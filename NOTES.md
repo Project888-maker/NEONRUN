@@ -48,5 +48,31 @@ node scripts/icons.mjs # recraft SVG icons -> PNG
 - `npx vite preview` then `node scripts/shots.mjs "http://localhost:4173/?debug&q=high&fixed" screenshots` — headless Chromium screenshots + console errors. `?fixed` makes the sim advance 1/30 s per frame so software rendering still produces representative sim time.
 - URL flags: `?debug` (fps / draw calls overlay), `?q=low|med|high`, `?touch` (force touch controls), `?fixed`.
 
+## Deployment
+- GitHub: branch `claude/keen-thompson-j8ie3f` of Project888-maker/NEONRUN.
+- **Vercel**: blocked. The connected Vercel account returned `403 forbidden` both for creating a Git-linked project and for direct deployments ("You don't have permission to create a project"). `vercel.json` is ready. To deploy: import the repo at vercel.com/new (framework Vite, build `npm run build`, output `dist`), or grant the connector project-creation rights.
+- **Fallback**: a private playable build is published as a claude.ai artifact (`node scripts/artifact.mjs` builds `dist/artifact.html`). Artifacts don't serve `.glb`, so models ship as base64 JSON and the loader falls back to it.
+
+## fal.ai spend
+About **$15.67** of the $25 budget (estimate from per-model prices in `scripts/assets.mjs`; fal returns billable units but not dollar cost). 176 manifest entries. Two requests failed and were replaced:
+- `ad_pills` was blocked by the content filter and replaced with `ad_umbrella`.
+- Three SFX failed the 0.5 s minimum duration and were regenerated longer.
+
 ## Known issues
-- See the final section of the report in the README.
+- FPS on real GPUs is unmeasured. The container only has SwiftShader (CPU WebGL), which runs at 0.3–1.5 fps here.
+
+  Scene cost per frame:
+
+  | View | Draw calls | Triangles |
+  | --- | --- | --- |
+  | Street level | 300–700 (+ reflection pass) | 0.25–0.75M |
+  | Long avenue on High | up to ~1,500 | ~1.9M |
+
+  Adaptive quality drops High → Med → Low below 38 fps. If a mid laptop struggles, the first levers are `reflectionEvery` and `viewDistance` in `src/core/quality.ts`.
+- The hero car is image-to-3D. Its underside has some generated "fins" behind the rear wheels, and its texture is baked, so paint colours are tints over the baked gunmetal.
+- The physics wheels use the same positions as the model, but tire grip is arcade-tuned, not simulation.
+- Hazard drones are simple pursuers (no obstacle avoidance) and can clip through buildings.
+- Traffic uses a fixed population around the player and kinematic bodies: cars stop when hit, but they aren't knocked around.
+- Audio was verified to load and decode without errors, but couldn't be listened to here. Engine loop crossfade points are tuned by ear-less heuristics.
+- In the artifact build it is unknown whether the sandbox CSP permits WebAssembly compilation (Rapier). If the artifact hangs on "Loading", use `npm run preview` locally or the Vercel route above.
+- Rain intensity, fog density and bloom were tuned only on screenshots.

@@ -49,7 +49,16 @@ export class Loader {
   gltf(path: string): Promise<GLTF | null> {
     this.total++;
     return new Promise((res) => {
-      this.gl.load(BASE + path, (g) => { this.tick(path); res(g); }, undefined, (e) => { console.warn('missing model', path, e); this.tick(path); res(null); });
+      this.gl.load(BASE + path, (g) => { this.tick(path); res(g); }, undefined, async () => {
+        // fallback for hosts that don't serve .glb: the same model as base64 inside <path>.json
+        try {
+          const r = await fetch(BASE + path + '.json');
+          if (!r.ok) throw new Error(String(r.status));
+          const b64: string = (await r.json()).glb;
+          const bin = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+          this.gl.parse(bin.buffer, BASE + 'models/', (g) => { this.tick(path); res(g); }, (e) => { console.warn('model parse failed', path, e); this.tick(path); res(null); });
+        } catch (e) { console.warn('missing model', path, e); this.tick(path); res(null); }
+      });
     });
   }
 
