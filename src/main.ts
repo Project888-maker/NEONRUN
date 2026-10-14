@@ -430,7 +430,7 @@ function startDrive() {
   ($('intro-video') as HTMLVideoElement).pause();
   show('hud', true);
   hud.show(true);
-  if (isMobile() || params.has('touch')) show('touch', true);
+  if (isMobile() || params.has('touch')) { show('touch', true); document.body.classList.add('touch'); }
   audio.setVolumes({ master: save.settings.master, music: save.settings.music, sfx: save.settings.sfx });
   audio.startDriving();
   audio.music_('chill');

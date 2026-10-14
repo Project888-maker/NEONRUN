@@ -16,7 +16,7 @@ html, body { margin: 0; height: 100%; background: var(--ink); color: var(--text)
 .screen { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 20; }
 .screen video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .screen .shade { position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(5,6,12,0.15) 0%, rgba(5,6,12,0.75) 70%, rgba(5,6,12,0.95) 100%); }
-.logo { position: relative; width: min(680px, 86vw); mix-blend-mode: screen; filter: drop-shadow(0 0 24px rgba(255, 47, 180, 0.45)); }
+.logo { position: relative; width: min(680px, 86vw, 78vh); mix-blend-mode: screen; filter: drop-shadow(0 0 24px rgba(255, 47, 180, 0.45)); }
 .tagline { position: relative; letter-spacing: 0.35em; text-transform: uppercase; color: var(--muted); margin: 6px 0 36px; font-size: 15px; text-align: center; }
 .loadbar { position: relative; width: min(420px, 70vw); height: 4px; background: rgba(255,255,255,0.08); margin-top: 30px; overflow: hidden; border-radius: 2px; }
 #loadfill { height: 100%; width: 0; background: linear-gradient(90deg, var(--magenta), var(--cyan)); box-shadow: 0 0 12px var(--cyan); transition: width .2s; }
@@ -124,7 +124,7 @@ button.primary:hover { background: var(--magenta); color: #fff; }
 #t-boost { right: 30px; bottom: 236px; border-color: var(--amber) !important; }
 #t-pause { right: 16px; top: 230px; width: 44px !important; height: 44px !important; }
 
-#tap { position: fixed; bottom: 12%; left: 0; right: 0; text-align: center; z-index: 30; font-family: 'Orbitron', sans-serif; letter-spacing: 0.3em; text-transform: uppercase; font-size: 13px; color: var(--text); animation: pulse 1s infinite alternate; }
+#tap { position: fixed; top: max(14px, env(safe-area-inset-top)); left: 0; right: 0; text-align: center; z-index: 30; font-family: 'Orbitron', sans-serif; letter-spacing: 0.3em; text-transform: uppercase; font-size: 13px; color: var(--text); animation: pulse 1s infinite alternate; }
 
 @media (max-width: 760px) {
   #minimap { width: 128px; height: 128px; top: 10px; right: 10px; }
@@ -136,3 +136,31 @@ button.primary:hover { background: var(--magenta); color: #fff; }
   .hud-tc { top: 54px; }
   .credits { font-size: 16px; }
 }
+
+/* ---- touch / phone layout ---- */
+body.touch #minimap { width: 120px; height: 120px; top: max(8px, env(safe-area-inset-top)); right: max(10px, env(safe-area-inset-right)); }
+body.touch .hud-br { left: max(12px, env(safe-area-inset-left)); right: auto; top: 64px; bottom: auto; transform: none; align-items: flex-start; }
+body.touch #speedo { width: 104px; height: 104px; }
+body.touch .boost { width: 104px; margin-top: 0; }
+body.touch .hud-tc { top: max(8px, env(safe-area-inset-top)); }
+body.touch #h-prompt { font-size: 11px; padding: 4px 12px; }
+body.touch #h-timer { font-size: 28px; }
+body.touch #t-boost { top: 140px; bottom: auto; right: max(26px, env(safe-area-inset-right)); width: 72px !important; height: 72px !important; }
+body.touch #t-pause { top: auto; bottom: 16px; right: auto; left: 50%; transform: translateX(-50%); }
+body.touch #t-gas { right: max(20px, env(safe-area-inset-right)); bottom: max(28px, env(safe-area-inset-bottom)); }
+body.touch #t-brake { bottom: max(20px, env(safe-area-inset-bottom)); }
+body.touch #t-drift { bottom: 124px; }
+body.touch #combo { top: 22%; font-size: 16px; }
+body.touch #toast { bottom: 30%; }
+
+/* short screens (phones in landscape): compact title + menus */
+@media (max-height: 620px) {
+  .logo { width: min(340px, 50vw); }
+  .tagline { margin: 2px 0 12px; font-size: 11px; }
+  .menu { flex-direction: row; flex-wrap: wrap; justify-content: center; width: min(640px, 92vw); gap: 8px; }
+  .menu button { padding: 10px 14px; font-size: 12px; }
+  #tap { font-size: 11px; }
+  .footer { display: none; }
+  .panel { padding: 16px 18px; max-height: 94vh; }
+}
+@media (pointer: coarse) { #tap { display: none !important; } }

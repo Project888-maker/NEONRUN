@@ -19,10 +19,12 @@ from scipy import ndimage
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / 'assets' / 'generated'
 DST = ROOT / 'public' / 'assets'
+BUILD = ROOT / 'assets' / 'build'  # intermediates that are packed into atlases, not shipped
 
 
 def out(rel: str) -> Path:
-    p = DST / rel
+    base = BUILD if rel.startswith(('sign/', 'ad/', 'shop/')) or any(rel.startswith(f'tex/{n}_') for n in ('roadlines', 'brick', 'rubber')) else DST
+    p = base / rel
     p.parent.mkdir(parents=True, exist_ok=True)
     return p
 
@@ -236,10 +238,10 @@ def pack_atlas(items, width, pad=4):
 
 def process_atlases():
     # neon signs atlas with average glow colour (for light pools)
-    meta = json.load(open(DST / 'sign' / 'signs.json'))
+    meta = json.load(open(BUILD / 'sign' / 'signs.json'))
     items, info = [], {}
     for id_ in meta:
-        im = Image.open(DST / 'sign' / f'{id_}.webp').convert('RGB')
+        im = Image.open(BUILD / 'sign' / f'{id_}.webp').convert('RGB')
         im.thumbnail((400, 400), Image.LANCZOS)
         a = np.asarray(im).astype(np.float32) / 255
         w = a.max(axis=-1)
@@ -254,10 +256,10 @@ def process_atlases():
     json.dump(info, open(out('atlas/signs.json'), 'w'), indent=1)
     print('signs atlas', atlas.size)
     # ads atlas
-    meta = json.load(open(DST / 'ad' / 'ads.json'))
+    meta = json.load(open(BUILD / 'ad' / 'ads.json'))
     items, info = [], {}
     for id_ in meta:
-        im = Image.open(DST / 'ad' / f'{id_}.webp').convert('RGB')
+        im = Image.open(BUILD / 'ad' / f'{id_}.webp').convert('RGB')
         im.thumbnail((640, 640), Image.LANCZOS)
         items.append((id_, im))
         info[id_] = {'aspect': meta[id_]}
@@ -268,7 +270,7 @@ def process_atlases():
     json.dump(info, open(out('atlas/ads.json'), 'w'), indent=1)
     print('ads atlas', atlas.size)
     # shops atlas: 2 x 4 grid of 1024x512
-    shops = sorted((DST / 'shop').glob('*.webp'))
+    shops = sorted((BUILD / 'shop').glob('*.webp'))
     atlas = Image.new('RGB', (2048, 2048))
     info = {}
     for i, f in enumerate(shops[:8]):

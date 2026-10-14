@@ -67,7 +67,6 @@ export class Loader {
       jobs.push(this.tex(`tex/${s}_rough.webp`, false).then((t) => (tex[`${s}_rough`] = t)));
     }
     for (const f of FACADE_IDS) jobs.push(this.tex(`facade/${f}.webp`).then((t) => (tex[`facade_${f}`] = t)));
-    for (const s of SHOP_IDS) jobs.push(this.tex(`shop/${s}.webp`).then((t) => (tex[`shop_${s}`] = t)));
     jobs.push(this.tex('sky/night_pano.webp').then((t) => (tex.sky = t)));
     jobs.push(this.tex('sky/clouds.webp').then((t) => (tex.clouds = t)));
     // signs / ads are rendered from atlases (public/assets/atlas), loaded by the city

@@ -69,9 +69,9 @@ if (want('drift')) {
   await sleep(500);
   await N('setInput', { throttle: 1 });
   await sleep(3500);
-  await N('setInput', { throttle: 1, steer: 0.8, handbrake: true });
+  await N('setInput', { throttle: 1, steer: -0.8, handbrake: true });
   await sleep(1200);
-  await N('setInput', { throttle: 1, steer: 0.6 });
+  await N('setInput', { throttle: 1, steer: -0.6 });
   await sleep(1200);
   await shot('04_drift');
   await N('setInput', { brake: 1 });
