@@ -30,7 +30,8 @@ button.primary { background: linear-gradient(90deg, rgba(255,47,180,0.85), rgba(
 button.primary:hover { background: var(--magenta); color: #fff; }
 .footer { position: absolute; bottom: 14px; font-size: 12px; color: var(--muted); letter-spacing: 0.08em; padding: 0 16px; text-align: center; }
 
-.panel-screen { background: rgba(3, 4, 10, 0.55); backdrop-filter: blur(6px); }
+.panel-screen { background: linear-gradient(rgba(3, 4, 10, 0.72), rgba(3, 4, 10, 0.88)), url(/assets/ui/loading.webp) center / cover no-repeat; backdrop-filter: blur(6px); }
+#pause.panel-screen { background: rgba(3, 4, 10, 0.55); }
 .panel { position: relative; background: var(--panel); border: 1px solid var(--line); padding: 26px 30px; width: min(520px, 92vw); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 60px rgba(33, 243, 255, 0.08); }
 .panel.wide { width: min(980px, 94vw); }
 .panel h2 { font-family: 'Orbitron', sans-serif; letter-spacing: 0.25em; text-transform: uppercase; margin: 0 0 18px; color: var(--cyan); font-size: 22px; }

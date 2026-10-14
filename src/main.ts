@@ -545,7 +545,7 @@ function adaptiveQuality(dt: number) {
   perf.samples.push(dt);
   if (perf.samples.length > 240) perf.samples.shift();
   perf.checkT += dt;
-  if (perf.checkT > 5 && save.settings.quality === 'auto' && perf.samples.length >= 200) {
+  if (perf.checkT > 5 && save.settings.quality === 'auto' && !params.has('q') && perf.samples.length >= 200) {
     perf.checkT = 0;
     const avg = perf.samples.reduce((a, b) => a + b, 0) / perf.samples.length;
     const fps = 1 / avg;
@@ -662,6 +662,7 @@ function frame(now: number) {
     if (vehicle.isUpsideDown() && vehicle.speedAbs < 2) { upsideT += dtReal; if (upsideT > 2) { resetCar(); upsideT = 0; } } else upsideT = 0;
 
     car.update(dtReal, vehicle, carPos, carQuat, inp.throttle);
+    car.beams.visible = chase.mode !== 'hood';
     chase.update(dtReal, carPos, carQuat, carVel, vehicle.speed, vehicle.boosting, vehicle.drifting, vehicle.body);
     missions.update(dtReal, simTime, carPos, carVel, vehicle.speedAbs, vehicle.drifting, traffic.cars, () => {
       chase.impact(0.6);
@@ -711,7 +712,7 @@ function frame(now: number) {
     city.updateVisibility(camera.position, Q.viewDistance);
     updateLightPools();
     const s = Math.min(1, vehicle.speedAbs / 60);
-    (post.lens as any).set(simTime, Q.lensFx ? 0.55 * (1 - s * 0.6) : 0, vehicle.boosting ? 0.9 : s > 0.6 ? (s - 0.6) * 1.2 : 0);
+    (post.lens as any).set(simTime, Q.lensFx ? 0.55 * (1 - s * 0.6) : 0, (vehicle.boosting ? 0.6 : 0) * Math.min(1, vehicle.speedAbs / 30) + (s > 0.6 ? (s - 0.6) * 1.2 : 0));
     post.chroma.offset.set(0.0006 + (vehicle.boosting ? 0.0025 : 0), 0.0004 + (vehicle.boosting ? 0.0015 : 0));
   }
   renderer.info.reset();

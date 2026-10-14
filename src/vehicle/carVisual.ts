@@ -151,11 +151,11 @@ export class CarVisual {
     this.root.add(this.shadow);
 
     // boost flames
-    const flameGeo = new THREE.ConeGeometry(0.11, 1, 12, 1, true);
+    const flameGeo = new THREE.ConeGeometry(0.09, 1, 12, 1, true);
     flameGeo.translate(0, -0.5, 0);
     flameGeo.rotateX(Math.PI / 2); // apex at origin pointing -Z... flame extends backwards
     for (const sx of [0.42, -0.42]) {
-      const f = new THREE.Mesh(flameGeo, new THREE.MeshBasicMaterial({ color: new THREE.Color(0.4, 0.7, 3.5), transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false }));
+      const f = new THREE.Mesh(flameGeo, new THREE.MeshBasicMaterial({ color: new THREE.Color(0.15, 0.35, 2.2), transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false }));
       f.position.set(sx, 0.42, -2.45);
       f.visible = false;
       this.root.add(f);
@@ -234,8 +234,8 @@ export class CarVisual {
     for (const f of this.flames) {
       f.visible = boosting;
       if (boosting) {
-        const s = 1 + Math.random() * 0.5;
-        f.scale.set(1 + Math.random() * 0.3, 1 + Math.random() * 0.3, s * 1.6);
+        const s = 0.55 + Math.random() * 0.35;
+        f.scale.set(1 + Math.random() * 0.3, 1 + Math.random() * 0.3, s);
       }
     }
     this.flameLight.intensity = boosting ? 30 + Math.random() * 25 : 0;

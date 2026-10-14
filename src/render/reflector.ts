@@ -13,6 +13,7 @@ export class PlanarReflector {
   camera = new THREE.PerspectiveCamera();
   height: number;
   enabled = true;
+  far = 320;
   private plane = new THREE.Plane();
   private normal = new THREE.Vector3(0, 1, 0);
   private clipPlane = new THREE.Vector4();
@@ -50,9 +51,10 @@ export class PlanarReflector {
     up.y = -up.y;
     rc.up.copy(up);
     rc.lookAt(rc.position.clone().add(dir));
-    rc.fov = cam.fov; rc.aspect = cam.aspect; rc.near = cam.near; rc.far = cam.far;
+    // reflections only need the nearby street: a short far plane culls distant chunks (big draw-call saving)
+    rc.fov = cam.fov; rc.aspect = cam.aspect; rc.near = cam.near; rc.far = Math.min(cam.far, this.far);
     rc.updateMatrixWorld();
-    rc.projectionMatrix.copy(cam.projectionMatrix);
+    rc.updateProjectionMatrix();
 
     // texture matrix: world -> reflection uv
     this.textureMatrix.set(0.5, 0, 0, 0.5, 0, 0.5, 0, 0.5, 0, 0, 0.5, 0.5, 0, 0, 0, 1);

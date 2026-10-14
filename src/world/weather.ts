@@ -215,7 +215,7 @@ export class FogLayers {
       s.layers.set(LAYER_NO_REFLECT);
       this.sprites.push(s);
       this.group.add(s);
-      s.userData.base = 0.10 + Math.random() * 0.12;
+      s.userData.base = 0.05 + Math.random() * 0.08;
       s.userData.drift = new THREE.Vector3((Math.random() - 0.5) * 1.5, 0, (Math.random() - 0.5) * 1.5);
     }
   }
@@ -223,7 +223,7 @@ export class FogLayers {
     const a = Math.random() * Math.PI * 2;
     const r = far ? 120 + Math.random() * 60 : 25 + Math.random() * 150;
     const size = 30 + Math.random() * 60;
-    s.position.set(cam.x + Math.cos(a) * r, 3 + Math.random() * 28, cam.z + Math.sin(a) * r);
+    s.position.set(cam.x + Math.cos(a) * r, 8 + Math.random() * 34, cam.z + Math.sin(a) * r);
     s.scale.set(size * 1.6, size * 0.6, 1);
   }
   update(dt: number, cam: THREE.Vector3, density: number) {

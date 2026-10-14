@@ -406,6 +406,24 @@ export class City {
       if (rng.chance(0.15)) this.sounds.push({ pos: new THREE.Vector3(px, y, pz), type: 'neon' });
     }
     if (d === 'neon' && rng.chance(0.3)) this.sounds.push({ pos: new THREE.Vector3(fx + nx * 4, 1.5, fz + nz * 4), type: 'crowd' });
+    // docks: sodium floodlights on warehouse walls, with light cones spilling onto the street
+    if (d === 'docks') {
+      const n2 = Math.max(1, Math.floor(len / 18));
+      for (let k = 0; k < n2; k++) {
+        const off = -((n2 - 1) * 18) / 2 + k * 18;
+        const lx = fx + tx * off + nx * 0.6, lz = fz + tz * off + nz * 0.6;
+        const col = new THREE.Color(1.0, 0.5, 0.16);
+        this.b.add('flood', chunkOf(lx, lz), this.geo.box, this.floodMat(), mtx(lx, 7.2, lz, rot, 1.4, 0.35, 0.5));
+        this.b.add('cone', chunkOf(lx, lz), this.geo.cone, this.mats.cone, mtx(lx + nx * 1.5, 7.1, lz + nz * 1.5, 0, 4.5, 7.0, 4.5), { aColor: [col.r, col.g, col.b] }, LAYER_NO_REFLECT);
+        this.lights.push({ pos: new THREE.Vector3(lx + nx * 4, 5.5, lz + nz * 4), color: col, radius: 16, kind: 'lamp' });
+      }
+      if (rng.chance(0.25)) {
+        // big painted company number / hazard stripes read as emissive panel
+        const id = rng.pick(this.signIds.horizontal);
+        const info = this.signInfo[id];
+        this.atlasQuad('sign', info.uv, fx + nx * 0.3, Math.min(h - 3, 10), fz + nz * 0.3, rot, 3 * info.aspect, 3);
+      }
+    }
     // drainpipes / pipes in backstreets
     if (d === 'backstreets' && rng.chance(0.5)) this.prop('pipes', fx + tx * rng.range(-0.4, 0.4) * len + nx * 0.2, CURB_H - 10 + Math.min(h, 20), fz + tz * rng.range(-0.4, 0.4) * len + nz * 0.2, rot, 1);
   }
@@ -487,6 +505,10 @@ export class City {
     }
   }
 
+  private _floodMat?: THREE.MeshStandardMaterial;
+  private floodMat() {
+    return (this._floodMat ??= new THREE.MeshStandardMaterial({ color: 0x111111, emissive: new THREE.Color(1, 0.55, 0.2), emissiveIntensity: 9 }));
+  }
   private _contMat?: THREE.MeshStandardMaterial;
   private containerMat() {
     if (this._contMat) return this._contMat;

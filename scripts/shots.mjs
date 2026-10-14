@@ -39,6 +39,16 @@ const sleep = async (ms) => {
 };
 const shot = async (name) => { await page.screenshot({ path: path.join(out, `${name}.png`) }); const t = await N('telemetry'); console.log(new Date().toISOString().slice(11, 19), name, JSON.stringify({ kmh: t.kmh.toFixed(0), fps: t.fps?.toFixed(1), calls: t.calls, tris: t.tris, drift: t.drifting, pos: t.pos.map((v) => v.toFixed(0)).join(',') })); return t; };
 
+if (want('ui')) {
+  await page.click('button[data-act="garage"]');
+  await realSleep(800);
+  await page.screenshot({ path: path.join(out, '00_garage.png') });
+  await page.click('#garage button[data-act="back"]');
+  await page.click('button[data-act="settings"]');
+  await realSleep(500);
+  await page.screenshot({ path: path.join(out, '00_settings.png') });
+  await page.click('#settings button[data-act="back"]');
+}
 await N('start');
 await N('unlockAll');
 await sleep(2500);
@@ -53,6 +63,12 @@ if (want('drive')) {
   await shot('03_boost');
 }
 if (want('drift')) {
+  // open stretch of road: outer ring road on the west side, heading +Z
+  await N('setInput', {});
+  await N('teleport', -768 - 1.75, -600, 0);
+  await sleep(500);
+  await N('setInput', { throttle: 1 });
+  await sleep(3500);
   await N('setInput', { throttle: 1, steer: 0.8, handbrake: true });
   await sleep(1200);
   await N('setInput', { throttle: 1, steer: 0.6 });
@@ -61,6 +77,22 @@ if (want('drift')) {
   await N('setInput', { brake: 1 });
   await sleep(3000);
   await shot('05_brake');
+}
+if (want('mission')) {
+  await N('setInput', {});
+  let m = await N('mission');
+  const [tx, , tz] = m.target;
+  await N('teleport', tx + 3, tz + 3, 0);
+  await sleep(2000);
+  m = await N('mission');
+  console.log('mission after pickup', JSON.stringify(m));
+  await shot('20_delivery');
+  const [dx, , dz] = m.target;
+  await N('teleport', dx + 3, dz + 3, 0);
+  await sleep(1500);
+  await shot('21_results');
+  await sleep(6000);
+  console.log('mission after results', JSON.stringify(await N('mission')));
 }
 const places = [
   ['06_neon', -384 + 1.75, -420, Math.PI],

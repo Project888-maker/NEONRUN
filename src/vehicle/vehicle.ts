@@ -239,7 +239,7 @@ export class Vehicle {
       if (!w.front) Fx += drive / 2;
       // ABS: brake force per wheel never exceeds ~85% of available grip
       if (brakeForce > 0) Fx -= Math.sign(vLong) * Math.min(brakeForce * (w.front ? 0.34 : 0.16), maxF * 0.85);
-      if (!w.front && inp.handbrake) Fx -= Math.sign(vLong) * Math.min(Math.abs(vLong) * wheelMass / dt * 0.2, maxF * 0.6);
+      if (!w.front && inp.handbrake) Fx -= Math.sign(vLong) * Math.min(Math.abs(vLong) * wheelMass / dt * 0.2, maxF * 0.3);
       Fx -= vLong * 18; // rolling resistance
       // friction circle (rear drive wheels can spin up -> power oversteer)
       const tot = Math.hypot(Fx, Fy);
@@ -284,7 +284,7 @@ export class Vehicle {
       this.driftTime = this.drifting ? this.driftTime + dt : wasDrifting ? this.driftTime : 0;
       // steering helps rotate while drifting (arcade), and caps spin-outs
       if (this.drifting) {
-        const yawAssist = -inp.steer * 2600 * Math.min(1, spd / 20);
+        const yawAssist = -inp.steer * 2600 * Math.min(1, spd / 20) * Math.max(0, 1 - Math.abs(slideAngle) / 0.8);
         b.applyTorqueImpulse({ x: up.x * yawAssist * dt, y: up.y * yawAssist * dt, z: up.z * yawAssist * dt }, true);
       }
       // stability control: damp unintended slides (not while the player is handbraking)
@@ -295,9 +295,9 @@ export class Vehicle {
       }
       // drift angle limiter + speed keeper: big, holdable arcade drifts that don't spin out
       if (Math.abs(slideAngle) > 0.3 && spd > 6) {
-        const over = Math.abs(slideAngle) - 0.62;
+        const over = Math.abs(slideAngle) - 0.55;
         if (over > 0 && Math.sign(yawRate) === Math.sign(-slideAngle)) {
-          const corr = -yawRate * 4200 * Math.min(1, over * 4);
+          const corr = -yawRate * (9000 * Math.min(1, over * 4) + (Math.abs(slideAngle) > 1.0 ? 14000 : 0));
           b.applyTorqueImpulse({ x: up.x * corr * dt, y: up.y * corr * dt, z: up.z * corr * dt }, true);
         }
         if (inp.throttle > 0) {

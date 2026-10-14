@@ -22,11 +22,11 @@ export function qualitySettings(level: QualityLevel): QualitySettings {
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   switch (level) {
     case 'low':
-      return { level, pixelRatio: Math.min(dpr, 1) * 0.75, reflection: true, reflectionScale: 0.25, reflectionEvery: 3, ao: false, bloom: true, smaa: false, rainCount: 4000, splashCount: 150, traffic: 12, fogSprites: 20, viewDistance: 300, realLights: 2, lensFx: false };
+      return { level, pixelRatio: Math.min(dpr, 1) * 0.75, reflection: true, reflectionScale: 0.25, reflectionEvery: 3, ao: false, bloom: true, smaa: false, rainCount: 3000, splashCount: 150, traffic: 12, fogSprites: 20, viewDistance: 260, realLights: 2, lensFx: false };
     case 'med':
-      return { level, pixelRatio: Math.min(dpr, 1.25), reflection: true, reflectionScale: 0.4, reflectionEvery: 2, ao: false, bloom: true, smaa: true, rainCount: 10000, splashCount: 350, traffic: 22, fogSprites: 45, viewDistance: 380, realLights: 4, lensFx: true };
+      return { level, pixelRatio: Math.min(dpr, 1.25), reflection: true, reflectionScale: 0.4, reflectionEvery: 2, ao: false, bloom: true, smaa: true, rainCount: 6000, splashCount: 350, traffic: 22, fogSprites: 45, viewDistance: 330, realLights: 4, lensFx: true };
     default:
-      return { level, pixelRatio: Math.min(dpr, 1.5), reflection: true, reflectionScale: 0.5, reflectionEvery: 1, ao: true, bloom: true, smaa: true, rainCount: 20000, splashCount: 600, traffic: 32, fogSprites: 70, viewDistance: 460, realLights: 6, lensFx: true };
+      return { level, pixelRatio: Math.min(dpr, 1.5), reflection: true, reflectionScale: 0.5, reflectionEvery: 1, ao: true, bloom: true, smaa: true, rainCount: 9000, splashCount: 600, traffic: 32, fogSprites: 70, viewDistance: 400, realLights: 6, lensFx: true };
   }
 }
 

@@ -1,10 +1,11 @@
 import { chromium } from 'playwright';
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
-const p = await b.newPage({ viewport: { width: 480, height: 270 } });
-p.on('pageerror', (e) => console.log('ERR', e.message));
-await p.goto('http://localhost:4173/?q=low');
+const p = await b.newPage({ viewport: { width: 320, height: 180 } });
+p.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') console.log(m.type(), m.text().slice(0, 800)); });
+p.on('pageerror', (e) => console.log('PAGEERR', e.message, e.stack?.slice(0, 600)));
+await p.goto('http://localhost:4173/?q=high&fixed');
 await p.waitForFunction(() => window.__neon && window.__neon.state() === 'title', null, { timeout: 300000 });
 await p.evaluate(() => window.__neon.start());
-await new Promise((r) => setTimeout(r, 3000));
-console.log(JSON.stringify(await p.evaluate(() => window.__neon.carInfo()), null, 1));
+await p.waitForFunction(() => window.__neon.simTime() > 2, null, { timeout: 300000 });
+console.log('carVisible', await p.evaluate(() => window.__neon.carVisible?.()));
 await b.close();

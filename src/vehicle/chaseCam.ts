@@ -49,9 +49,15 @@ export class ChaseCam {
     if (!this.init) { this.pos.copy(desired); this.init = true; }
     // critically damped spring
     const k = this.mode === 'hood' ? 400 : 60, c = 2 * Math.sqrt(k);
-    const acc = desired.clone().sub(this.pos).multiplyScalar(k).addScaledVector(this.vel, -c);
-    this.vel.addScaledVector(acc, Math.min(dt, 1 / 30));
-    this.pos.addScaledVector(this.vel, Math.min(dt, 1 / 30));
+    // sub-stepped so the spring stays stable and keeps up at any frame rate
+    let rem = Math.min(dt, 0.25);
+    while (rem > 1e-5) {
+      const h = Math.min(rem, 1 / 120);
+      const acc = desired.clone().sub(this.pos).multiplyScalar(k).add(carVel.clone().sub(this.vel).multiplyScalar(c));
+      this.vel.addScaledVector(acc, h);
+      this.pos.addScaledVector(this.vel, h);
+      rem -= h;
+    }
     if (this.mode === 'hood') this.pos.copy(desired);
     if (this.pos.y < 0.4) this.pos.y = 0.4;
 

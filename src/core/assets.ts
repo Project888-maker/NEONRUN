@@ -4,7 +4,7 @@ import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.j
 
 const BASE = './assets/';
 
-export const PBR_SETS = ['asphalt', 'concrete', 'brushed_metal', 'rusted_metal', 'brick', 'rubber', 'glass_grime'] as const;
+export const PBR_SETS = ['asphalt', 'concrete', 'brushed_metal', 'rusted_metal', 'glass_grime'] as const;
 export const FACADE_IDS = ['apartment', 'office_glass', 'tenement', 'industrial', 'megablock', 'tower_lux'] as const;
 export const SHOP_IDS = ['noodle', 'pharmacy', 'arcade', 'shutters', 'electronics', 'convenience', 'garage', 'bar'] as const;
 
@@ -59,10 +59,6 @@ export class Loader {
   }
 
   async loadAll(): Promise<Assets> {
-    const [signMeta, adMeta] = await Promise.all([
-      this.json<Record<string, number>>('sign/signs.json'),
-      this.json<Record<string, number>>('ad/ads.json'),
-    ]);
     const tex: Record<string, THREE.Texture> = {};
     const jobs: Promise<unknown>[] = [];
     for (const s of PBR_SETS) {
@@ -74,10 +70,9 @@ export class Loader {
     for (const s of SHOP_IDS) jobs.push(this.tex(`shop/${s}.webp`).then((t) => (tex[`shop_${s}`] = t)));
     jobs.push(this.tex('sky/night_pano.webp').then((t) => (tex.sky = t)));
     jobs.push(this.tex('sky/clouds.webp').then((t) => (tex.clouds = t)));
+    // signs / ads are rendered from atlases (public/assets/atlas), loaded by the city
     const signs: Assets['signs'] = [];
-    for (const [id, aspect] of Object.entries(signMeta)) jobs.push(this.tex(`sign/${id}.webp`).then((t) => signs.push({ id, tex: t, aspect })));
     const ads: Assets['ads'] = [];
-    for (const [id, aspect] of Object.entries(adMeta)) jobs.push(this.tex(`ad/${id}.webp`).then((t) => ads.push({ id, tex: t, aspect })));
     const liveries: Record<string, THREE.Texture> = {};
     for (const l of ['liv_stripes', 'liv_tiger', 'liv_circuit', 'liv_kanji', 'liv_flames', 'liv_geo']) jobs.push(this.tex(`livery/${l}.png`).then((t) => (liveries[l] = t)));
     let kit: GLTF | null = null, car: GLTF | null = null;
@@ -86,8 +81,6 @@ export class Loader {
     const landmarks: Record<string, GLTF> = {};
     for (const l of ['lm_pagoda', 'lm_watertower', 'lm_crane', 'lm_gate', 'lm_statue']) jobs.push(this.gltf(`models/${l}.glb`).then((g) => { if (g) landmarks[l] = g; }));
     await Promise.all(jobs);
-    signs.sort((a, b) => a.id.localeCompare(b.id));
-    ads.sort((a, b) => a.id.localeCompare(b.id));
     if (!kit) throw new Error('citykit.glb failed to load');
     return { tex, signs, ads, kit, car, landmarks, liveries };
   }
