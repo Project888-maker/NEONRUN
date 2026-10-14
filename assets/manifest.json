@@ -1,0 +1,3041 @@
+{
+  "budget_usd": 25,
+  "spent_usd_est": 15.6697,
+  "assets": {
+    "_tests/probe": {
+      "files": [],
+      "model": "fal-ai/flux/schnell + fal-ai/flux-2-pro",
+      "prompt": "connectivity test",
+      "cost_usd_est": 0.033,
+      "created": "2026-10-14T22:06:37.767Z"
+    },
+    "tex/asphalt": {
+      "files": [
+        "assets/generated/tex/asphalt.png"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "wet black asphalt road surface at night, small shallow puddles, fine aggregate stones, hairline cracks, subtle oil stains. seamless tileable texture, orthographic top-down view, flat even diffuse lighting, no shadows, no perspective, no vignette, photorealistic PBR albedo, ultra detailed, 4k scan",
+      "input": {
+        "prompt": "wet black asphalt road surface at night, small shallow puddles, fine aggregate stones, hairline cracks, subtle oil stains. seamless tileable texture, orthographic top-down view, flat even diffuse lighting, no shadows, no perspective, no vignette, photorealistic PBR albedo, ultra detailed, 4k scan",
+        "image_size": "square_hd",
+        "output_format": "png",
+        "seed": 7
+      },
+      "seed": 7,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:06:55.997Z",
+      "seconds": 14
+    },
+    "tex/roadlines": {
+      "files": [
+        "assets/generated/tex/roadlines.png"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "worn asphalt road with a single straight faded white painted lane stripe running vertically through the center, rain wet, paint chipped. seamless tileable texture, orthographic top-down view, flat even diffuse lighting, no shadows, no perspective, no vignette, photorealistic PBR albedo, ultra detailed, 4k scan",
+      "input": {
+        "prompt": "worn asphalt road with a single straight faded white painted lane stripe running vertically through the center, rain wet, paint chipped. seamless tileable texture, orthographic top-down view, flat even diffuse lighting, no shadows, no perspective, no vignette, photorealistic PBR albedo, ultra detailed, 4k scan",
+        "image_size": "square_hd",
+        "output_format": "png",
+        "seed": 7
+      },
+      "seed": 7,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:07:13.337Z",
+      "seconds": 13
+    },
+    "tex/glass_grime": {
+      "files": [
+        "assets/generated/tex/glass_grime.png"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "dirty window glass surface, dried rain droplets, dust and grime streaks, smudges, translucent grey. seamless tileable texture, orthographic top-down view, flat even diffuse lighting, no shadows, no perspective, no vignette, photorealistic PBR albedo, ultra detailed, 4k scan",
+      "input": {
+        "prompt": "dirty window glass surface, dried rain droplets, dust and grime streaks, smudges, translucent grey. seamless tileable texture, orthographic top-down view, flat even diffuse lighting, no shadows, no perspective, no vignette, photorealistic PBR albedo, ultra detailed, 4k scan",
+        "image_size": "square_hd",
+        "output_format": "png",
+        "seed": 7
+      },
+      "seed": 7,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:07:13.738Z",
+      "seconds": 14
+    },
+    "tex/brushed_metal": {
+      "files": [
+        "assets/generated/tex/brushed_metal.png"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "brushed stainless steel panel, fine directional brushing, light scratches, faint fingerprints. seamless tileable texture, orthographic top-down view, flat even diffuse lighting, no shadows, no perspective, no vignette, photorealistic PBR albedo, ultra detailed, 4k scan",
+      "input": {
+        "prompt": "brushed stainless steel panel, fine directional brushing, light scratches, faint fingerprints. seamless tileable texture, orthographic top-down view, flat even diffuse lighting, no shadows, no perspective, no vignette, photorealistic PBR albedo, ultra detailed, 4k scan",
+        "image_size": "square_hd",
+        "output_format": "png",
+        "seed": 7
+      },
+      "seed": 7,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:07:13.859Z",
+      "seconds": 14
+    },
+    "tex/concrete": {
+      "files": [
+        "assets/generated/tex/concrete.png"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "weathered grey city concrete sidewalk slab, rain stains, small chips, grime, subtle seams. seamless tileable texture, orthographic top-down view, flat even diffuse lighting, no shadows, no perspective, no vignette, photorealistic PBR albedo, ultra detailed, 4k scan",
+      "input": {
+        "prompt": "weathered grey city concrete sidewalk slab, rain stains, small chips, grime, subtle seams. seamless tileable texture, orthographic top-down view, flat even diffuse lighting, no shadows, no perspective, no vignette, photorealistic PBR albedo, ultra detailed, 4k scan",
+        "image_size": "square_hd",
+        "output_format": "png",
+        "seed": 7
+      },
+      "seed": 7,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:07:14.185Z",
+      "seconds": 14
+    },
+    "tex/rusted_metal": {
+      "files": [
+        "assets/generated/tex/rusted_metal.png"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "rusted corrugated steel shipping container wall, peeling paint, orange rust streaks, rain streaks. seamless tileable texture, orthographic top-down view, flat even diffuse lighting, no shadows, no perspective, no vignette, photorealistic PBR albedo, ultra detailed, 4k scan",
+      "input": {
+        "prompt": "rusted corrugated steel shipping container wall, peeling paint, orange rust streaks, rain streaks. seamless tileable texture, orthographic top-down view, flat even diffuse lighting, no shadows, no perspective, no vignette, photorealistic PBR albedo, ultra detailed, 4k scan",
+        "image_size": "square_hd",
+        "output_format": "png",
+        "seed": 7
+      },
+      "seed": 7,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:07:17.812Z",
+      "seconds": 18
+    },
+    "tex/rubber": {
+      "files": [
+        "assets/generated/tex/rubber.png"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "black rubber tire tread surface, fine grooves, sipes, worn, dusty. seamless tileable texture, orthographic top-down view, flat even diffuse lighting, no shadows, no perspective, no vignette, photorealistic PBR albedo, ultra detailed, 4k scan",
+      "input": {
+        "prompt": "black rubber tire tread surface, fine grooves, sipes, worn, dusty. seamless tileable texture, orthographic top-down view, flat even diffuse lighting, no shadows, no perspective, no vignette, photorealistic PBR albedo, ultra detailed, 4k scan",
+        "image_size": "square_hd",
+        "output_format": "png",
+        "seed": 7
+      },
+      "seed": 7,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:07:27.395Z",
+      "seconds": 14
+    },
+    "tex/brick": {
+      "files": [
+        "assets/generated/tex/brick.png"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "old dark red brick wall, soot stains, moss in mortar lines, rain darkened. seamless tileable texture, orthographic top-down view, flat even diffuse lighting, no shadows, no perspective, no vignette, photorealistic PBR albedo, ultra detailed, 4k scan",
+      "input": {
+        "prompt": "old dark red brick wall, soot stains, moss in mortar lines, rain darkened. seamless tileable texture, orthographic top-down view, flat even diffuse lighting, no shadows, no perspective, no vignette, photorealistic PBR albedo, ultra detailed, 4k scan",
+        "image_size": "square_hd",
+        "output_format": "png",
+        "seed": 7
+      },
+      "seed": 7,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:07:28.925Z",
+      "seconds": 16
+    },
+    "facade/apartment": {
+      "files": [
+        "assets/generated/facade/apartment.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "dense asian concrete apartment tower facade, many small windows, roughly 35 percent lit with warm tungsten and cold fluorescent light, air conditioning units, laundry, rust stains. perfectly frontal orthographic architectural elevation photo, zero perspective distortion, the facade fills the entire frame edge to edge, no sky, no ground, regular repeating grid, at night in heavy rain, photorealistic, highly detailed",
+      "input": {
+        "prompt": "dense asian concrete apartment tower facade, many small windows, roughly 35 percent lit with warm tungsten and cold fluorescent light, air conditioning units, laundry, rust stains. perfectly frontal orthographic architectural elevation photo, zero perspective distortion, the facade fills the entire frame edge to edge, no sky, no ground, regular repeating grid, at night in heavy rain, photorealistic, highly detailed",
+        "image_size": {
+          "width": 1024,
+          "height": 1536
+        },
+        "output_format": "jpeg",
+        "seed": 11
+      },
+      "seed": 11,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-14T22:07:29.218Z",
+      "seconds": 15
+    },
+    "facade/office_glass": {
+      "files": [
+        "assets/generated/facade/office_glass.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "modern glass curtain wall office skyscraper facade, dark blue tinted glass panels, a few lit office floors with cool white light, steel mullions. perfectly frontal orthographic architectural elevation photo, zero perspective distortion, the facade fills the entire frame edge to edge, no sky, no ground, regular repeating grid, at night in heavy rain, photorealistic, highly detailed",
+      "input": {
+        "prompt": "modern glass curtain wall office skyscraper facade, dark blue tinted glass panels, a few lit office floors with cool white light, steel mullions. perfectly frontal orthographic architectural elevation photo, zero perspective distortion, the facade fills the entire frame edge to edge, no sky, no ground, regular repeating grid, at night in heavy rain, photorealistic, highly detailed",
+        "image_size": {
+          "width": 1024,
+          "height": 1536
+        },
+        "output_format": "jpeg",
+        "seed": 11
+      },
+      "seed": 11,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-14T22:07:29.457Z",
+      "seconds": 15
+    },
+    "facade/tenement": {
+      "files": [
+        "assets/generated/facade/tenement.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "old brick tenement building facade, fire escapes, warm lit windows with curtains, pipes, grime. perfectly frontal orthographic architectural elevation photo, zero perspective distortion, the facade fills the entire frame edge to edge, no sky, no ground, regular repeating grid, at night in heavy rain, photorealistic, highly detailed",
+      "input": {
+        "prompt": "old brick tenement building facade, fire escapes, warm lit windows with curtains, pipes, grime. perfectly frontal orthographic architectural elevation photo, zero perspective distortion, the facade fills the entire frame edge to edge, no sky, no ground, regular repeating grid, at night in heavy rain, photorealistic, highly detailed",
+        "image_size": {
+          "width": 1024,
+          "height": 1536
+        },
+        "output_format": "jpeg",
+        "seed": 11
+      },
+      "seed": 11,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-14T22:07:31.114Z",
+      "seconds": 13
+    },
+    "facade/megablock": {
+      "files": [
+        "assets/generated/facade/megablock.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "brutalist megablock residential facade, stacked balconies, colorful lit windows magenta teal amber, satellite dishes, cables. perfectly frontal orthographic architectural elevation photo, zero perspective distortion, the facade fills the entire frame edge to edge, no sky, no ground, regular repeating grid, at night in heavy rain, photorealistic, highly detailed",
+      "input": {
+        "prompt": "brutalist megablock residential facade, stacked balconies, colorful lit windows magenta teal amber, satellite dishes, cables. perfectly frontal orthographic architectural elevation photo, zero perspective distortion, the facade fills the entire frame edge to edge, no sky, no ground, regular repeating grid, at night in heavy rain, photorealistic, highly detailed",
+        "image_size": {
+          "width": 1024,
+          "height": 1536
+        },
+        "output_format": "jpeg",
+        "seed": 11
+      },
+      "seed": 11,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-14T22:07:42.068Z",
+      "seconds": 13
+    },
+    "facade/tower_lux": {
+      "files": [
+        "assets/generated/facade/tower_lux.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "luxury skyscraper facade, vertical LED light strips in cyan, dark glass, sleek metal fins. perfectly frontal orthographic architectural elevation photo, zero perspective distortion, the facade fills the entire frame edge to edge, no sky, no ground, regular repeating grid, at night in heavy rain, photorealistic, highly detailed",
+      "input": {
+        "prompt": "luxury skyscraper facade, vertical LED light strips in cyan, dark glass, sleek metal fins. perfectly frontal orthographic architectural elevation photo, zero perspective distortion, the facade fills the entire frame edge to edge, no sky, no ground, regular repeating grid, at night in heavy rain, photorealistic, highly detailed",
+        "image_size": {
+          "width": 1024,
+          "height": 1536
+        },
+        "output_format": "jpeg",
+        "seed": 11
+      },
+      "seed": 11,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-14T22:07:42.866Z",
+      "seconds": 14
+    },
+    "shop/noodle": {
+      "files": [
+        "assets/generated/shop/noodle.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "small ramen noodle bar with warm lit interior, red lanterns, steam, menu boards, sliding door. perfectly frontal orthographic photo of a single street level shopfront at night in a rainy cyberpunk asian megacity, zero perspective, fills the frame edge to edge, wet reflections on the floor, photorealistic",
+      "input": {
+        "prompt": "small ramen noodle bar with warm lit interior, red lanterns, steam, menu boards, sliding door. perfectly frontal orthographic photo of a single street level shopfront at night in a rainy cyberpunk asian megacity, zero perspective, fills the frame edge to edge, wet reflections on the floor, photorealistic",
+        "image_size": {
+          "width": 1536,
+          "height": 768
+        },
+        "output_format": "jpeg",
+        "seed": 21
+      },
+      "seed": 21,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-14T22:07:43.068Z",
+      "seconds": 14
+    },
+    "facade/industrial": {
+      "files": [
+        "assets/generated/facade/industrial.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "industrial warehouse facade, corrugated metal cladding, small high windows with dim sodium light, vents, pipes, rust. perfectly frontal orthographic architectural elevation photo, zero perspective distortion, the facade fills the entire frame edge to edge, no sky, no ground, regular repeating grid, at night in heavy rain, photorealistic, highly detailed",
+      "input": {
+        "prompt": "industrial warehouse facade, corrugated metal cladding, small high windows with dim sodium light, vents, pipes, rust. perfectly frontal orthographic architectural elevation photo, zero perspective distortion, the facade fills the entire frame edge to edge, no sky, no ground, regular repeating grid, at night in heavy rain, photorealistic, highly detailed",
+        "image_size": {
+          "width": 1024,
+          "height": 1536
+        },
+        "output_format": "jpeg",
+        "seed": 11
+      },
+      "seed": 11,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-14T22:07:43.085Z",
+      "seconds": 16
+    },
+    "shop/pharmacy": {
+      "files": [
+        "assets/generated/shop/pharmacy.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "bright 24h pharmacy with green cross sign, white fluorescent interior, shelves of products. perfectly frontal orthographic photo of a single street level shopfront at night in a rainy cyberpunk asian megacity, zero perspective, fills the frame edge to edge, wet reflections on the floor, photorealistic",
+      "input": {
+        "prompt": "bright 24h pharmacy with green cross sign, white fluorescent interior, shelves of products. perfectly frontal orthographic photo of a single street level shopfront at night in a rainy cyberpunk asian megacity, zero perspective, fills the frame edge to edge, wet reflections on the floor, photorealistic",
+        "image_size": {
+          "width": 1536,
+          "height": 768
+        },
+        "output_format": "jpeg",
+        "seed": 21
+      },
+      "seed": 21,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-14T22:07:44.410Z",
+      "seconds": 13
+    },
+    "shop/arcade": {
+      "files": [
+        "assets/generated/shop/arcade.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "retro video game arcade entrance with glowing cabinets inside, magenta and cyan light. perfectly frontal orthographic photo of a single street level shopfront at night in a rainy cyberpunk asian megacity, zero perspective, fills the frame edge to edge, wet reflections on the floor, photorealistic",
+      "input": {
+        "prompt": "retro video game arcade entrance with glowing cabinets inside, magenta and cyan light. perfectly frontal orthographic photo of a single street level shopfront at night in a rainy cyberpunk asian megacity, zero perspective, fills the frame edge to edge, wet reflections on the floor, photorealistic",
+        "image_size": {
+          "width": 1536,
+          "height": 768
+        },
+        "output_format": "jpeg",
+        "seed": 21
+      },
+      "seed": 21,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-14T22:07:55.142Z",
+      "seconds": 13
+    },
+    "shop/shutters": {
+      "files": [
+        "assets/generated/shop/shutters.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "closed shop with graffiti covered metal roller shutters, a dim neon sign above, puddles. perfectly frontal orthographic photo of a single street level shopfront at night in a rainy cyberpunk asian megacity, zero perspective, fills the frame edge to edge, wet reflections on the floor, photorealistic",
+      "input": {
+        "prompt": "closed shop with graffiti covered metal roller shutters, a dim neon sign above, puddles. perfectly frontal orthographic photo of a single street level shopfront at night in a rainy cyberpunk asian megacity, zero perspective, fills the frame edge to edge, wet reflections on the floor, photorealistic",
+        "image_size": {
+          "width": 1536,
+          "height": 768
+        },
+        "output_format": "jpeg",
+        "seed": 21
+      },
+      "seed": 21,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-14T22:07:55.916Z",
+      "seconds": 13
+    },
+    "shop/electronics": {
+      "files": [
+        "assets/generated/shop/electronics.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "cramped electronics repair shop with screens, cables and circuit boards, cool blue light. perfectly frontal orthographic photo of a single street level shopfront at night in a rainy cyberpunk asian megacity, zero perspective, fills the frame edge to edge, wet reflections on the floor, photorealistic",
+      "input": {
+        "prompt": "cramped electronics repair shop with screens, cables and circuit boards, cool blue light. perfectly frontal orthographic photo of a single street level shopfront at night in a rainy cyberpunk asian megacity, zero perspective, fills the frame edge to edge, wet reflections on the floor, photorealistic",
+        "image_size": {
+          "width": 1536,
+          "height": 768
+        },
+        "output_format": "jpeg",
+        "seed": 21
+      },
+      "seed": 21,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-14T22:07:56.264Z",
+      "seconds": 13
+    },
+    "shop/convenience": {
+      "files": [
+        "assets/generated/shop/convenience.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "convenience store with bright interior, drinks fridges, posters on the glass. perfectly frontal orthographic photo of a single street level shopfront at night in a rainy cyberpunk asian megacity, zero perspective, fills the frame edge to edge, wet reflections on the floor, photorealistic",
+      "input": {
+        "prompt": "convenience store with bright interior, drinks fridges, posters on the glass. perfectly frontal orthographic photo of a single street level shopfront at night in a rainy cyberpunk asian megacity, zero perspective, fills the frame edge to edge, wet reflections on the floor, photorealistic",
+        "image_size": {
+          "width": 1536,
+          "height": 768
+        },
+        "output_format": "jpeg",
+        "seed": 21
+      },
+      "seed": 21,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-14T22:07:56.833Z",
+      "seconds": 14
+    },
+    "shop/garage": {
+      "files": [
+        "assets/generated/shop/garage.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "auto repair garage bay with open roller door, tools, amber work lights. perfectly frontal orthographic photo of a single street level shopfront at night in a rainy cyberpunk asian megacity, zero perspective, fills the frame edge to edge, wet reflections on the floor, photorealistic",
+      "input": {
+        "prompt": "auto repair garage bay with open roller door, tools, amber work lights. perfectly frontal orthographic photo of a single street level shopfront at night in a rainy cyberpunk asian megacity, zero perspective, fills the frame edge to edge, wet reflections on the floor, photorealistic",
+        "image_size": {
+          "width": 1536,
+          "height": 768
+        },
+        "output_format": "jpeg",
+        "seed": 21
+      },
+      "seed": 21,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-14T22:07:58.525Z",
+      "seconds": 14
+    },
+    "sign/noodle_bar": {
+      "files": [
+        "assets/generated/sign/noodle_bar.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "text 'NOODLE BAR' in hot pink neon with a steaming bowl icon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+      "input": {
+        "prompt": "text 'NOODLE BAR' in hot pink neon with a steaming bowl icon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+        "image_size": "landscape_4_3",
+        "output_format": "jpeg",
+        "seed": 31
+      },
+      "seed": 31,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:08:06.859Z",
+      "seconds": 11
+    },
+    "sign/speed_wash": {
+      "files": [
+        "assets/generated/sign/speed_wash.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "text 'SPEED WASH' in blue neon with water droplets. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+      "input": {
+        "prompt": "text 'SPEED WASH' in blue neon with water droplets. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+        "image_size": "landscape_4_3",
+        "output_format": "jpeg",
+        "seed": 31
+      },
+      "seed": 31,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:08:07.505Z",
+      "seconds": 9
+    },
+    "sign/arcade": {
+      "files": [
+        "assets/generated/sign/arcade.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "text 'ARCADE' in electric cyan and magenta neon with a joystick icon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+      "input": {
+        "prompt": "text 'ARCADE' in electric cyan and magenta neon with a joystick icon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+        "image_size": "landscape_4_3",
+        "output_format": "jpeg",
+        "seed": 31
+      },
+      "seed": 31,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:08:07.770Z",
+      "seconds": 11
+    },
+    "shop/bar": {
+      "files": [
+        "assets/generated/shop/bar.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "dim cocktail bar entrance with purple neon, frosted glass door, bouncer rope. perfectly frontal orthographic photo of a single street level shopfront at night in a rainy cyberpunk asian megacity, zero perspective, fills the frame edge to edge, wet reflections on the floor, photorealistic",
+      "input": {
+        "prompt": "dim cocktail bar entrance with purple neon, frosted glass door, bouncer rope. perfectly frontal orthographic photo of a single street level shopfront at night in a rainy cyberpunk asian megacity, zero perspective, fills the frame edge to edge, wet reflections on the floor, photorealistic",
+        "image_size": {
+          "width": 1536,
+          "height": 768
+        },
+        "output_format": "jpeg",
+        "seed": 21
+      },
+      "seed": 21,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-14T22:08:08.147Z",
+      "seconds": 13
+    },
+    "sign/pharmacy": {
+      "files": [
+        "assets/generated/sign/pharmacy.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "text 'PHARMACY 24H' in bright green neon with a cross icon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+      "input": {
+        "prompt": "text 'PHARMACY 24H' in bright green neon with a cross icon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+        "image_size": "landscape_4_3",
+        "output_format": "jpeg",
+        "seed": 31
+      },
+      "seed": 31,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:08:09.283Z",
+      "seconds": 13
+    },
+    "sign/dental": {
+      "files": [
+        "assets/generated/sign/dental.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "text 'DENTAL CLINIC' in white and cyan neon with a tooth icon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+      "input": {
+        "prompt": "text 'DENTAL CLINIC' in white and cyan neon with a tooth icon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+        "image_size": "landscape_4_3",
+        "output_format": "jpeg",
+        "seed": 31
+      },
+      "seed": 31,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:08:17.941Z",
+      "seconds": 11
+    },
+    "sign/bank": {
+      "files": [
+        "assets/generated/sign/bank.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "text 'KAIROS BANK' in amber gold neon, elegant serif. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+      "input": {
+        "prompt": "text 'KAIROS BANK' in amber gold neon, elegant serif. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+        "image_size": "landscape_4_3",
+        "output_format": "jpeg",
+        "seed": 31
+      },
+      "seed": 31,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:08:18.502Z",
+      "seconds": 11
+    },
+    "sign/open": {
+      "files": [
+        "assets/generated/sign/open.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "text 'OPEN' in red neon inside a blue neon rectangle. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+      "input": {
+        "prompt": "text 'OPEN' in red neon inside a blue neon rectangle. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+        "image_size": "landscape_4_3",
+        "output_format": "jpeg",
+        "seed": 31
+      },
+      "seed": 31,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:08:19.084Z",
+      "seconds": 11
+    },
+    "sign/karaoke": {
+      "files": [
+        "assets/generated/sign/karaoke.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "text 'KARAOKE' in purple neon with a microphone icon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+      "input": {
+        "prompt": "text 'KARAOKE' in purple neon with a microphone icon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+        "image_size": "landscape_4_3",
+        "output_format": "jpeg",
+        "seed": 31
+      },
+      "seed": 31,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:08:20.234Z",
+      "seconds": 11
+    },
+    "sign/hotel": {
+      "files": [
+        "assets/generated/sign/hotel.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "vertical text 'HOTEL' in red neon, stacked letters. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+      "input": {
+        "prompt": "vertical text 'HOTEL' in red neon, stacked letters. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+        "image_size": "landscape_4_3",
+        "output_format": "jpeg",
+        "seed": 31
+      },
+      "seed": 31,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:08:20.838Z",
+      "seconds": 13
+    },
+    "sign/pawn": {
+      "files": [
+        "assets/generated/sign/pawn.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "text 'PAWN & LOAN' in yellow neon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+      "input": {
+        "prompt": "text 'PAWN & LOAN' in yellow neon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+        "image_size": "landscape_4_3",
+        "output_format": "jpeg",
+        "seed": 31
+      },
+      "seed": 31,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:08:29.011Z",
+      "seconds": 11
+    },
+    "sign/liquor": {
+      "files": [
+        "assets/generated/sign/liquor.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "text 'LIQUOR' in orange neon script. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+      "input": {
+        "prompt": "text 'LIQUOR' in orange neon script. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+        "image_size": "landscape_4_3",
+        "output_format": "jpeg",
+        "seed": 31
+      },
+      "seed": 31,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:08:29.027Z",
+      "seconds": 9
+    },
+    "sign/tattoo": {
+      "files": [
+        "assets/generated/sign/tattoo.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "text 'TATTOO' in teal neon with a dagger icon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+      "input": {
+        "prompt": "text 'TATTOO' in teal neon with a dagger icon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+        "image_size": "landscape_4_3",
+        "output_format": "jpeg",
+        "seed": 31
+      },
+      "seed": 31,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:08:30.070Z",
+      "seconds": 12
+    },
+    "sign/motel": {
+      "files": [
+        "assets/generated/sign/motel.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "text 'NO VACANCY' in pink neon, retro script. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+      "input": {
+        "prompt": "text 'NO VACANCY' in pink neon, retro script. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+        "image_size": "landscape_4_3",
+        "output_format": "jpeg",
+        "seed": 31
+      },
+      "seed": 31,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:08:31.758Z",
+      "seconds": 11
+    },
+    "sign/cyberware": {
+      "files": [
+        "assets/generated/sign/cyberware.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "text 'CYBERWARE CLINIC' in cyan neon with a robotic arm icon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+      "input": {
+        "prompt": "text 'CYBERWARE CLINIC' in cyan neon with a robotic arm icon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+        "image_size": "landscape_4_3",
+        "output_format": "jpeg",
+        "seed": 31
+      },
+      "seed": 31,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:08:34.408Z",
+      "seconds": 15
+    },
+    "sign/sushi": {
+      "files": [
+        "assets/generated/sign/sushi.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "text 'SUSHI' in white neon with a red fish icon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+      "input": {
+        "prompt": "text 'SUSHI' in white neon with a red fish icon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+        "image_size": "landscape_4_3",
+        "output_format": "jpeg",
+        "seed": 31
+      },
+      "seed": 31,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:08:37.856Z",
+      "seconds": 9
+    },
+    "sign/coffee": {
+      "files": [
+        "assets/generated/sign/coffee.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "text 'NIGHT OWL COFFEE' in warm white neon with an owl icon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+      "input": {
+        "prompt": "text 'NIGHT OWL COFFEE' in warm white neon with an owl icon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+        "image_size": "landscape_4_3",
+        "output_format": "jpeg",
+        "seed": 31
+      },
+      "seed": 31,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:08:40.965Z",
+      "seconds": 11
+    },
+    "sign/bar_cocktail": {
+      "files": [
+        "assets/generated/sign/bar_cocktail.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "a cocktail glass icon in magenta and cyan neon, no text. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+      "input": {
+        "prompt": "a cocktail glass icon in magenta and cyan neon, no text. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+        "image_size": "landscape_4_3",
+        "output_format": "jpeg",
+        "seed": 31
+      },
+      "seed": 31,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:08:42.152Z",
+      "seconds": 13
+    },
+    "sign/repair": {
+      "files": [
+        "assets/generated/sign/repair.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "text 'AUTO REPAIR' in amber neon with a wrench icon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+      "input": {
+        "prompt": "text 'AUTO REPAIR' in amber neon with a wrench icon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+        "image_size": "landscape_4_3",
+        "output_format": "jpeg",
+        "seed": 31
+      },
+      "seed": 31,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:08:42.695Z",
+      "seconds": 11
+    },
+    "sign/club": {
+      "files": [
+        "assets/generated/sign/club.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "text 'VOLT' in electric blue neon, futuristic lettering, lightning bolt. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+      "input": {
+        "prompt": "text 'VOLT' in electric blue neon, futuristic lettering, lightning bolt. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+        "image_size": "landscape_4_3",
+        "output_format": "jpeg",
+        "seed": 31
+      },
+      "seed": 31,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:08:43.181Z",
+      "seconds": 9
+    },
+    "sign/cafe_cat": {
+      "files": [
+        "assets/generated/sign/cafe_cat.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "a cute cat face icon in pink neon with text 'NEKO CAFE'. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+      "input": {
+        "prompt": "a cute cat face icon in pink neon with text 'NEKO CAFE'. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+        "image_size": "landscape_4_3",
+        "output_format": "jpeg",
+        "seed": 31
+      },
+      "seed": 31,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:08:49.084Z",
+      "seconds": 11
+    },
+    "sign/cjk_pharmacy": {
+      "files": [
+        "assets/generated/sign/cjk_pharmacy.jpg"
+      ],
+      "model": "fal-ai/nano-banana-2",
+      "prompt": "neon sign with Japanese characters for pharmacy and a green cross, green and white neon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+      "input": {
+        "prompt": "neon sign with Japanese characters for pharmacy and a green cross, green and white neon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+        "aspect_ratio": "16:9",
+        "resolution": "1K",
+        "output_format": "jpeg"
+      },
+      "seed": null,
+      "cost_usd_est": 0.08,
+      "created": "2026-10-14T22:08:53.631Z",
+      "seconds": 11
+    },
+    "sign/cjk_massage": {
+      "files": [
+        "assets/generated/sign/cjk_massage.jpg"
+      ],
+      "model": "fal-ai/nano-banana-2",
+      "prompt": "vertical neon sign with Chinese characters, magenta neon, decorative border. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+      "input": {
+        "prompt": "vertical neon sign with Chinese characters, magenta neon, decorative border. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+        "aspect_ratio": "9:16",
+        "resolution": "1K",
+        "output_format": "jpeg"
+      },
+      "seed": null,
+      "cost_usd_est": 0.08,
+      "created": "2026-10-14T22:08:54.236Z",
+      "seconds": 11
+    },
+    "sign/cjk_ramen": {
+      "files": [
+        "assets/generated/sign/cjk_ramen.jpg"
+      ],
+      "model": "fal-ai/nano-banana-2",
+      "prompt": "vertical neon sign with Japanese katakana and kanji characters for ramen, red and white neon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+      "input": {
+        "prompt": "vertical neon sign with Japanese katakana and kanji characters for ramen, red and white neon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+        "aspect_ratio": "9:16",
+        "resolution": "1K",
+        "output_format": "jpeg"
+      },
+      "seed": null,
+      "cost_usd_est": 0.08,
+      "created": "2026-10-14T22:08:54.492Z",
+      "seconds": 14
+    },
+    "sign/cjk_hotel": {
+      "files": [
+        "assets/generated/sign/cjk_hotel.jpg"
+      ],
+      "model": "fal-ai/nano-banana-2",
+      "prompt": "vertical neon sign with Chinese characters reading hotel, gold and red neon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+      "input": {
+        "prompt": "vertical neon sign with Chinese characters reading hotel, gold and red neon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+        "aspect_ratio": "9:16",
+        "resolution": "1K",
+        "output_format": "jpeg"
+      },
+      "seed": null,
+      "cost_usd_est": 0.08,
+      "created": "2026-10-14T22:08:55.223Z",
+      "seconds": 13
+    },
+    "sign/cjk_izakaya": {
+      "files": [
+        "assets/generated/sign/cjk_izakaya.jpg"
+      ],
+      "model": "fal-ai/nano-banana-2",
+      "prompt": "horizontal neon sign with Japanese kanji for izakaya, warm orange neon with a sake bottle icon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+      "input": {
+        "prompt": "horizontal neon sign with Japanese kanji for izakaya, warm orange neon with a sake bottle icon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+        "aspect_ratio": "16:9",
+        "resolution": "1K",
+        "output_format": "jpeg"
+      },
+      "seed": null,
+      "cost_usd_est": 0.08,
+      "created": "2026-10-14T22:09:02.043Z",
+      "seconds": 13
+    },
+    "sign/cjk_electronics": {
+      "files": [
+        "assets/generated/sign/cjk_electronics.jpg"
+      ],
+      "model": "fal-ai/nano-banana-2",
+      "prompt": "vertical neon sign with Japanese katakana for electronics, cyan neon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+      "input": {
+        "prompt": "vertical neon sign with Japanese katakana for electronics, cyan neon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+        "aspect_ratio": "9:16",
+        "resolution": "1K",
+        "output_format": "jpeg"
+      },
+      "seed": null,
+      "cost_usd_est": 0.08,
+      "created": "2026-10-14T22:09:04.673Z",
+      "seconds": 11
+    },
+    "sign/cjk_game": {
+      "files": [
+        "assets/generated/sign/cjk_game.jpg"
+      ],
+      "model": "fal-ai/nano-banana-2",
+      "prompt": "vertical neon sign with Japanese katakana for game center, purple and teal neon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+      "input": {
+        "prompt": "vertical neon sign with Japanese katakana for game center, purple and teal neon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+        "aspect_ratio": "9:16",
+        "resolution": "1K",
+        "output_format": "jpeg"
+      },
+      "seed": null,
+      "cost_usd_est": 0.08,
+      "created": "2026-10-14T22:09:07.506Z",
+      "seconds": 13
+    },
+    "sign/cjk_dumpling": {
+      "files": [
+        "assets/generated/sign/cjk_dumpling.jpg"
+      ],
+      "model": "fal-ai/nano-banana-2",
+      "prompt": "horizontal neon sign with Chinese characters for dumplings and a dumpling icon, yellow and red neon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+      "input": {
+        "prompt": "horizontal neon sign with Chinese characters for dumplings and a dumpling icon, yellow and red neon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+        "aspect_ratio": "16:9",
+        "resolution": "1K",
+        "output_format": "jpeg"
+      },
+      "seed": null,
+      "cost_usd_est": 0.08,
+      "created": "2026-10-14T22:09:07.662Z",
+      "seconds": 13
+    },
+    "sign/cjk_bank": {
+      "files": [
+        "assets/generated/sign/cjk_bank.jpg"
+      ],
+      "model": "fal-ai/nano-banana-2",
+      "prompt": "neon sign with Chinese characters for bank, amber neon, square frame. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+      "input": {
+        "prompt": "neon sign with Chinese characters for bank, amber neon, square frame. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+        "aspect_ratio": "16:9",
+        "resolution": "1K",
+        "output_format": "jpeg"
+      },
+      "seed": null,
+      "cost_usd_est": 0.08,
+      "created": "2026-10-14T22:09:08.545Z",
+      "seconds": 13
+    },
+    "sign/cjk_karaoke": {
+      "files": [
+        "assets/generated/sign/cjk_karaoke.jpg"
+      ],
+      "model": "fal-ai/nano-banana-2",
+      "prompt": "vertical neon sign with Japanese katakana for karaoke, pink neon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+      "input": {
+        "prompt": "vertical neon sign with Japanese katakana for karaoke, pink neon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+        "aspect_ratio": "9:16",
+        "resolution": "1K",
+        "output_format": "jpeg"
+      },
+      "seed": null,
+      "cost_usd_est": 0.08,
+      "created": "2026-10-14T22:09:15.201Z",
+      "seconds": 13
+    },
+    "sign/cjk_tea": {
+      "files": [
+        "assets/generated/sign/cjk_tea.jpg"
+      ],
+      "model": "fal-ai/nano-banana-2",
+      "prompt": "neon sign with Chinese characters for tea house and a teapot icon, green neon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+      "input": {
+        "prompt": "neon sign with Chinese characters for tea house and a teapot icon, green neon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+        "aspect_ratio": "16:9",
+        "resolution": "1K",
+        "output_format": "jpeg"
+      },
+      "seed": null,
+      "cost_usd_est": 0.08,
+      "created": "2026-10-14T22:09:17.980Z",
+      "seconds": 13
+    },
+    "sign/cjk_clinic": {
+      "files": [
+        "assets/generated/sign/cjk_clinic.jpg"
+      ],
+      "model": "fal-ai/nano-banana-2",
+      "prompt": "vertical neon sign with Japanese kanji for clinic, white and blue neon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+      "input": {
+        "prompt": "vertical neon sign with Japanese kanji for clinic, white and blue neon. single glowing neon tube sign, photographed straight on, isolated on a pure black background, nothing else in frame, crisp readable lettering, realistic glass tubes with glow and slight bloom, high contrast",
+        "aspect_ratio": "9:16",
+        "resolution": "1K",
+        "output_format": "jpeg"
+      },
+      "seed": null,
+      "cost_usd_est": 0.08,
+      "created": "2026-10-14T22:09:18.386Z",
+      "seconds": 11
+    },
+    "ad/ad_energy": {
+      "files": [
+        "assets/generated/ad/ad_energy.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "energy drink can for fictional brand 'VOLTA' surrounded by electric cyan lightning on magenta background. full frame advertising billboard artwork, no frame, no wall, fills the image edge to edge, cyberpunk megacity advertising, glossy commercial photography, vivid neon colors, crisp readable brand name",
+      "input": {
+        "prompt": "energy drink can for fictional brand 'VOLTA' surrounded by electric cyan lightning on magenta background. full frame advertising billboard artwork, no frame, no wall, fills the image edge to edge, cyberpunk megacity advertising, glossy commercial photography, vivid neon colors, crisp readable brand name",
+        "image_size": "landscape_16_9",
+        "output_format": "jpeg",
+        "seed": 41
+      },
+      "seed": 41,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:09:18.715Z",
+      "seconds": 11
+    },
+    "ad/ad_ramen": {
+      "files": [
+        "assets/generated/ad/ad_ramen.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "steaming bowl of ramen, fictional brand 'MOMO RAMEN', warm red and gold. full frame advertising billboard artwork, no frame, no wall, fills the image edge to edge, cyberpunk megacity advertising, glossy commercial photography, vivid neon colors, crisp readable brand name",
+      "input": {
+        "prompt": "steaming bowl of ramen, fictional brand 'MOMO RAMEN', warm red and gold. full frame advertising billboard artwork, no frame, no wall, fills the image edge to edge, cyberpunk megacity advertising, glossy commercial photography, vivid neon colors, crisp readable brand name",
+        "image_size": "landscape_16_9",
+        "output_format": "jpeg",
+        "seed": 41
+      },
+      "seed": 41,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:09:21.790Z",
+      "seconds": 13
+    },
+    "ad/ad_implant": {
+      "files": [
+        "assets/generated/ad/ad_implant.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "elegant woman with glowing cyber eye implant, fictional brand 'IRIS OPTICS', teal and purple. full frame advertising billboard artwork, no frame, no wall, fills the image edge to edge, cyberpunk megacity advertising, glossy commercial photography, vivid neon colors, crisp readable brand name",
+      "input": {
+        "prompt": "elegant woman with glowing cyber eye implant, fictional brand 'IRIS OPTICS', teal and purple. full frame advertising billboard artwork, no frame, no wall, fills the image edge to edge, cyberpunk megacity advertising, glossy commercial photography, vivid neon colors, crisp readable brand name",
+        "image_size": "portrait_16_9",
+        "output_format": "jpeg",
+        "seed": 41
+      },
+      "seed": 41,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:09:26.296Z",
+      "seconds": 11
+    },
+    "ad/ad_car": {
+      "files": [
+        "assets/generated/ad/ad_car.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "sleek original futuristic sports car with light trails, fictional brand 'APEX MOTORS', no real car brand. full frame advertising billboard artwork, no frame, no wall, fills the image edge to edge, cyberpunk megacity advertising, glossy commercial photography, vivid neon colors, crisp readable brand name",
+      "input": {
+        "prompt": "sleek original futuristic sports car with light trails, fictional brand 'APEX MOTORS', no real car brand. full frame advertising billboard artwork, no frame, no wall, fills the image edge to edge, cyberpunk megacity advertising, glossy commercial photography, vivid neon colors, crisp readable brand name",
+        "image_size": "landscape_16_9",
+        "output_format": "jpeg",
+        "seed": 41
+      },
+      "seed": 41,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:09:29.054Z",
+      "seconds": 11
+    },
+    "ad/ad_drink": {
+      "files": [
+        "assets/generated/ad/ad_drink.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "glass bottle of soda with condensation, fictional brand 'NOVA COLA', red and white. full frame advertising billboard artwork, no frame, no wall, fills the image edge to edge, cyberpunk megacity advertising, glossy commercial photography, vivid neon colors, crisp readable brand name",
+      "input": {
+        "prompt": "glass bottle of soda with condensation, fictional brand 'NOVA COLA', red and white. full frame advertising billboard artwork, no frame, no wall, fills the image edge to edge, cyberpunk megacity advertising, glossy commercial photography, vivid neon colors, crisp readable brand name",
+        "image_size": "portrait_16_9",
+        "output_format": "jpeg",
+        "seed": 41
+      },
+      "seed": 41,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:09:29.267Z",
+      "seconds": 11
+    },
+    "ad/ad_watch": {
+      "files": [
+        "assets/generated/ad/ad_watch.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "holographic smartwatch floating, fictional brand 'CHRONOS', deep blue and cyan. full frame advertising billboard artwork, no frame, no wall, fills the image edge to edge, cyberpunk megacity advertising, glossy commercial photography, vivid neon colors, crisp readable brand name",
+      "input": {
+        "prompt": "holographic smartwatch floating, fictional brand 'CHRONOS', deep blue and cyan. full frame advertising billboard artwork, no frame, no wall, fills the image edge to edge, cyberpunk megacity advertising, glossy commercial photography, vivid neon colors, crisp readable brand name",
+        "image_size": "landscape_16_9",
+        "output_format": "jpeg",
+        "seed": 41
+      },
+      "seed": 41,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:09:29.850Z",
+      "seconds": 11
+    },
+    "ad/ad_airline": {
+      "files": [
+        "assets/generated/ad/ad_airline.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "sleek flying taxi over a neon city, fictional brand 'SKYLANE', sunset magenta. full frame advertising billboard artwork, no frame, no wall, fills the image edge to edge, cyberpunk megacity advertising, glossy commercial photography, vivid neon colors, crisp readable brand name",
+      "input": {
+        "prompt": "sleek flying taxi over a neon city, fictional brand 'SKYLANE', sunset magenta. full frame advertising billboard artwork, no frame, no wall, fills the image edge to edge, cyberpunk megacity advertising, glossy commercial photography, vivid neon colors, crisp readable brand name",
+        "image_size": "landscape_16_9",
+        "output_format": "jpeg",
+        "seed": 41
+      },
+      "seed": 41,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:09:37.454Z",
+      "seconds": 16
+    },
+    "ad/ad_noodle_cup": {
+      "files": [
+        "assets/generated/ad/ad_noodle_cup.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "instant noodle cup with chopsticks, fictional brand 'KAZE NOODLE', orange and yellow. full frame advertising billboard artwork, no frame, no wall, fills the image edge to edge, cyberpunk megacity advertising, glossy commercial photography, vivid neon colors, crisp readable brand name",
+      "input": {
+        "prompt": "instant noodle cup with chopsticks, fictional brand 'KAZE NOODLE', orange and yellow. full frame advertising billboard artwork, no frame, no wall, fills the image edge to edge, cyberpunk megacity advertising, glossy commercial photography, vivid neon colors, crisp readable brand name",
+        "image_size": "portrait_16_9",
+        "output_format": "jpeg",
+        "seed": 41
+      },
+      "seed": 41,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:09:38.202Z",
+      "seconds": 9
+    },
+    "ad/ad_game": {
+      "files": [
+        "assets/generated/ad/ad_game.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "dramatic video game key art of a robot samurai, fictional title 'STEEL RONIN', red and black. full frame advertising billboard artwork, no frame, no wall, fills the image edge to edge, cyberpunk megacity advertising, glossy commercial photography, vivid neon colors, crisp readable brand name",
+      "input": {
+        "prompt": "dramatic video game key art of a robot samurai, fictional title 'STEEL RONIN', red and black. full frame advertising billboard artwork, no frame, no wall, fills the image edge to edge, cyberpunk megacity advertising, glossy commercial photography, vivid neon colors, crisp readable brand name",
+        "image_size": "landscape_16_9",
+        "output_format": "jpeg",
+        "seed": 41
+      },
+      "seed": 41,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:09:42.191Z",
+      "seconds": 13
+    },
+    "sky/night_pano": {
+      "files": [
+        "assets/generated/sky/night_pano.png"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "wide seamless 360 degree panoramic photograph of a vast cyberpunk megacity skyline at night seen from street level far away, endless distant skyscrapers silhouettes with tiny lit windows, heavy light pollution glowing purple and teal haze, low clouds lit from below in magenta and cyan, rain atmosphere, distant flying vehicle lights, horizon in the lower third, photorealistic, cinematic",
+      "input": {
+        "prompt": "wide seamless 360 degree panoramic photograph of a vast cyberpunk megacity skyline at night seen from street level far away, endless distant skyscrapers silhouettes with tiny lit windows, heavy light pollution glowing purple and teal haze, low clouds lit from below in magenta and cyan, rain atmosphere, distant flying vehicle lights, horizon in the lower third, photorealistic, cinematic",
+        "image_size": {
+          "width": 2048,
+          "height": 768
+        },
+        "output_format": "png",
+        "seed": 51
+      },
+      "seed": 51,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-14T22:09:45.421Z",
+      "seconds": 16
+    },
+    "sky/clouds": {
+      "files": [
+        "assets/generated/sky/clouds.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "seamless tileable texture of dense stormy night clouds seen from below, lit by city light pollution in purple and teal, soft, dark, no ground, no buildings, photorealistic",
+      "input": {
+        "prompt": "seamless tileable texture of dense stormy night clouds seen from below, lit by city light pollution in purple and teal, soft, dark, no ground, no buildings, photorealistic",
+        "image_size": "square_hd",
+        "output_format": "jpeg",
+        "seed": 52
+      },
+      "seed": 52,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:09:48.340Z",
+      "seconds": 11
+    },
+    "ui/card_docks": {
+      "files": [
+        "assets/generated/ui/card_docks.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "Industrial Docks: stacked shipping containers, giant cranes, thick fog, sodium orange lights, wet concrete, rain. Cinematic night photograph of a cyberpunk megacity district, photorealistic, moody, deep blue-black shadows",
+      "input": {
+        "prompt": "Industrial Docks: stacked shipping containers, giant cranes, thick fog, sodium orange lights, wet concrete, rain. Cinematic night photograph of a cyberpunk megacity district, photorealistic, moody, deep blue-black shadows",
+        "image_size": "landscape_16_9",
+        "output_format": "jpeg",
+        "seed": 62
+      },
+      "seed": 62,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:09:56.686Z",
+      "seconds": 11
+    },
+    "ui/loading": {
+      "files": [
+        "assets/generated/ui/loading.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "cinematic wide shot of a sleek dark muscle sports car with glowing cyan underglow speeding through a rain soaked neon cyberpunk street at night, wet road reflecting magenta and teal signs, light trails, volumetric fog, low angle, photorealistic, movie still, no logos",
+      "input": {
+        "prompt": "cinematic wide shot of a sleek dark muscle sports car with glowing cyan underglow speeding through a rain soaked neon cyberpunk street at night, wet road reflecting magenta and teal signs, light trails, volumetric fog, low angle, photorealistic, movie still, no logos",
+        "image_size": {
+          "width": 1920,
+          "height": 1088
+        },
+        "output_format": "jpeg",
+        "seed": 61
+      },
+      "seed": 61,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-14T22:09:57.419Z",
+      "seconds": 15
+    },
+    "ui/card_neon": {
+      "files": [
+        "assets/generated/ui/card_neon.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "Neon District: dense market street packed with glowing neon signs in magenta and cyan, crowds with umbrellas, steam, rain. Cinematic night photograph of a cyberpunk megacity district, photorealistic, moody, deep blue-black shadows",
+      "input": {
+        "prompt": "Neon District: dense market street packed with glowing neon signs in magenta and cyan, crowds with umbrellas, steam, rain. Cinematic night photograph of a cyberpunk megacity district, photorealistic, moody, deep blue-black shadows",
+        "image_size": "landscape_16_9",
+        "output_format": "jpeg",
+        "seed": 62
+      },
+      "seed": 62,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:09:58.979Z",
+      "seconds": 14
+    },
+    "ui/card_downtown": {
+      "files": [
+        "assets/generated/ui/card_downtown.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "Downtown Towers: canyon of tall glass skyscrapers, elevated monorail train passing overhead, holographic ads, teal light. Cinematic night photograph of a cyberpunk megacity district, photorealistic, moody, deep blue-black shadows",
+      "input": {
+        "prompt": "Downtown Towers: canyon of tall glass skyscrapers, elevated monorail train passing overhead, holographic ads, teal light. Cinematic night photograph of a cyberpunk megacity district, photorealistic, moody, deep blue-black shadows",
+        "image_size": "landscape_16_9",
+        "output_format": "jpeg",
+        "seed": 62
+      },
+      "seed": 62,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:09:59.543Z",
+      "seconds": 11
+    },
+    "ui/card_backstreets": {
+      "files": [
+        "assets/generated/ui/card_backstreets.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "Backstreets: narrow alley with steam vents, puddles, tangled cables, small neon signs, fire escapes, dim amber light. Cinematic night photograph of a cyberpunk megacity district, photorealistic, moody, deep blue-black shadows",
+      "input": {
+        "prompt": "Backstreets: narrow alley with steam vents, puddles, tangled cables, small neon signs, fire escapes, dim amber light. Cinematic night photograph of a cyberpunk megacity district, photorealistic, moody, deep blue-black shadows",
+        "image_size": "landscape_16_9",
+        "output_format": "jpeg",
+        "seed": 62
+      },
+      "seed": 62,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:10:07.598Z",
+      "seconds": 11
+    },
+    "icon/i01_map": {
+      "files": [
+        "assets/generated/icon/i01_map.svg"
+      ],
+      "model": "fal-ai/recraft/v4/text-to-image",
+      "prompt": "map pin location marker. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+      "input": {
+        "prompt": "map pin location marker. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+        "image_size": "square",
+        "style": "vector_illustration"
+      },
+      "seed": null,
+      "cost_usd_est": 0.04,
+      "created": "2026-10-14T22:10:11.971Z",
+      "seconds": 13
+    },
+    "icon/i00_package": {
+      "files": [
+        "assets/generated/icon/i00_package.svg"
+      ],
+      "model": "fal-ai/recraft/v4/text-to-image",
+      "prompt": "package delivery box. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+      "input": {
+        "prompt": "package delivery box. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+        "image_size": "square",
+        "style": "vector_illustration"
+      },
+      "seed": null,
+      "cost_usd_est": 0.04,
+      "created": "2026-10-14T22:10:12.472Z",
+      "seconds": 15
+    },
+    "icon/i02_stopwatch": {
+      "files": [
+        "assets/generated/icon/i02_stopwatch.svg"
+      ],
+      "model": "fal-ai/recraft/v4/text-to-image",
+      "prompt": "stopwatch timer. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+      "input": {
+        "prompt": "stopwatch timer. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+        "image_size": "square",
+        "style": "vector_illustration"
+      },
+      "seed": null,
+      "cost_usd_est": 0.04,
+      "created": "2026-10-14T22:10:12.775Z",
+      "seconds": 13
+    },
+    "icon/i03_lightning": {
+      "files": [
+        "assets/generated/icon/i03_lightning.svg"
+      ],
+      "model": "fal-ai/recraft/v4/text-to-image",
+      "prompt": "lightning bolt boost. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+      "input": {
+        "prompt": "lightning bolt boost. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+        "image_size": "square",
+        "style": "vector_illustration"
+      },
+      "seed": null,
+      "cost_usd_est": 0.04,
+      "created": "2026-10-14T22:10:20.610Z",
+      "seconds": 13
+    },
+    "icon/i04_car": {
+      "files": [
+        "assets/generated/icon/i04_car.svg"
+      ],
+      "model": "fal-ai/recraft/v4/text-to-image",
+      "prompt": "car steering wheel. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+      "input": {
+        "prompt": "car steering wheel. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+        "image_size": "square",
+        "style": "vector_illustration"
+      },
+      "seed": null,
+      "cost_usd_est": 0.04,
+      "created": "2026-10-14T22:10:24.961Z",
+      "seconds": 13
+    },
+    "icon/i05_tire": {
+      "files": [
+        "assets/generated/icon/i05_tire.svg"
+      ],
+      "model": "fal-ai/recraft/v4/text-to-image",
+      "prompt": "tire grip. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+      "input": {
+        "prompt": "tire grip. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+        "image_size": "square",
+        "style": "vector_illustration"
+      },
+      "seed": null,
+      "cost_usd_est": 0.04,
+      "created": "2026-10-14T22:10:25.395Z",
+      "seconds": 13
+    },
+    "icon/i06_speedometer": {
+      "files": [
+        "assets/generated/icon/i06_speedometer.svg"
+      ],
+      "model": "fal-ai/recraft/v4/text-to-image",
+      "prompt": "speedometer gauge. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+      "input": {
+        "prompt": "speedometer gauge. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+        "image_size": "square",
+        "style": "vector_illustration"
+      },
+      "seed": null,
+      "cost_usd_est": 0.04,
+      "created": "2026-10-14T22:10:25.915Z",
+      "seconds": 13
+    },
+    "icon/i07_coin": {
+      "files": [
+        "assets/generated/icon/i07_coin.svg"
+      ],
+      "model": "fal-ai/recraft/v4/text-to-image",
+      "prompt": "coin credits. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+      "input": {
+        "prompt": "coin credits. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+        "image_size": "square",
+        "style": "vector_illustration"
+      },
+      "seed": null,
+      "cost_usd_est": 0.04,
+      "created": "2026-10-14T22:10:34.053Z",
+      "seconds": 13
+    },
+    "icon/i08_warning": {
+      "files": [
+        "assets/generated/icon/i08_warning.svg"
+      ],
+      "model": "fal-ai/recraft/v4/text-to-image",
+      "prompt": "warning triangle. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+      "input": {
+        "prompt": "warning triangle. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+        "image_size": "square",
+        "style": "vector_illustration"
+      },
+      "seed": null,
+      "cost_usd_est": 0.04,
+      "created": "2026-10-14T22:10:37.970Z",
+      "seconds": 13
+    },
+    "icon/i09_drone": {
+      "files": [
+        "assets/generated/icon/i09_drone.svg"
+      ],
+      "model": "fal-ai/recraft/v4/text-to-image",
+      "prompt": "drone. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+      "input": {
+        "prompt": "drone. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+        "image_size": "square",
+        "style": "vector_illustration"
+      },
+      "seed": null,
+      "cost_usd_est": 0.04,
+      "created": "2026-10-14T22:10:38.562Z",
+      "seconds": 13
+    },
+    "icon/i10_trophy": {
+      "files": [
+        "assets/generated/icon/i10_trophy.svg"
+      ],
+      "model": "fal-ai/recraft/v4/text-to-image",
+      "prompt": "trophy. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+      "input": {
+        "prompt": "trophy. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+        "image_size": "square",
+        "style": "vector_illustration"
+      },
+      "seed": null,
+      "cost_usd_est": 0.04,
+      "created": "2026-10-14T22:10:38.946Z",
+      "seconds": 13
+    },
+    "ui/logo": {
+      "files": [
+        "assets/generated/ui/logo.png"
+      ],
+      "model": "fal-ai/gpt-image-2",
+      "prompt": "Game logo for 'NEON RUN'. Bold italic futuristic speed lettering, chrome and glowing neon tube outline in cyan and magenta, motion speed lines, on a pure solid black background, centered, no other text",
+      "input": {
+        "prompt": "Game logo for 'NEON RUN'. Bold italic futuristic speed lettering, chrome and glowing neon tube outline in cyan and magenta, motion speed lines, on a pure solid black background, centered, no other text",
+        "image_size": "landscape_16_9",
+        "quality": "high"
+      },
+      "seed": null,
+      "cost_usd_est": 0.1,
+      "created": "2026-10-14T22:10:40.540Z",
+      "seconds": 62
+    },
+    "icon/i11_wrench": {
+      "files": [
+        "assets/generated/icon/i11_wrench.svg"
+      ],
+      "model": "fal-ai/recraft/v4/text-to-image",
+      "prompt": "wrench upgrade. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+      "input": {
+        "prompt": "wrench upgrade. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+        "image_size": "square",
+        "style": "vector_illustration"
+      },
+      "seed": null,
+      "cost_usd_est": 0.04,
+      "created": "2026-10-14T22:10:47.279Z",
+      "seconds": 13
+    },
+    "icon/i12_lock": {
+      "files": [
+        "assets/generated/icon/i12_lock.svg"
+      ],
+      "model": "fal-ai/recraft/v4/text-to-image",
+      "prompt": "lock. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+      "input": {
+        "prompt": "lock. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+        "image_size": "square",
+        "style": "vector_illustration"
+      },
+      "seed": null,
+      "cost_usd_est": 0.04,
+      "created": "2026-10-14T22:10:49.023Z",
+      "seconds": 11
+    },
+    "icon/i13_checkmark": {
+      "files": [
+        "assets/generated/icon/i13_checkmark.svg"
+      ],
+      "model": "fal-ai/recraft/v4/text-to-image",
+      "prompt": "checkmark in circle. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+      "input": {
+        "prompt": "checkmark in circle. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+        "image_size": "square",
+        "style": "vector_illustration"
+      },
+      "seed": null,
+      "cost_usd_est": 0.04,
+      "created": "2026-10-14T22:10:52.031Z",
+      "seconds": 13
+    },
+    "icon/i14_cross": {
+      "files": [
+        "assets/generated/icon/i14_cross.svg"
+      ],
+      "model": "fal-ai/recraft/v4/text-to-image",
+      "prompt": "cross in circle. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+      "input": {
+        "prompt": "cross in circle. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+        "image_size": "square",
+        "style": "vector_illustration"
+      },
+      "seed": null,
+      "cost_usd_est": 0.04,
+      "created": "2026-10-14T22:10:52.407Z",
+      "seconds": 13
+    },
+    "icon/i15_flag": {
+      "files": [
+        "assets/generated/icon/i15_flag.svg"
+      ],
+      "model": "fal-ai/recraft/v4/text-to-image",
+      "prompt": "flag finish. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+      "input": {
+        "prompt": "flag finish. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+        "image_size": "square",
+        "style": "vector_illustration"
+      },
+      "seed": null,
+      "cost_usd_est": 0.04,
+      "created": "2026-10-14T22:10:53.554Z",
+      "seconds": 13
+    },
+    "icon/i17_radio": {
+      "files": [
+        "assets/generated/icon/i17_radio.svg"
+      ],
+      "model": "fal-ai/recraft/v4/text-to-image",
+      "prompt": "radio signal antenna. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+      "input": {
+        "prompt": "radio signal antenna. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+        "image_size": "square",
+        "style": "vector_illustration"
+      },
+      "seed": null,
+      "cost_usd_est": 0.04,
+      "created": "2026-10-14T22:10:59.933Z",
+      "seconds": 11
+    },
+    "icon/i16_compass": {
+      "files": [
+        "assets/generated/icon/i16_compass.svg"
+      ],
+      "model": "fal-ai/recraft/v4/text-to-image",
+      "prompt": "compass north arrow. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+      "input": {
+        "prompt": "compass north arrow. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+        "image_size": "square",
+        "style": "vector_illustration"
+      },
+      "seed": null,
+      "cost_usd_est": 0.04,
+      "created": "2026-10-14T22:11:00.723Z",
+      "seconds": 13
+    },
+    "livery/liv_stripes": {
+      "files": [
+        "assets/generated/livery/liv_stripes.png"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "twin racing stripes with chevrons in cyan. car livery decal graphic design, flat vector vinyl wrap artwork, isolated on a pure solid black background, horizontal composition, no car, no text",
+      "input": {
+        "prompt": "twin racing stripes with chevrons in cyan. car livery decal graphic design, flat vector vinyl wrap artwork, isolated on a pure solid black background, horizontal composition, no car, no text",
+        "image_size": "landscape_16_9",
+        "output_format": "png",
+        "seed": 71
+      },
+      "seed": 71,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:11:02.542Z",
+      "seconds": 9
+    },
+    "icon/i19_gear": {
+      "files": [
+        "assets/generated/icon/i19_gear.svg"
+      ],
+      "model": "fal-ai/recraft/v4/text-to-image",
+      "prompt": "gear settings. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+      "input": {
+        "prompt": "gear settings. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+        "image_size": "square",
+        "style": "vector_illustration"
+      },
+      "seed": null,
+      "cost_usd_est": 0.04,
+      "created": "2026-10-14T22:11:07.942Z",
+      "seconds": 16
+    },
+    "livery/liv_tiger": {
+      "files": [
+        "assets/generated/livery/liv_tiger.png"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "aggressive tiger stripe slashes in hot magenta. car livery decal graphic design, flat vector vinyl wrap artwork, isolated on a pure solid black background, horizontal composition, no car, no text",
+      "input": {
+        "prompt": "aggressive tiger stripe slashes in hot magenta. car livery decal graphic design, flat vector vinyl wrap artwork, isolated on a pure solid black background, horizontal composition, no car, no text",
+        "image_size": "landscape_16_9",
+        "output_format": "png",
+        "seed": 71
+      },
+      "seed": 71,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:11:08.822Z",
+      "seconds": 9
+    },
+    "livery/liv_circuit": {
+      "files": [
+        "assets/generated/livery/liv_circuit.png"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "glowing circuit board traces in teal. car livery decal graphic design, flat vector vinyl wrap artwork, isolated on a pure solid black background, horizontal composition, no car, no text",
+      "input": {
+        "prompt": "glowing circuit board traces in teal. car livery decal graphic design, flat vector vinyl wrap artwork, isolated on a pure solid black background, horizontal composition, no car, no text",
+        "image_size": "landscape_16_9",
+        "output_format": "png",
+        "seed": 71
+      },
+      "seed": 71,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:11:11.747Z",
+      "seconds": 11
+    },
+    "icon/i18_rain": {
+      "files": [
+        "assets/generated/icon/i18_rain.svg"
+      ],
+      "model": "fal-ai/recraft/v4/text-to-image",
+      "prompt": "rain cloud. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+      "input": {
+        "prompt": "rain cloud. single minimal flat game HUD icon, thick clean white line art, centered, on a pure solid black background, no text, high contrast, vector style",
+        "image_size": "square",
+        "style": "vector_illustration"
+      },
+      "seed": null,
+      "cost_usd_est": 0.04,
+      "created": "2026-10-14T22:11:13.586Z",
+      "seconds": 22
+    },
+    "livery/liv_kanji": {
+      "files": [
+        "assets/generated/livery/liv_kanji.png"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "brush stroke splash with abstract calligraphy shapes in red and white. car livery decal graphic design, flat vector vinyl wrap artwork, isolated on a pure solid black background, horizontal composition, no car, no text",
+      "input": {
+        "prompt": "brush stroke splash with abstract calligraphy shapes in red and white. car livery decal graphic design, flat vector vinyl wrap artwork, isolated on a pure solid black background, horizontal composition, no car, no text",
+        "image_size": "landscape_16_9",
+        "output_format": "png",
+        "seed": 71
+      },
+      "seed": 71,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:11:14.078Z",
+      "seconds": 12
+    },
+    "livery/liv_flames": {
+      "files": [
+        "assets/generated/livery/liv_flames.png"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "stylized flames in amber and orange. car livery decal graphic design, flat vector vinyl wrap artwork, isolated on a pure solid black background, horizontal composition, no car, no text",
+      "input": {
+        "prompt": "stylized flames in amber and orange. car livery decal graphic design, flat vector vinyl wrap artwork, isolated on a pure solid black background, horizontal composition, no car, no text",
+        "image_size": "landscape_16_9",
+        "output_format": "png",
+        "seed": 71
+      },
+      "seed": 71,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:11:16.881Z",
+      "seconds": 9
+    },
+    "livery/liv_geo": {
+      "files": [
+        "assets/generated/livery/liv_geo.png"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "sharp geometric triangles and hexagons in purple and cyan. car livery decal graphic design, flat vector vinyl wrap artwork, isolated on a pure solid black background, horizontal composition, no car, no text",
+      "input": {
+        "prompt": "sharp geometric triangles and hexagons in purple and cyan. car livery decal graphic design, flat vector vinyl wrap artwork, isolated on a pure solid black background, horizontal composition, no car, no text",
+        "image_size": "landscape_16_9",
+        "output_format": "png",
+        "seed": 71
+      },
+      "seed": 71,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:11:17.724Z",
+      "seconds": 9
+    },
+    "concept/car": {
+      "files": [
+        "assets/generated/concept/car.png"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "original design aggressive modern muscle sports coupe, long hood, wide rear haunches, matte dark gunmetal paint, black tinted windows, thin LED headlight strip, black multi-spoke wheels with low profile tires, no logos, no badges, no text. single object product render, three quarter view from slightly above, centered, fully visible with margin, plain pure white studio background, soft even lighting, no shadow clutter, highly detailed, realistic materials",
+      "input": {
+        "prompt": "original design aggressive modern muscle sports coupe, long hood, wide rear haunches, matte dark gunmetal paint, black tinted windows, thin LED headlight strip, black multi-spoke wheels with low profile tires, no logos, no badges, no text. single object product render, three quarter view from slightly above, centered, fully visible with margin, plain pure white studio background, soft even lighting, no shadow clutter, highly detailed, realistic materials",
+        "image_size": "landscape_4_3",
+        "output_format": "png",
+        "seed": 81
+      },
+      "seed": 81,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:11:22.820Z",
+      "seconds": 11
+    },
+    "concept/lm_watertower": {
+      "files": [
+        "assets/generated/concept/lm_watertower.png"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "old rooftop water tower on steel legs with a big circular neon ring sign, no text. single object product render, three quarter view from slightly above, centered, fully visible with margin, plain pure white studio background, soft even lighting, no shadow clutter, highly detailed, realistic materials",
+      "input": {
+        "prompt": "old rooftop water tower on steel legs with a big circular neon ring sign, no text. single object product render, three quarter view from slightly above, centered, fully visible with margin, plain pure white studio background, soft even lighting, no shadow clutter, highly detailed, realistic materials",
+        "image_size": "square_hd",
+        "output_format": "png",
+        "seed": 82
+      },
+      "seed": 82,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:11:23.177Z",
+      "seconds": 9
+    },
+    "concept/lm_pagoda": {
+      "files": [
+        "assets/generated/concept/lm_pagoda.png"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "futuristic neon pagoda tower top with five stacked curved roofs edged with magenta neon strips, antennas, no text. single object product render, three quarter view from slightly above, centered, fully visible with margin, plain pure white studio background, soft even lighting, no shadow clutter, highly detailed, realistic materials",
+      "input": {
+        "prompt": "futuristic neon pagoda tower top with five stacked curved roofs edged with magenta neon strips, antennas, no text. single object product render, three quarter view from slightly above, centered, fully visible with margin, plain pure white studio background, soft even lighting, no shadow clutter, highly detailed, realistic materials",
+        "image_size": "square_hd",
+        "output_format": "png",
+        "seed": 82
+      },
+      "seed": 82,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:11:26.808Z",
+      "seconds": 13
+    },
+    "concept/lm_crane": {
+      "files": [
+        "assets/generated/concept/lm_crane.png"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "giant harbor gantry container crane, red and white steel truss, warning lights, no text. single object product render, three quarter view from slightly above, centered, fully visible with margin, plain pure white studio background, soft even lighting, no shadow clutter, highly detailed, realistic materials",
+      "input": {
+        "prompt": "giant harbor gantry container crane, red and white steel truss, warning lights, no text. single object product render, three quarter view from slightly above, centered, fully visible with margin, plain pure white studio background, soft even lighting, no shadow clutter, highly detailed, realistic materials",
+        "image_size": "square_hd",
+        "output_format": "png",
+        "seed": 82
+      },
+      "seed": 82,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:11:32.249Z",
+      "seconds": 15
+    },
+    "concept/lm_gate": {
+      "files": [
+        "assets/generated/concept/lm_gate.png"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "monumental cyberpunk district gate archway, concrete pillars with vertical neon signs and a big holographic crossbar, no text. single object product render, three quarter view from slightly above, centered, fully visible with margin, plain pure white studio background, soft even lighting, no shadow clutter, highly detailed, realistic materials",
+      "input": {
+        "prompt": "monumental cyberpunk district gate archway, concrete pillars with vertical neon signs and a big holographic crossbar, no text. single object product render, three quarter view from slightly above, centered, fully visible with margin, plain pure white studio background, soft even lighting, no shadow clutter, highly detailed, realistic materials",
+        "image_size": "square_hd",
+        "output_format": "png",
+        "seed": 82
+      },
+      "seed": 82,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:11:33.059Z",
+      "seconds": 15
+    },
+    "concept/lm_statue": {
+      "files": [
+        "assets/generated/concept/lm_statue.png"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "large stylized cat statue (maneki neko) made of chrome and glowing cyan panels on a pedestal, no text. single object product render, three quarter view from slightly above, centered, fully visible with margin, plain pure white studio background, soft even lighting, no shadow clutter, highly detailed, realistic materials",
+      "input": {
+        "prompt": "large stylized cat statue (maneki neko) made of chrome and glowing cyan panels on a pedestal, no text. single object product render, three quarter view from slightly above, centered, fully visible with margin, plain pure white studio background, soft even lighting, no shadow clutter, highly detailed, realistic materials",
+        "image_size": "square_hd",
+        "output_format": "png",
+        "seed": 82
+      },
+      "seed": 82,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:11:35.974Z",
+      "seconds": 13
+    },
+    "video/stinger": {
+      "files": [
+        "assets/generated/video/stinger.mp4"
+      ],
+      "model": "fal-ai/kling-video/v2.5-turbo/pro/text-to-video",
+      "prompt": "dark sports car drifts to a stop in front of a glowing neon doorway in the rain, sparks of light, camera orbits fast, triumphant. photorealistic cinematic, anamorphic, rain, wet reflections, neon magenta and teal against deep blue-black, no text, no logos",
+      "input": {
+        "prompt": "dark sports car drifts to a stop in front of a glowing neon doorway in the rain, sparks of light, camera orbits fast, triumphant. photorealistic cinematic, anamorphic, rain, wet reflections, neon magenta and teal against deep blue-black, no text, no logos",
+        "duration": "5",
+        "aspect_ratio": "16:9",
+        "negative_prompt": "blur, distort, low quality, text, watermark",
+        "cfg_scale": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.35000000000000003,
+      "created": "2026-10-14T22:13:05.786Z",
+      "seconds": 99
+    },
+    "video/bb_drink": {
+      "files": [
+        "assets/generated/video/bb_drink.mp4"
+      ],
+      "model": "fal-ai/kling-video/v2.5-turbo/pro/text-to-video",
+      "prompt": "commercial: a glossy energy drink can rotating slowly with electric lightning arcs around it, cyan on magenta, product shot, photorealistic, vivid, no text",
+      "input": {
+        "prompt": "commercial: a glossy energy drink can rotating slowly with electric lightning arcs around it, cyan on magenta, product shot, photorealistic, vivid, no text",
+        "duration": "5",
+        "aspect_ratio": "16:9",
+        "negative_prompt": "text, watermark, blur",
+        "cfg_scale": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.35000000000000003,
+      "created": "2026-10-14T22:13:09.770Z",
+      "seconds": 94
+    },
+    "video/bb_koi": {
+      "files": [
+        "assets/generated/video/bb_koi.mp4"
+      ],
+      "model": "fal-ai/kling-video/v2.5-turbo/pro/text-to-video",
+      "prompt": "holographic advertisement: glowing koi fish swimming in a loop through neon water ripples, magenta and cyan, abstract commercial, photorealistic, vivid, no text",
+      "input": {
+        "prompt": "holographic advertisement: glowing koi fish swimming in a loop through neon water ripples, magenta and cyan, abstract commercial, photorealistic, vivid, no text",
+        "duration": "5",
+        "aspect_ratio": "16:9",
+        "negative_prompt": "text, watermark, blur",
+        "cfg_scale": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.35000000000000003,
+      "created": "2026-10-14T22:13:11.923Z",
+      "seconds": 99
+    },
+    "video/loading_loop": {
+      "files": [
+        "assets/generated/video/loading_loop.mp4"
+      ],
+      "model": "fal-ai/kling-video/v2.5-turbo/pro/text-to-video",
+      "prompt": "locked off static camera, rain falling past a flickering neon sign reflected in a puddle on a dark street at night, subtle looping motion. photorealistic cinematic, anamorphic, rain, wet reflections, neon magenta and teal against deep blue-black, no text, no logos",
+      "input": {
+        "prompt": "locked off static camera, rain falling past a flickering neon sign reflected in a puddle on a dark street at night, subtle looping motion. photorealistic cinematic, anamorphic, rain, wet reflections, neon magenta and teal against deep blue-black, no text, no logos",
+        "duration": "5",
+        "aspect_ratio": "16:9",
+        "negative_prompt": "camera movement, text, watermark",
+        "cfg_scale": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.35000000000000003,
+      "created": "2026-10-14T22:13:16.785Z",
+      "seconds": 105
+    },
+    "music/drive": {
+      "files": [
+        "assets/generated/music/drive.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/music",
+      "prompt": "Dark synthwave cyberpunk driving theme, 128 BPM, pulsing analog bass, gated drums, fast arpeggiated synths, rising tension, night city, seamless loop, instrumental only",
+      "input": {
+        "prompt": "Dark synthwave cyberpunk driving theme, 128 BPM, pulsing analog bass, gated drums, fast arpeggiated synths, rising tension, night city, seamless loop, instrumental only",
+        "music_length_ms": 110000,
+        "force_instrumental": true,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 1.4666666666666668,
+      "created": "2026-10-14T22:13:25.517Z",
+      "seconds": 14
+    },
+    "music/chill": {
+      "files": [
+        "assets/generated/music/chill.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/music",
+      "prompt": "Ambient lo-fi synth for rainy night free roam, 80 BPM, warm pads, soft vinyl crackle, mellow electric piano, rain mood, seamless loop, instrumental only",
+      "input": {
+        "prompt": "Ambient lo-fi synth for rainy night free roam, 80 BPM, warm pads, soft vinyl crackle, mellow electric piano, rain mood, seamless loop, instrumental only",
+        "music_length_ms": 95000,
+        "force_instrumental": true,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 1.2666666666666666,
+      "created": "2026-10-14T22:13:28.220Z",
+      "seconds": 11
+    },
+    "music/urgent": {
+      "files": [
+        "assets/generated/music/urgent.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/music",
+      "prompt": "Aggressive high energy cyberpunk chase music, 145 BPM, distorted bass, pounding drums, alarm-like synth stabs, urgent countdown tension, seamless loop, instrumental only",
+      "input": {
+        "prompt": "Aggressive high energy cyberpunk chase music, 145 BPM, distorted bass, pounding drums, alarm-like synth stabs, urgent countdown tension, seamless loop, instrumental only",
+        "music_length_ms": 90000,
+        "force_instrumental": true,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 1.2000000000000002,
+      "created": "2026-10-14T22:13:36.748Z",
+      "seconds": 11
+    },
+    "music/menu": {
+      "files": [
+        "assets/generated/music/menu.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/music",
+      "prompt": "Cinematic dark ambient title theme, slow build, deep drones, distant synth choir, sparse piano, rain, gradual swell, seamless loop, instrumental only",
+      "input": {
+        "prompt": "Cinematic dark ambient title theme, slow build, deep drones, distant synth choir, sparse piano, rain, gradual swell, seamless loop, instrumental only",
+        "music_length_ms": 100000,
+        "force_instrumental": true,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 1.3333333333333335,
+      "created": "2026-10-14T22:13:39.305Z",
+      "seconds": 11
+    },
+    "sfx/engine_idle": {
+      "files": [
+        "assets/generated/sfx/engine_idle.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "deep V8 muscle car engine idling, steady rumble, close mic, no other sounds",
+      "input": {
+        "text": "deep V8 muscle car engine idling, steady rumble, close mic, no other sounds",
+        "duration_seconds": 4,
+        "loop": true,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:13:41.398Z",
+      "seconds": 5
+    },
+    "sfx/engine_low": {
+      "files": [
+        "assets/generated/sfx/engine_low.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "V8 muscle car engine at steady low-mid RPM cruising, constant pitch, close mic, no other sounds",
+      "input": {
+        "text": "V8 muscle car engine at steady low-mid RPM cruising, constant pitch, close mic, no other sounds",
+        "duration_seconds": 4,
+        "loop": true,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:13:43.951Z",
+      "seconds": 5
+    },
+    "sfx/engine_high": {
+      "files": [
+        "assets/generated/sfx/engine_high.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "V8 muscle car engine at steady high RPM roaring, constant pitch, close mic, no other sounds",
+      "input": {
+        "text": "V8 muscle car engine at steady high RPM roaring, constant pitch, close mic, no other sounds",
+        "duration_seconds": 4,
+        "loop": true,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:13:46.163Z",
+      "seconds": 5
+    },
+    "sfx/boost": {
+      "files": [
+        "assets/generated/sfx/boost.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "turbo nitrous boost whoosh with rising jet roar",
+      "input": {
+        "text": "turbo nitrous boost whoosh with rising jet roar",
+        "duration_seconds": 2.5,
+        "loop": false,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:13:46.676Z",
+      "seconds": 3
+    },
+    "video/intro": {
+      "files": [
+        "assets/generated/video/intro.mp4"
+      ],
+      "model": "fal-ai/kling-video/v2.5-turbo/pro/text-to-video",
+      "prompt": "slow aerial drone shot descending through low clouds into a vast rain soaked cyberpunk megacity at night, towering skyscrapers with neon signs, elevated train passing, then following a lone dark sports car with cyan underglow speeding down a wet avenue. photorealistic cinematic, anamorphic, rain, wet reflections, neon magenta and teal against deep blue-black, no text, no logos",
+      "input": {
+        "prompt": "slow aerial drone shot descending through low clouds into a vast rain soaked cyberpunk megacity at night, towering skyscrapers with neon signs, elevated train passing, then following a lone dark sports car with cyan underglow speeding down a wet avenue. photorealistic cinematic, anamorphic, rain, wet reflections, neon magenta and teal against deep blue-black, no text, no logos",
+        "duration": "10",
+        "aspect_ratio": "16:9",
+        "negative_prompt": "blur, distort, low quality, text, watermark",
+        "cfg_scale": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.7000000000000001,
+      "created": "2026-10-14T22:13:48.836Z",
+      "seconds": 146
+    },
+    "sfx/tire_squeal": {
+      "files": [
+        "assets/generated/sfx/tire_squeal.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "continuous car tire squeal while drifting on asphalt",
+      "input": {
+        "text": "continuous car tire squeal while drifting on asphalt",
+        "duration_seconds": 3,
+        "loop": true,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:13:50.976Z",
+      "seconds": 5
+    },
+    "sfx/drift_wet": {
+      "files": [
+        "assets/generated/sfx/drift_wet.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "car tires sliding sideways on wet asphalt, hissing water spray and squeal",
+      "input": {
+        "text": "car tires sliding sideways on wet asphalt, hissing water spray and squeal",
+        "duration_seconds": 3,
+        "loop": true,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:13:51.338Z",
+      "seconds": 5
+    },
+    "sfx/gear_shift": {
+      "files": [
+        "assets/generated/sfx/gear_shift.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "quick mechanical gear shift clunk with blow off valve pssh",
+      "input": {
+        "text": "quick mechanical gear shift clunk with blow off valve pssh",
+        "duration_seconds": 0.8,
+        "loop": false,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:13:51.731Z",
+      "seconds": 3
+    },
+    "sfx/horn": {
+      "files": [
+        "assets/generated/sfx/horn.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "loud car horn honk, single",
+      "input": {
+        "text": "loud car horn honk, single",
+        "duration_seconds": 1.2,
+        "loop": false,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:13:53.460Z",
+      "seconds": 2
+    },
+    "sfx/hit_heavy": {
+      "files": [
+        "assets/generated/sfx/hit_heavy.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "heavy car crash impact, crunching metal",
+      "input": {
+        "text": "heavy car crash impact, crunching metal",
+        "duration_seconds": 1.5,
+        "loop": false,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:13:54.267Z",
+      "seconds": 3
+    },
+    "sfx/hit_light": {
+      "files": [
+        "assets/generated/sfx/hit_light.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "light car bump into plastic barrier, thud",
+      "input": {
+        "text": "light car bump into plastic barrier, thud",
+        "duration_seconds": 1,
+        "loop": false,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:13:55.940Z",
+      "seconds": 5
+    },
+    "sfx/hit_metal": {
+      "files": [
+        "assets/generated/sfx/hit_metal.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "car scraping hitting a metal pole, clang",
+      "input": {
+        "text": "car scraping hitting a metal pole, clang",
+        "duration_seconds": 1.2,
+        "loop": false,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:13:56.071Z",
+      "seconds": 3
+    },
+    "sfx/hit_glass": {
+      "files": [
+        "assets/generated/sfx/hit_glass.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "glass shattering from car impact",
+      "input": {
+        "text": "glass shattering from car impact",
+        "duration_seconds": 1.5,
+        "loop": false,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:13:56.819Z",
+      "seconds": 3
+    },
+    "sfx/suspension": {
+      "files": [
+        "assets/generated/sfx/suspension.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "car suspension thump landing over a bump",
+      "input": {
+        "text": "car suspension thump landing over a bump",
+        "duration_seconds": 0.6,
+        "loop": false,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:13:58.352Z",
+      "seconds": 2
+    },
+    "sfx/rain_light": {
+      "files": [
+        "assets/generated/sfx/rain_light.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "light rain falling on a city street at night, steady",
+      "input": {
+        "text": "light rain falling on a city street at night, steady",
+        "duration_seconds": 6,
+        "loop": true,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:14:00.718Z",
+      "seconds": 5
+    },
+    "sfx/rain_heavy": {
+      "files": [
+        "assets/generated/sfx/rain_heavy.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "heavy rain downpour on city street, steady, dense",
+      "input": {
+        "text": "heavy rain downpour on city street, steady, dense",
+        "duration_seconds": 6,
+        "loop": true,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:14:01.467Z",
+      "seconds": 5
+    },
+    "sfx/rain_roof": {
+      "files": [
+        "assets/generated/sfx/rain_roof.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "rain drumming on a car metal roof from inside the car",
+      "input": {
+        "text": "rain drumming on a car metal roof from inside the car",
+        "duration_seconds": 5,
+        "loop": true,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:14:05.190Z",
+      "seconds": 7
+    },
+    "sfx/tire_hiss": {
+      "files": [
+        "assets/generated/sfx/tire_hiss.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "car tires rolling fast on a wet road, continuous water hiss",
+      "input": {
+        "text": "car tires rolling fast on a wet road, continuous water hiss",
+        "duration_seconds": 4,
+        "loop": true,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:14:05.890Z",
+      "seconds": 5
+    },
+    "sfx/sirens": {
+      "files": [
+        "assets/generated/sfx/sirens.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "distant police sirens echoing in a city at night",
+      "input": {
+        "text": "distant police sirens echoing in a city at night",
+        "duration_seconds": 6,
+        "loop": true,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:14:06.237Z",
+      "seconds": 5
+    },
+    "sfx/city_hum": {
+      "files": [
+        "assets/generated/sfx/city_hum.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "distant futuristic city ambience hum, traffic, faint voices, night",
+      "input": {
+        "text": "distant futuristic city ambience hum, traffic, faint voices, night",
+        "duration_seconds": 6,
+        "loop": true,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:14:09.913Z",
+      "seconds": 5
+    },
+    "sfx/neon_buzz": {
+      "files": [
+        "assets/generated/sfx/neon_buzz.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "electric neon sign buzzing hum",
+      "input": {
+        "text": "electric neon sign buzzing hum",
+        "duration_seconds": 3,
+        "loop": true,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:14:10.655Z",
+      "seconds": 5
+    },
+    "sfx/steam_vent": {
+      "files": [
+        "assets/generated/sfx/steam_vent.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "steam hissing from a street vent",
+      "input": {
+        "text": "steam hissing from a street vent",
+        "duration_seconds": 3,
+        "loop": true,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:14:10.991Z",
+      "seconds": 5
+    },
+    "sfx/ui_confirm": {
+      "files": [
+        "assets/generated/sfx/ui_confirm.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "futuristic UI confirm chime, positive",
+      "input": {
+        "text": "futuristic UI confirm chime, positive",
+        "duration_seconds": 0.8,
+        "loop": false,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:14:13.451Z",
+      "seconds": 2
+    },
+    "sfx/ui_error": {
+      "files": [
+        "assets/generated/sfx/ui_error.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "futuristic UI error buzz, negative",
+      "input": {
+        "text": "futuristic UI error buzz, negative",
+        "duration_seconds": 0.7,
+        "loop": false,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:14:15.898Z",
+      "seconds": 2
+    },
+    "sfx/mission_complete": {
+      "files": [
+        "assets/generated/sfx/mission_complete.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "mission complete success fanfare, synth, triumphant short",
+      "input": {
+        "text": "mission complete success fanfare, synth, triumphant short",
+        "duration_seconds": 2.5,
+        "loop": false,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:14:17.889Z",
+      "seconds": 3
+    },
+    "sfx/mission_start": {
+      "files": [
+        "assets/generated/sfx/mission_start.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "cyberpunk mission start stinger, synth rise with impact",
+      "input": {
+        "text": "cyberpunk mission start stinger, synth rise with impact",
+        "duration_seconds": 1.8,
+        "loop": false,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:14:19.137Z",
+      "seconds": 5
+    },
+    "sfx/timer_warning": {
+      "files": [
+        "assets/generated/sfx/timer_warning.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "urgent digital countdown warning beeps",
+      "input": {
+        "text": "urgent digital countdown warning beeps",
+        "duration_seconds": 1.2,
+        "loop": false,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:14:20.569Z",
+      "seconds": 3
+    },
+    "sfx/pickup": {
+      "files": [
+        "assets/generated/sfx/pickup.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "package pickup confirmation, magnetic clunk and digital chime",
+      "input": {
+        "text": "package pickup confirmation, magnetic clunk and digital chime",
+        "duration_seconds": 1,
+        "loop": false,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:14:21.690Z",
+      "seconds": 3
+    },
+    "video/bb_eye": {
+      "files": [
+        "assets/generated/video/bb_eye.mp4"
+      ],
+      "model": "fal-ai/kling-video/v2.5-turbo/pro/text-to-video",
+      "prompt": "beauty tech commercial: close up of a woman opening her eye revealing a glowing cyber iris implant, teal purple light, photorealistic, vivid, no text",
+      "input": {
+        "prompt": "beauty tech commercial: close up of a woman opening her eye revealing a glowing cyber iris implant, teal purple light, photorealistic, vivid, no text",
+        "duration": "5",
+        "aspect_ratio": "9:16",
+        "negative_prompt": "text, watermark, blur",
+        "cfg_scale": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.35000000000000003,
+      "created": "2026-10-14T22:14:23.485Z",
+      "seconds": 74
+    },
+    "sfx/train": {
+      "files": [
+        "assets/generated/sfx/train.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "elevated metro train passing overhead on rails, rumble and clatter",
+      "input": {
+        "text": "elevated metro train passing overhead on rails, rumble and clatter",
+        "duration_seconds": 6,
+        "loop": false,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:14:24.359Z",
+      "seconds": 3
+    },
+    "sfx/drone_hum": {
+      "files": [
+        "assets/generated/sfx/drone_hum.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "hovering drone propeller hum, electric whine",
+      "input": {
+        "text": "hovering drone propeller hum, electric whine",
+        "duration_seconds": 4,
+        "loop": true,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:14:25.234Z",
+      "seconds": 5
+    },
+    "sfx/crowd": {
+      "files": [
+        "assets/generated/sfx/crowd.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "crowd murmur at a busy night market, indistinct chatter",
+      "input": {
+        "text": "crowd murmur at a busy night market, indistinct chatter",
+        "duration_seconds": 6,
+        "loop": true,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:14:25.449Z",
+      "seconds": 5
+    },
+    "sfx/near_miss": {
+      "files": [
+        "assets/generated/sfx/near_miss.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "fast car whooshing past very close, doppler",
+      "input": {
+        "text": "fast car whooshing past very close, doppler",
+        "duration_seconds": 1,
+        "loop": false,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:14:26.130Z",
+      "seconds": 3
+    },
+    "sfx/cash": {
+      "files": [
+        "assets/generated/sfx/cash.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "digital credits payment received sound",
+      "input": {
+        "text": "digital credits payment received sound",
+        "duration_seconds": 0.8,
+        "loop": false,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:14:26.882Z",
+      "seconds": 3
+    },
+    "voice/brief_1": {
+      "files": [
+        "assets/generated/voice/brief_1.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Package is hot. Get it to the drop-off before the clock runs out.",
+      "input": {
+        "text": "Package is hot. Get it to the drop-off before the clock runs out.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-14T22:14:27.746Z",
+      "seconds": 3
+    },
+    "voice/brief_2": {
+      "files": [
+        "assets/generated/voice/brief_2.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "New job. Pick up the parcel, mind the drones.",
+      "input": {
+        "text": "New job. Pick up the parcel, mind the drones.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-14T22:14:28.108Z",
+      "seconds": 3
+    },
+    "voice/brief_3": {
+      "files": [
+        "assets/generated/voice/brief_3.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Client's waiting. Don't make them wait long.",
+      "input": {
+        "text": "Client's waiting. Don't make them wait long.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-14T22:14:28.797Z",
+      "seconds": 3
+    },
+    "voice/brief_docks": {
+      "files": [
+        "assets/generated/voice/brief_docks.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "The Docks. Fog rolls in thick. Trust your lights.",
+      "input": {
+        "text": "The Docks. Fog rolls in thick. Trust your lights.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-14T22:14:30.512Z",
+      "seconds": 3
+    },
+    "voice/brief_downtown": {
+      "files": [
+        "assets/generated/voice/brief_downtown.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Downtown. Glass towers and corporate eyes. Keep it clean.",
+      "input": {
+        "text": "Downtown. Glass towers and corporate eyes. Keep it clean.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-14T22:14:30.597Z",
+      "seconds": 2
+    },
+    "voice/brief_back": {
+      "files": [
+        "assets/generated/voice/brief_back.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Backstreets. Tight corners. Don't scratch the paint.",
+      "input": {
+        "text": "Backstreets. Tight corners. Don't scratch the paint.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-14T22:14:31.405Z",
+      "seconds": 3
+    },
+    "voice/brief_neon": {
+      "files": [
+        "assets/generated/voice/brief_neon.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Neon District. Crowded, loud, and nobody's watching. Perfect.",
+      "input": {
+        "text": "Neon District. Crowded, loud, and nobody's watching. Perfect.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-14T22:14:31.620Z",
+      "seconds": 5
+    },
+    "voice/ten_left": {
+      "files": [
+        "assets/generated/voice/ten_left.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Ten seconds left.",
+      "input": {
+        "text": "Ten seconds left.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-14T22:14:33.057Z",
+      "seconds": 2
+    },
+    "voice/pickup": {
+      "files": [
+        "assets/generated/voice/pickup.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Package secured. Now move.",
+      "input": {
+        "text": "Package secured. Now move.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-14T22:14:33.193Z",
+      "seconds": 3
+    },
+    "voice/twenty_left": {
+      "files": [
+        "assets/generated/voice/twenty_left.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Twenty seconds. Pick it up.",
+      "input": {
+        "text": "Twenty seconds. Pick it up.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-14T22:14:33.909Z",
+      "seconds": 3
+    },
+    "video/bb_ramen": {
+      "files": [
+        "assets/generated/video/bb_ramen.mp4"
+      ],
+      "model": "fal-ai/kling-video/v2.5-turbo/pro/text-to-video",
+      "prompt": "food commercial: steaming bowl of ramen with chopsticks lifting noodles, warm light, slow motion, steam, photorealistic, vivid, no text",
+      "input": {
+        "prompt": "food commercial: steaming bowl of ramen with chopsticks lifting noodles, warm light, slow motion, steam, photorealistic, vivid, no text",
+        "duration": "5",
+        "aspect_ratio": "16:9",
+        "negative_prompt": "text, watermark, blur",
+        "cfg_scale": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.35000000000000003,
+      "created": "2026-10-14T22:14:34.411Z",
+      "seconds": 89
+    },
+    "voice/success_1": {
+      "files": [
+        "assets/generated/voice/success_1.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Delivered. Credits are in your account.",
+      "input": {
+        "text": "Delivered. Credits are in your account.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-14T22:14:34.615Z",
+      "seconds": 3
+    },
+    "voice/success_2": {
+      "files": [
+        "assets/generated/voice/success_2.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Clean run. I knew you had it.",
+      "input": {
+        "text": "Clean run. I knew you had it.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-14T22:14:35.594Z",
+      "seconds": 3
+    },
+    "voice/fail_1": {
+      "files": [
+        "assets/generated/voice/fail_1.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Too late. Client walked. We'll talk about this.",
+      "input": {
+        "text": "Too late. Client walked. We'll talk about this.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-14T22:14:35.844Z",
+      "seconds": 3
+    },
+    "voice/fail_2": {
+      "files": [
+        "assets/generated/voice/fail_2.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Package is dead. Head back, courier.",
+      "input": {
+        "text": "Package is dead. Head back, courier.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-14T22:14:36.551Z",
+      "seconds": 3
+    },
+    "voice/near_miss_1": {
+      "files": [
+        "assets/generated/voice/near_miss_1.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "That was close.",
+      "input": {
+        "text": "That was close.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-14T22:14:36.961Z",
+      "seconds": 3
+    },
+    "voice/near_miss_2": {
+      "files": [
+        "assets/generated/voice/near_miss_2.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Easy. The car is worth more than you are.",
+      "input": {
+        "text": "Easy. The car is worth more than you are.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-14T22:14:37.228Z",
+      "seconds": 3
+    },
+    "voice/drone": {
+      "files": [
+        "assets/generated/voice/drone.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Drones on your tail. Lose them.",
+      "input": {
+        "text": "Drones on your tail. Lose them.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-14T22:14:38.299Z",
+      "seconds": 3
+    },
+    "voice/upgrade": {
+      "files": [
+        "assets/generated/voice/upgrade.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Nice upgrade. She purrs now.",
+      "input": {
+        "text": "Nice upgrade. She purrs now.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-14T22:14:38.391Z",
+      "seconds": 3
+    },
+    "voice/unlock": {
+      "files": [
+        "assets/generated/voice/unlock.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "New district unlocked. The city just got bigger.",
+      "input": {
+        "text": "New district unlocked. The city just got bigger.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-14T22:14:39.144Z",
+      "seconds": 3
+    },
+    "ad/ad_umbrella": {
+      "files": [
+        "assets/generated/ad/ad_umbrella.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "transparent glowing LED umbrella in the rain, fictional brand 'RAINLIGHT', pastel teal and pink. full frame advertising billboard artwork, no frame, no wall, fills the image edge to edge, cyberpunk megacity advertising, glossy commercial photography, vivid neon colors, crisp readable brand name",
+      "input": {
+        "prompt": "transparent glowing LED umbrella in the rain, fictional brand 'RAINLIGHT', pastel teal and pink. full frame advertising billboard artwork, no frame, no wall, fills the image edge to edge, cyberpunk megacity advertising, glossy commercial photography, vivid neon colors, crisp readable brand name",
+        "image_size": "portrait_16_9",
+        "output_format": "jpeg",
+        "seed": 41
+      },
+      "seed": 41,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:16:39.454Z",
+      "seconds": 14
+    },
+    "model3d/lm_watertower": {
+      "files": [
+        "assets/generated/model3d/lm_watertower.glb"
+      ],
+      "model": "fal-ai/trellis-2",
+      "prompt": null,
+      "input": {
+        "image_url": "@file:assets/generated/concept/lm_watertower.png",
+        "resolution": 1024,
+        "texture_size": 2048,
+        "decimation_target": 40000
+      },
+      "seed": null,
+      "cost_usd_est": 0.3,
+      "created": "2026-10-14T22:16:48.063Z",
+      "seconds": 22
+    },
+    "model3d/lm_crane": {
+      "files": [
+        "assets/generated/model3d/lm_crane.glb"
+      ],
+      "model": "fal-ai/trellis-2",
+      "prompt": null,
+      "input": {
+        "image_url": "@file:assets/generated/concept/lm_crane.png",
+        "resolution": 1024,
+        "texture_size": 2048,
+        "decimation_target": 40000
+      },
+      "seed": null,
+      "cost_usd_est": 0.3,
+      "created": "2026-10-14T22:16:53.552Z",
+      "seconds": 28
+    },
+    "sfx/ui_click": {
+      "files": [
+        "assets/generated/sfx/ui_click.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "clean futuristic UI click",
+      "input": {
+        "text": "clean futuristic UI click",
+        "duration_seconds": 0.5,
+        "loop": false,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:16:58.407Z",
+      "seconds": 5
+    },
+    "sfx/ui_hover": {
+      "files": [
+        "assets/generated/sfx/ui_hover.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "soft subtle futuristic UI hover tick",
+      "input": {
+        "text": "soft subtle futuristic UI hover tick",
+        "duration_seconds": 0.5,
+        "loop": false,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:17:00.846Z",
+      "seconds": 2
+    },
+    "sfx/timer_tick": {
+      "files": [
+        "assets/generated/sfx/timer_tick.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "digital clock tick",
+      "input": {
+        "text": "digital clock tick",
+        "duration_seconds": 0.5,
+        "loop": false,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-14T22:17:03.656Z",
+      "seconds": 3
+    },
+    "model3d/lm_pagoda": {
+      "files": [
+        "assets/generated/model3d/lm_pagoda.glb"
+      ],
+      "model": "fal-ai/trellis-2",
+      "prompt": null,
+      "input": {
+        "image_url": "@file:assets/generated/concept/lm_pagoda.png",
+        "resolution": 1024,
+        "texture_size": 2048,
+        "decimation_target": 40000
+      },
+      "seed": null,
+      "cost_usd_est": 0.3,
+      "created": "2026-10-14T22:17:14.051Z",
+      "seconds": 48
+    },
+    "model3d/lm_statue": {
+      "files": [
+        "assets/generated/model3d/lm_statue.glb"
+      ],
+      "model": "fal-ai/trellis-2",
+      "prompt": null,
+      "input": {
+        "image_url": "@file:assets/generated/concept/lm_statue.png",
+        "resolution": 1024,
+        "texture_size": 2048,
+        "decimation_target": 40000
+      },
+      "seed": null,
+      "cost_usd_est": 0.3,
+      "created": "2026-10-14T22:17:41.222Z",
+      "seconds": 53
+    },
+    "model3d/lm_gate": {
+      "files": [
+        "assets/generated/model3d/lm_gate.glb"
+      ],
+      "model": "fal-ai/trellis-2",
+      "prompt": null,
+      "input": {
+        "image_url": "@file:assets/generated/concept/lm_gate.png",
+        "resolution": 1024,
+        "texture_size": 2048,
+        "decimation_target": 40000
+      },
+      "seed": null,
+      "cost_usd_est": 0.3,
+      "created": "2026-10-14T22:18:08.035Z",
+      "seconds": 89
+    },
+    "model3d/car": {
+      "files": [
+        "assets/generated/model3d/car.glb",
+        "assets/generated/model3d/car_rendered_image.png"
+      ],
+      "model": "tripo3d/h3.1/image-to-3d",
+      "prompt": null,
+      "input": {
+        "image_url": "@file:assets/generated/concept/car.png",
+        "texture": true,
+        "pbr": true,
+        "texture_quality": "detailed",
+        "geometry_quality": "detailed",
+        "face_limit": 60000
+      },
+      "seed": null,
+      "cost_usd_est": 0.6,
+      "created": "2026-10-14T22:20:46.053Z",
+      "seconds": 260
+    }
+  }
+}

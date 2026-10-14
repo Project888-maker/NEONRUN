@@ -1,0 +1,9 @@
+node_modules
+dist
+.vercel
+.env
+.env.*
+*.log
+/screenshots/tmp
+__pycache__
+*.blend1

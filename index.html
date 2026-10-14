@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#05060c" />
+  <title>NEON RUN</title>
+  <meta name="description" content="NEON RUN: a rain-soaked cyberpunk courier driving game. Deliver packages against the clock across a neon megacity." />
+  <link rel="icon" href="./assets/icon/package.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Orbitron:wght@600;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./src/style.css" />
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <!-- loading -->
+  <div id="loading" class="screen">
+    <video id="loading-video" src="./assets/video/loading_loop.mp4" poster="./assets/video/loading_loop.jpg" autoplay muted loop playsinline></video>
+    <div class="shade"></div>
+    <img class="logo" src="./assets/ui/logo.png" alt="NEON RUN" />
+    <div class="loadbar"><div id="loadfill"></div></div>
+    <div id="loadlabel">Booting city grid…</div>
+  </div>
+
+  <!-- title -->
+  <div id="title" class="screen hidden">
+    <video id="intro-video" src="./assets/video/intro.mp4" poster="./assets/video/intro.jpg" muted loop playsinline></video>
+    <div class="shade"></div>
+    <img class="logo" src="./assets/ui/logo.png" alt="NEON RUN" />
+    <div class="tagline">Night shift. Hot packages. No refunds.</div>
+    <nav class="menu">
+      <button data-act="play" class="primary">Drive</button>
+      <button data-act="garage">Garage</button>
+      <button data-act="settings">Settings</button>
+      <button data-act="controls">Controls</button>
+    </nav>
+    <div class="footer">Original game · all brands fictional · <span id="build-info"></span></div>
+  </div>
+
+  <!-- garage -->
+  <div id="garage" class="screen panel-screen hidden">
+    <div class="panel wide">
+      <h2>Garage</h2>
+      <div class="credits-line"><img src="./assets/icon/coin.png" alt="" /> <span id="g-credits">0</span> CR</div>
+      <h3>Performance</h3>
+      <div id="upgrades" class="cards"></div>
+      <h3>Paint</h3>
+      <div id="paints" class="swatches"></div>
+      <h3>Underglow</h3>
+      <div id="glows" class="swatches"></div>
+      <h3>Livery</h3>
+      <div id="liveries" class="swatches liv"></div>
+      <h3>Districts</h3>
+      <div id="districts" class="cards districts"></div>
+      <button data-act="back" class="back">Back</button>
+    </div>
+  </div>
+
+  <!-- settings -->
+  <div id="settings" class="screen panel-screen hidden">
+    <div class="panel">
+      <h2>Settings</h2>
+      <label>Graphics quality
+        <div class="seg" id="q-seg"><button data-q="auto">Auto</button><button data-q="low">Low</button><button data-q="med">Medium</button><button data-q="high">High</button></div>
+      </label>
+      <label>Master volume <input type="range" id="v-master" min="0" max="1" step="0.05" /></label>
+      <label>Music volume <input type="range" id="v-music" min="0" max="1" step="0.05" /></label>
+      <label>Effects volume <input type="range" id="v-sfx" min="0" max="1" step="0.05" /></label>
+      <label>Camera
+        <div class="seg" id="cam-seg"><button data-cam="chase">Chase</button><button data-cam="far">Far</button><button data-cam="hood">Hood</button></div>
+      </label>
+      <div class="hint">Quality changes apply after restart of the drive (Esc → Quit).</div>
+      <button data-act="back" class="back">Back</button>
+    </div>
+  </div>
+
+  <!-- controls -->
+  <div id="controls" class="screen panel-screen hidden">
+    <div class="panel">
+      <h2>Controls</h2>
+      <table class="keys">
+        <tr><td>W / ↑</td><td>Throttle</td></tr>
+        <tr><td>S / ↓</td><td>Brake / reverse</td></tr>
+        <tr><td>A D / ← →</td><td>Steer</td></tr>
+        <tr><td>Space</td><td>Handbrake (drift)</td></tr>
+        <tr><td>Shift / N</td><td>Boost</td></tr>
+        <tr><td>C</td><td>Change camera</td></tr>
+        <tr><td>R</td><td>Reset car</td></tr>
+        <tr><td>M</td><td>Toggle big map</td></tr>
+        <tr><td>Esc / P</td><td>Pause</td></tr>
+        <tr><td>Gamepad</td><td>RT throttle · LT brake · A/RB drift · B/X boost</td></tr>
+        <tr><td>Touch</td><td>Drag left side to steer · buttons on the right</td></tr>
+      </table>
+      <button data-act="back" class="back">Back</button>
+    </div>
+  </div>
+
+  <!-- pause -->
+  <div id="pause" class="screen panel-screen hidden">
+    <div class="panel">
+      <h2>Paused</h2>
+      <nav class="menu">
+        <button data-act="resume" class="primary">Resume</button>
+        <button data-act="garage">Garage</button>
+        <button data-act="settings">Settings</button>
+        <button data-act="quit">Quit to title</button>
+      </nav>
+    </div>
+  </div>
+
+  <!-- HUD -->
+  <div id="hud" class="hidden">
+    <div class="hud-tl">
+      <div class="credits"><img src="./assets/icon/coin.png" alt="" /><span id="h-credits">0</span></div>
+      <div class="district" id="h-district">Neon District</div>
+    </div>
+    <div class="hud-tc">
+      <div id="h-prompt">Get to the pickup</div>
+      <div id="h-timer" class="hidden">00.0</div>
+      <div id="h-dist"></div>
+    </div>
+    <canvas id="minimap" width="220" height="220"></canvas>
+    <div class="hud-br">
+      <canvas id="speedo" width="260" height="260"></canvas>
+      <div class="boost"><img src="./assets/icon/lightning.png" alt="" /><div class="bar"><div id="h-boost"></div></div></div>
+    </div>
+    <div id="combo"></div>
+    <div id="toast"></div>
+    <div id="arrow"></div>
+    <div id="fps"></div>
+  </div>
+
+  <div id="banner" class="hidden"><div class="b-sub">Entering</div><div class="b-title" id="banner-title">NEON DISTRICT</div></div>
+
+  <div id="results" class="hidden">
+    <video id="stinger" src="./assets/video/stinger.mp4" muted playsinline></video>
+    <div class="r-card">
+      <div class="r-title" id="r-title">Delivered</div>
+      <div class="r-rows" id="r-rows"></div>
+      <div class="r-total" id="r-total"></div>
+    </div>
+  </div>
+
+  <div id="bigmap" class="hidden"><canvas id="bigmap-canvas" width="900" height="900"></canvas></div>
+
+  <!-- touch controls -->
+  <div id="touch" class="hidden">
+    <div id="t-steer"><div id="t-knob"></div></div>
+    <button id="t-gas">GAS</button>
+    <button id="t-brake">BRK</button>
+    <button id="t-drift">DRIFT</button>
+    <button id="t-boost">BOOST</button>
+    <button id="t-pause">II</button>
+  </div>
+
+  <div id="tap" class="hidden">Tap / press any key to start</div>
+
+  <script type="module" src="./src/main.ts"></script>
+</body>
+</html>
