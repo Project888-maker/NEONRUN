@@ -15,7 +15,8 @@ const browser = await chromium.launch({
   executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
   args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'],
 });
-const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+const W = +(process.env.SHOT_W || 960), H = Math.round((W * 9) / 16);
+const page = await browser.newPage({ viewport: { width: W, height: H } });
 const errors = [];
 page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') errors.push(`[${m.type()}] ${m.text()}`); });
 page.on('pageerror', (e) => errors.push(`[pageerror] ${e.message}`));
@@ -24,7 +25,7 @@ const t0 = Date.now();
 await page.goto(url, { waitUntil: 'domcontentloaded' });
 await page.waitForFunction(() => window.__neon && window.__neon.state() === 'title', null, { timeout: 600000 });
 const loadSec = (Date.now() - t0) / 1000;
-console.log(`loaded in ${loadSec.toFixed(1)}s`);
+console.log(new Date().toISOString().slice(11, 19), `loaded in ${loadSec.toFixed(1)}s`);
 const want = (n) => !only.length || only.includes(n);
 if (want('title')) await page.screenshot({ path: path.join(out, '00_title.png') });
 
@@ -36,7 +37,7 @@ const sleep = async (ms) => {
   const t0 = await N('simTime');
   await page.waitForFunction((t) => window.__neon.simTime() >= t, t0 + ms / 1000, { timeout: 600000, polling: 200 });
 };
-const shot = async (name) => { await page.screenshot({ path: path.join(out, `${name}.png`) }); const t = await N('telemetry'); console.log(name, JSON.stringify({ kmh: t.kmh.toFixed(0), fps: t.fps?.toFixed(1), calls: t.calls, tris: t.tris, drift: t.drifting, pos: t.pos.map((v) => v.toFixed(0)).join(',') })); return t; };
+const shot = async (name) => { await page.screenshot({ path: path.join(out, `${name}.png`) }); const t = await N('telemetry'); console.log(new Date().toISOString().slice(11, 19), name, JSON.stringify({ kmh: t.kmh.toFixed(0), fps: t.fps?.toFixed(1), calls: t.calls, tris: t.tris, drift: t.drifting, pos: t.pos.map((v) => v.toFixed(0)).join(',') })); return t; };
 
 await N('start');
 await N('unlockAll');

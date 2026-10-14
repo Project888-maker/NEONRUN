@@ -37,6 +37,7 @@ function beamMesh(color: THREE.Color) {
 export interface MissionEvents {
   onUnlock: (d: DistrictId) => void;
   onComplete: (ok: boolean) => void;
+  onNearMiss: () => void;
 }
 
 export class Missions {
@@ -206,6 +207,7 @@ export class Missions {
           this.nearMisses++;
           this.hud.combo('NEAR MISS', `+${50} · boost`, 1.2);
           this.audio.play('near_miss', { volume: 0.8 });
+          this.ev.onNearMiss();
           if (this.rng() < 0.25) this.audio.say(this.rng() < 0.5 ? 'near_miss_1' : 'near_miss_2');
         }
       }

@@ -68,6 +68,10 @@ const graph = buildRoadGraph();
 const realLights: THREE.PointLight[] = [];
 const videos: Record<string, HTMLVideoElement> = {};
 let lightGrid = new Map<string, LightSrc[]>();
+// live reflection probe for the car paint (High/Med): renders the real neon street into a cube map
+let cubeRT: THREE.WebGLCubeRenderTarget | null = null;
+let cubeCam: THREE.CubeCamera | null = null;
+let cubeFrame = 0;
 
 let state: 'loading' | 'title' | 'playing' | 'paused' = 'loading';
 let simTime = 0;
@@ -163,6 +167,10 @@ function buildWorld() {
     vehicle.wheels.forEach((w, i) => { const p = car.wheelLocal[['FL', 'FR', 'RL', 'RR'][i]]; w.local.set(p.x, p.y + vehicle.restLength * 0.6, p.z); });
   }
   scene.add(car.root);
+  cubeRT = new THREE.WebGLCubeRenderTarget(128, { type: THREE.HalfFloatType, generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter });
+  cubeCam = new THREE.CubeCamera(0.5, 600, cubeRT);
+  cubeCam.children.forEach((c) => { c.layers.enableAll(); c.layers.disable(LAYER_NO_REFLECT); });
+  scene.add(cubeCam);
   applyCustomization();
   chase = new ChaseCam(camera, phys);
   chase.mode = save.settings.cam;
@@ -183,6 +191,7 @@ function buildWorld() {
       audio.play('ui_confirm');
     },
     onComplete: () => {},
+    onNearMiss: () => { vehicle.boost = Math.min(1, vehicle.boost + 0.15); },
   });
   scene.add(missions.group);
   for (const d of save.unlocked) city.unlock(d);
@@ -618,7 +627,7 @@ const FIXED_MODE = params.has('fixed'); // deterministic sim for automated tests
 let fpsReal = performance.now();
 function frame(now: number) {
   requestAnimationFrame(frame);
-  const dtReal = FIXED_MODE ? 1 / 30 : Math.min(0.1, (now - last) / 1000);
+  const dtReal = FIXED_MODE ? 1 / 15 : Math.min(0.1, (now - last) / 1000);
   last = now;
   if (state === 'loading') return;
   simTime += state === 'paused' ? 0 : dtReal;
@@ -706,6 +715,19 @@ function frame(now: number) {
     post.chroma.offset.set(0.0006 + (vehicle.boosting ? 0.0025 : 0), 0.0004 + (vehicle.boosting ? 0.0015 : 0));
   }
   renderer.info.reset();
+  // car reflection probe: refresh every few frames (High: 6, Med: 15), off on Low
+  if (state === 'playing' && cubeCam && cubeRT && car.paintMat && qLevel !== 'low') {
+    if (cubeFrame++ % (qLevel === 'high' ? 6 : 15) === 0) {
+      car.root.visible = false;
+      cubeCam.position.copy(carPos).add(new THREE.Vector3(0, 1.2, 0));
+      cubeCam.update(renderer, scene);
+      cubeRT.texture.needsPMREMUpdate = true;
+      car.root.visible = true;
+      if (car.paintMat.envMap !== cubeRT.texture) { car.paintMat.envMap = cubeRT.texture; car.paintMat.envMapIntensity = 1.3; car.paintMat.needsUpdate = true; }
+    }
+  } else if (car && car.paintMat && cubeRT && car.paintMat.envMap === cubeRT.texture && qLevel === 'low') {
+    car.paintMat.envMap = scene.environment; car.paintMat.needsUpdate = true;
+  }
   reflector.update(renderer, scene, camera);
   post.render(dtReal);
 
@@ -735,6 +757,16 @@ function debugApi() {
   return {
     start: () => startDrive(),
     simTime: () => simTime,
+    carInfo: () => {
+      const out: any = { wheelLocal: Object.fromEntries(Object.entries(car.wheelLocal).map(([k, v]) => [k, v.toArray().map((n) => +n.toFixed(2))])) };
+      const b = new THREE.Box3().setFromObject(car.wheels[0]);
+      out.wheel0 = [b.min.toArray().map((n) => +n.toFixed(2)), b.max.toArray().map((n) => +n.toFixed(2))];
+      const bb = new THREE.Box3().setFromObject(car.body);
+      out.body = [bb.min.toArray().map((n) => +n.toFixed(2)), bb.max.toArray().map((n) => +n.toFixed(2))];
+      out.wheelChildren = car.wheels[0].children[0].children.length;
+      out.carPos = car.root.position.toArray();
+      return out;
+    },
     state: () => state,
     setInput: (i: any) => { input.scripted = i; },
     teleport: (x: number, z: number, yaw: number) => { vehicle.reset(new THREE.Vector3(x, 0.8, z), yaw); },

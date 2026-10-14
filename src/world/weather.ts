@@ -45,7 +45,7 @@ export class Rain {
           vA = (1.0 - aEnd * 0.85) * smoothstep(1.5, 7.0, d) * (1.0 - smoothstep(18.0, 30.0, d)) * uIntensity * step(aSeed, uIntensity + 0.001);
           gl_Position = projectionMatrix * mv;
         }`,
-      fragmentShader: `varying float vA; void main(){ gl_FragColor = vec4(vec3(0.55, 0.62, 0.75) * vA * 0.2, 1.0); }`,
+      fragmentShader: `varying float vA; void main(){ gl_FragColor = vec4(vec3(0.55, 0.62, 0.75) * vA * 0.11, 1.0); }`,
       transparent: true, blending: THREE.AdditiveBlending, depthWrite: false,
     });
     this.mesh = new THREE.LineSegments(g, m);

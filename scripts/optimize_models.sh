@@ -6,7 +6,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 GT=node_modules/.bin/gltf-transform
 OUT=public/assets/models
-$GT optimize assets/build/hero_car_raw.glb $OUT/hero_car.glb --compress meshopt --texture-compress webp --texture-size 2048 --simplify false
+$GT optimize assets/build/hero_car_raw.glb $OUT/hero_car.glb --compress meshopt --texture-compress webp --texture-size 2048 --simplify false --prune false --join false --flatten false
 for m in lm_pagoda lm_watertower lm_crane lm_gate lm_statue; do
   $GT optimize assets/generated/model3d/$m.glb $OUT/$m.glb --compress meshopt --texture-compress webp --texture-size 1024 --simplify true --simplify-ratio 0.5 --simplify-error 0.002
 done

@@ -451,6 +451,9 @@ export class City {
   private buildDocksBlock(i: number, j: number, cx: number, cz: number, inner: number) {
     const rng = this.rng;
     const kind = rng.next();
+    // loading bays at the kerb on each side of the block (mission spots)
+    const edge = inner / 2 + SIDEWALK + 1.5;
+    for (const [nx, nz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) this.spots.push({ x: cx + nx * edge, z: cz + nz * edge, district: 'docks', nx, nz });
     if (kind < 0.4) {
       // warehouse(s)
       const n = rng.int(1, 2);

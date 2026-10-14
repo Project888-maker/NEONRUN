@@ -429,7 +429,7 @@ def hero_wheel():
     finish(t, 'tire')
     parts.append(t)
     parts.append(cyl('tread', 0.37, 0.24, (0, 0, 0), m['rubber'], 40, rot=(0, math.radians(90), 0)))
-    rim = mat('rim', (0.05, 0.05, 0.055), 0.9, 0.25)
+    rim = mat('rim', (0.32, 0.33, 0.35), 1.0, 0.22)
     parts.append(cyl('barrel', 0.255, 0.2, (0, 0, 0), rim, 32, rot=(0, math.radians(90), 0)))
     parts.append(cyl('hub', 0.06, 0.24, (0.0, 0, 0), m['chrome'], 16, rot=(0, math.radians(90), 0)))
     for i in range(10):
