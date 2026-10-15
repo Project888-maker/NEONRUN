@@ -337,9 +337,10 @@ export class Campaign {
       (this.ring.material as THREE.MeshBasicMaterial).opacity = 0.6 + Math.sin(f.t * 5) * 0.3;
       for (const b of [this.beamP, this.beamD]) (b.children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>).material.uniforms.uTime.value = f.t;
       if (kind !== 'none') {
-        this.light.position.copy(tgt).setY(3);
+        // a soft low glow for people markers, the strong beacon light for pickups/drops
+        this.light.position.copy(tgt).setY(kind === 'ring' ? 0.6 : 3);
         this.light.color.set(kind === 'drop' ? 0xff2fb4 : kind === 'ring' ? 0xffb347 : 0x21f3ff);
-        this.light.intensity = 30 + Math.sin(f.t * 4) * 8;
+        this.light.intensity = (kind === 'ring' ? 5 : 30) + Math.sin(f.t * 4) * (kind === 'ring' ? 1.5 : 8);
       } else this.light.intensity = 0;
       this.h.hud.setDist(Math.hypot(tgt.x - f.pos.x, tgt.z - f.pos.z));
       this.routeT -= f.dt;

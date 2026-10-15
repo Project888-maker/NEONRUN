@@ -86,13 +86,18 @@ export class CarVisual {
         this.wheels.push(pivot);
       }
     } else if (car) {
-      const scene = car.scene;
+      // own copy per car (the garage, story missions and parked cars can create several):
+      // wheel positions are measured in the copy's local space, never relative to an older car
+      const scene = car.scene.clone(true);
+      scene.updateMatrixWorld(true);
       scene.traverse((o) => {
         if (o.name.startsWith('wheel_')) this.wheelLocal[o.name.slice(6)] = o.getWorldPosition(new THREE.Vector3());
         const m = o as THREE.Mesh;
         if (!m.isMesh) return;
-        const mat = m.material as THREE.MeshStandardMaterial;
+        let mat = m.material as THREE.MeshStandardMaterial;
         if (mat.name.startsWith('emit_')) {
+          mat = mat.clone();
+          m.material = mat;
           mat.emissiveIntensity = mat.name === 'emit_headlight' ? 9 : 4;
           if (mat.name === 'emit_brake') { this.brakeMat = mat; mat.emissiveIntensity = 0.3; }
           if (mat.name === 'emit_taillight') this.tailMat = mat;

@@ -164,6 +164,15 @@ if (want('foot')) {
   await shot('47_police');
   await N('setInput', {});
 }
+if (want('respawn')) {
+  // regression: re-creating the Night Courier after another car used to measure its wheels relative to the old car (it flipped)
+  await N('setCar', 'car_taxi'); await sleep(500);
+  await N('setCar', 'hero'); await sleep(800);
+  console.log('respawn carInfo', JSON.stringify((await N('carInfo')).wheelLocal));
+  await N('setInput', { throttle: 1 }); await sleep(2000); await N('setInput', {});
+  const t = await shot('62_respawn_hero');
+  console.log('respawn upright', JSON.stringify({ y: t.pos[1].toFixed(2), kmh: t.kmh.toFixed(0) }));
+}
 if (want('story')) {
   // play through the campaign with teleports: verifies every mission's steps complete or fail as designed
   const ids = (process.env.STORY || 'm1,m2,m3,m4,m5,m6,m7,m8,m9,m10,m11,m12').split(',');
