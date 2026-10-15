@@ -65,7 +65,7 @@ export class SkyTraffic {
           gl_PointSize = clamp(900.0 / -mv.z, 1.5, 6.0);
           gl_Position = projectionMatrix * mv;
         }`,
-      fragmentShader: `varying vec3 vC; void main(){ float d = length(gl_PointCoord - 0.5); gl_FragColor = vec4(vC * smoothstep(0.5, 0.1, d), 1.0); }`,
+      fragmentShader: `varying vec3 vC; void main(){ float d = length(gl_PointCoord - 0.5); gl_FragColor = vec4(vC * (1.0 - smoothstep(0.1, 0.5, d)), 1.0); }`,
       transparent: true, blending: THREE.AdditiveBlending, depthWrite: false,
     });
     this.points = new THREE.Points(g, m);

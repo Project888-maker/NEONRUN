@@ -87,7 +87,7 @@ export class Splashes {
         varying vec2 vUv; varying float vLife;
         void main(){
           float r = length(vUv - 0.5) * 2.0;
-          float ring = smoothstep(0.75, 0.9, r) * smoothstep(1.0, 0.92, r);
+          float ring = smoothstep(0.75, 0.9, r) * (1.0 - smoothstep(0.92, 1.0, r));
           float a = ring * (1.0 - vLife) * 0.5;
           gl_FragColor = vec4(vec3(0.6, 0.7, 0.85) * a, 1.0);
         }`,

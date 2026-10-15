@@ -28,9 +28,9 @@ vec3 drops(vec2 uv, float t, float scale){
   p.y += (life - 0.5) * 0.4 * step(0.6, n.x); // some drops slide
   vec2 d = (f - p) / aspect * aspect;
   float r = 0.08 + 0.12 * n.y;
-  float m = smoothstep(r, r*0.6, length(d)) * step(0.35, n.x) * smoothstep(1.0, 0.7, life);
+  float m = (1.0 - smoothstep(r*0.6, r, length(d))) * step(0.35, n.x) * (1.0 - smoothstep(0.7, 1.0, life));
   // trail
-  float trail = smoothstep(0.03, 0.0, abs(f.x - p.x)) * smoothstep(p.y, p.y + 0.4, f.y) * step(0.6, n.x) * 0.4;
+  float trail = (1.0 - smoothstep(0.0, 0.03, abs(f.x - p.x))) * smoothstep(p.y, p.y + 0.4, f.y) * step(0.6, n.x) * 0.4;
   return vec3(d * m * 1.8, m + trail);
 }
 

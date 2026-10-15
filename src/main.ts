@@ -14,6 +14,7 @@ import { Traffic } from './world/traffic';
 import { Train, SkyTraffic } from './world/ambient';
 import { Vehicle } from './vehicle/vehicle';
 import { CarVisual, PAINTS, UNDERGLOW } from './vehicle/carVisual';
+import { CAR_DEFS, carDef } from './vehicle/carModels';
 import { ChaseCam } from './vehicle/chaseCam';
 import { AudioSys } from './audio/audio';
 import { Hud } from './game/hud';
@@ -151,7 +152,7 @@ function buildWorld() {
   traffic = new Traffic(graph, phys, A.kit, 32, (x, z) => {
     const i = Math.round((x + HALF) / PITCH), j = Math.round((z + HALF) / PITCH);
     return Math.abs(lineCoord(i) - x) < 1 && Math.abs(lineCoord(j) - z) < 1 ? [i, j] : null;
-  });
+  }, CAR_DEFS.filter((d) => A.carsLod[d.id] || A.cars[d.id]).map((d) => ({ asset: A.carsLod[d.id] ?? A.cars[d.id], def: d })), env);
   (traffic as any).count = Q.traffic;
   traffic.onHonk = (p) => audio.play('horn', { pos: p, volume: 0.6, rate: 0.9 + Math.random() * 0.2 });
   scene.add(traffic.group);
@@ -160,22 +161,17 @@ function buildWorld() {
   skyTraffic = new SkyTraffic(450);
   scene.add(skyTraffic.points);
 
-  vehicle = new Vehicle(phys, SPAWN, SPAWN_YAW);
-  car = new CarVisual(A.car, A.kit, env);
-  if (Object.keys(car.wheelLocal).length === 4) {
-    // rebuild the physics wheels at the model's real wheel positions
-    vehicle.wheels.forEach((w, i) => { const p = car.wheelLocal[['FL', 'FR', 'RL', 'RR'][i]]; w.local.set(p.x, p.y + vehicle.restLength * 0.6, p.z); });
-  }
-  scene.add(car.root);
+  envTex = env;
+  if (!A.cars[save.car] && save.car !== 'hero') save.car = 'hero';
+  spawnPlayerCar(save.car, SPAWN, SPAWN_YAW);
   cubeRT = new THREE.WebGLCubeRenderTarget(128, { type: THREE.HalfFloatType, generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter });
-  cubeCam = new THREE.CubeCamera(0.5, 600, cubeRT);
+  cubeCam = new THREE.CubeCamera(0.5, 160, cubeRT);
   cubeCam.children.forEach((c) => { c.layers.enableAll(); c.layers.disable(LAYER_NO_REFLECT); });
   scene.add(cubeCam);
   applyCustomization();
   chase = new ChaseCam(camera, phys);
   chase.mode = save.settings.cam;
   eventQueue = new RAPIER.EventQueue(true);
-  vehicle.onShift = (g) => { if (state === 'playing' && g > 1) audio.play('gear_shift', { volume: 0.45 }); };
 
   post = new Post(renderer, scene, camera, Q);
   post.setSize(innerWidth, innerHeight);
@@ -215,6 +211,30 @@ function buildWorld() {
 }
 
 let atlasJson: { signs: any; ads: any; shops: any };
+let envTex: THREE.Texture;
+
+export const HERO_DEF = { id: 'hero', name: 'Night Courier', price: 0, desc: 'Your own muscle coupe. Paint, glow and liveries apply here.', mass: 1450, power: 1, topSpeed: 56, grip: 1, traffic: 0 };
+
+/** Replace the player's car (visual + physics), keeping position/heading/velocity. Used by the garage and car theft. */
+function spawnPlayerCar(id: string, pos: THREE.Vector3, yaw: number, vel?: THREE.Vector3) {
+  if (car) { car.root.removeFromParent(); }
+  if (vehicle) vehicle.dispose();
+  const asset = id === 'hero' ? undefined : A.cars[id];
+  const def = id === 'hero' ? HERO_DEF : carDef(id)!;
+  car = new CarVisual(asset ? null : A.car, A.kit, envTex, asset);
+  const wp = Object.fromEntries(Object.entries(car.wheelLocal).map(([k, v]) => [k, v.clone()]));
+  vehicle = new Vehicle(phys, pos, yaw, Object.keys(wp).length === 4 ? wp : undefined, {
+    mass: def.mass, power: def.power, topSpeed: def.topSpeed, grip: def.grip,
+    wheelRadius: asset ? asset.spec.wheelRadius : undefined, dims: car.dims,
+  });
+  vehicle.upgrades = { ...save.upgrades };
+  vehicle.onShift = (g) => { if (state === 'playing' && g > 1) audio.play('gear_shift', { volume: 0.45 }); };
+  if (vel) vehicle.body.setLinvel({ x: vel.x, y: vel.y, z: vel.z }, true);
+  scene.add(car.root);
+  carId = id;
+  if (cubeRT && car.paintMat) { car.paintMat.envMap = cubeRT.texture; car.paintMat.needsUpdate = true; }
+}
+let carId = 'hero';
 
 function placeLandmarks() {
   const fit = (id: string, target: number, by: 'height' | 'width') => {
@@ -365,6 +385,29 @@ function renderGarage() {
   $('glows').innerHTML = UNDERGLOW.map((c) => `<div class="swatch ${save.underglow === c ? 'on' : ''}" data-glow="${c}" style="background:${c};box-shadow:0 0 14px ${c}"></div>`).join('');
   $('liveries').innerHTML = `<div class="swatch ${!save.livery ? 'on' : ''}" data-liv="" style="display:flex;align-items:center;justify-content:center;font-size:11px;color:#8c9bb8">NONE</div>` +
     Object.keys(A.liveries).map((l) => `<div class="swatch ${save.livery === l ? 'on' : ''}" data-liv="${l}" style="background-image:url(./assets/livery/${l}.png)"></div>`).join('');
+  const bar = (v: number, max: number) => `<div class="pips">${[0, 1, 2, 3, 4].map((i) => `<i class="${i < Math.round((v / max) * 5) ? 'on' : ''}"></i>`).join('')}</div>`;
+  $('cars').innerHTML = [HERO_DEF, ...CAR_DEFS.filter((d) => A.cars[d.id])].map((d) => {
+    const owned = save.ownedCars.includes(d.id), current = save.car === d.id;
+    return `<div class="card car-card ${current ? 'current' : ''}"><div class="c-head">${d.name}</div><div class="desc">${d.desc}</div>
+      <div class="stat">Speed ${bar(d.topSpeed, 70)}</div><div class="stat">Power ${bar(d.power, 1.45)}</div><div class="stat">Grip ${bar(d.grip, 1.15)}</div>
+      <button data-car="${d.id}" ${current ? 'disabled' : ''}>${current ? 'Driving' : owned ? 'Drive' : `Buy · ${d.price.toLocaleString()} CR`}</button></div>`;
+  }).join('');
+  $('cars').querySelectorAll<HTMLButtonElement>('button[data-car]').forEach((b) => b.addEventListener('click', () => {
+    const id = b.dataset.car!;
+    const d = id === 'hero' ? HERO_DEF : carDef(id)!;
+    if (!save.ownedCars.includes(id)) {
+      if (save.credits < d.price) { audio.play('ui_error'); return; }
+      save.credits -= d.price;
+      save.ownedCars.push(id);
+      audio.play('cash');
+      hud.setCredits(save.credits);
+    }
+    save.car = id;
+    writeSave(save);
+    spawnPlayerCar(id, carPos.clone().setY(0.8), vehicle.yaw());
+    applyCustomization();
+    renderGarage();
+  }));
   $('districts').innerHTML = DISTRICT_ORDER.map((d) => {
     const un = save.unlocked.includes(d);
     const img = { neon: 'card_neon', backstreets: 'card_backstreets', downtown: 'card_downtown', docks: 'card_docks' }[d];
@@ -427,6 +470,7 @@ function setQuality(l: QualityLevel) {
 
 function startDrive() {
   show('title', false);
+  show('tap', false);
   ($('intro-video') as HTMLVideoElement).pause();
   show('hud', true);
   hud.show(true);
@@ -758,6 +802,18 @@ function debugApi() {
   return {
     start: () => startDrive(),
     simTime: () => simTime,
+    setCar: (id: string) => { spawnPlayerCar(id, carPos.clone().setY(0.8), vehicle.yaw()); },
+    trafficCount: () => traffic.cars.length,
+    behindTraffic: (n = 0) => {
+      // park the player 14 m behind the n-th nearest traffic car, facing the same way
+      const list = [...traffic.cars].sort((a, b) => a.pos.distanceTo(carPos) - b.pos.distanceTo(carPos));
+      const c = list[Math.min(n, list.length - 1)];
+      if (!c) return null;
+      const f = new THREE.Vector3(Math.sin(c.yaw), 0, Math.cos(c.yaw));
+      const p = c.pos.clone().addScaledVector(f, -14);
+      vehicle.reset(new THREE.Vector3(p.x, 0.8, p.z), c.yaw);
+      return { model: traffic.models[c.model]?.id, pos: c.pos.toArray() };
+    },
     carInfo: () => {
       const out: any = { wheelLocal: Object.fromEntries(Object.entries(car.wheelLocal).map(([k, v]) => [k, v.toArray().map((n) => +n.toFixed(2))])) };
       const b = new THREE.Box3().setFromObject(car.wheels[0]);

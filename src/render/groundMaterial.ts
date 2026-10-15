@@ -33,7 +33,7 @@ vec2 ripples(vec2 p, float t){
     float ph = fract(t * 0.9 + rnd);
     vec2 d = f - c*0.6;
     float r = length(d);
-    float ring = sin((r - ph*0.5) * 40.0) * smoothstep(0.5*ph+0.05, 0.5*ph-0.05, r) * smoothstep(0.0, 0.1, r) * (1.0 - ph);
+    float ring = sin((r - ph*0.5) * 40.0) * (1.0 - smoothstep(0.5*ph-0.05, 0.5*ph+0.05, r)) * smoothstep(0.0, 0.1, r) * (1.0 - ph);
     acc += d / max(r, 1e-3) * ring;
   }
   return acc * 0.35;

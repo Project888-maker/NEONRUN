@@ -11,6 +11,11 @@ import type { Physics } from '../core/physics';
 
 export interface VehicleInput { throttle: number; brake: number; steer: number; handbrake: boolean; boost: boolean }
 
+export interface VehicleOpts {
+  mass?: number; wheelRadius?: number; power?: number; topSpeed?: number; grip?: number;
+  dims?: { length: number; width: number; height: number };
+}
+
 export interface Upgrades { speed: number; grip: number; boost: number } // levels 0..3
 
 interface Wheel {
@@ -37,11 +42,14 @@ export class Vehicle {
   body: RAPIER.RigidBody;
   collider: RAPIER.Collider;
   wheels: Wheel[] = [];
-  readonly mass = 1450;
-  readonly wheelRadius = 0.37;
+  mass = 1450;
+  wheelRadius = 0.37;
   readonly restLength = 0.38;
-  readonly stiffness = 46000;
-  readonly damping = 4600;
+  stiffness = 46000;
+  damping = 4600;
+  /** per-car tuning (1 = hero car baseline) */
+  power = 1; topSpeed = 56; grip = 1;
+  private get ik() { return this.mass / 1450; } // inertia scale for torque-based assists
 
   // state for gameplay/audio/visuals
   speed = 0; // m/s along forward
@@ -64,8 +72,14 @@ export class Vehicle {
   private fwd = V(); private up = V(); private left = V();
   private tmp1 = V(); private tmp2 = V(); private tmp3 = V();
 
-  constructor(private phys: Physics, start: THREE.Vector3, yaw: number, wheelPos?: Record<string, THREE.Vector3>) {
+  constructor(private phys: Physics, start: THREE.Vector3, yaw: number, wheelPos?: Record<string, THREE.Vector3>, opts: VehicleOpts = {}) {
     const w = phys.world;
+    if (opts.mass) this.mass = opts.mass;
+    if (opts.wheelRadius) this.wheelRadius = opts.wheelRadius;
+    this.power = opts.power ?? 1; this.topSpeed = opts.topSpeed ?? 56; this.grip = opts.grip ?? 1;
+    this.stiffness = this.mass * 31.7;
+    this.damping = this.mass * 3.17;
+    const dims = opts.dims ?? { length: 4.8, width: 2.0, height: 1.3 };
     const desc = RAPIER.RigidBodyDesc.dynamic()
       .setTranslation(start.x, start.y, start.z)
       .setRotation({ x: 0, y: Math.sin(yaw / 2), z: 0, w: Math.cos(yaw / 2) })
@@ -74,8 +88,8 @@ export class Vehicle {
       .setLinearDamping(0.02)
       .setAngularDamping(0.9);
     this.body = w.createRigidBody(desc);
-    const cd = RAPIER.ColliderDesc.cuboid(0.92, 0.36, 2.3)
-      .setTranslation(0, 0.78, 0.05)
+    const cd = RAPIER.ColliderDesc.cuboid(dims.width * 0.45, dims.height * 0.28, dims.length * 0.478)
+      .setTranslation(0, Math.max(0.6, dims.height * 0.6), 0.05)
       .setDensity(0)
       .setFriction(0.15)
       .setRestitution(0.15)
@@ -84,10 +98,11 @@ export class Vehicle {
       .setContactForceEventThreshold(6000);
     this.collider = w.createCollider(cd, this.body);
     // second, lower-front collider for the nose / cabin shape
-    w.createCollider(RAPIER.ColliderDesc.cuboid(0.75, 0.25, 1.1).setTranslation(0, 1.2, -0.2).setDensity(0).setFriction(0.15)
+    w.createCollider(RAPIER.ColliderDesc.cuboid(dims.width * 0.36, dims.height * 0.18, dims.length * 0.23).setTranslation(0, dims.height * 0.92, -0.2).setDensity(0).setFriction(0.15)
       .setCollisionGroups(groups(GROUP_CAR, GROUP_WORLD | GROUP_TRAFFIC | GROUP_GATE)), this.body);
     const m = this.mass;
-    this.body.setAdditionalMassProperties(m, { x: 0, y: 0.48, z: 0.05 }, { x: 3600, y: 3900, z: 900 }, { x: 0, y: 0, z: 0, w: 1 }, true);
+    const k = m / 1450;
+    this.body.setAdditionalMassProperties(m, { x: 0, y: Math.min(0.62, dims.height * 0.37), z: 0.05 }, { x: 3600 * k, y: 3900 * k, z: 900 * k }, { x: 0, y: 0, z: 0, w: 1 }, true);
 
     const def: Record<string, THREE.Vector3> = wheelPos ?? {
       FL: new THREE.Vector3(0.84, 0.35, 1.43), FR: new THREE.Vector3(-0.84, 0.35, 1.43),
@@ -104,9 +119,12 @@ export class Vehicle {
     }
   }
 
-  get maxSpeed() { return 56 + this.upgrades.speed * 5.5; }
-  get engineForce() { return 11500 + this.upgrades.speed * 1600; }
-  get gripMul() { return 1.0 + this.upgrades.grip * 0.09; }
+  get maxSpeed() { return this.topSpeed + this.upgrades.speed * 5.5; }
+  get engineForce() { return (this.mass * 7.93 * this.power) + this.upgrades.speed * 1600 * (this.mass / 1450); }
+  get gripMul() { return this.grip * (1.0 + this.upgrades.grip * 0.09); }
+
+  /** Remove the rigid body (switching cars / leaving a stolen car). */
+  dispose() { this.phys.world.removeRigidBody(this.body); }
   get boostCap() { return 1 + this.upgrades.boost * 0.35; }
 
   reset(p: THREE.Vector3, yaw: number) {
@@ -284,20 +302,20 @@ export class Vehicle {
       this.driftTime = this.drifting ? this.driftTime + dt : wasDrifting ? this.driftTime : 0;
       // steering helps rotate while drifting (arcade), and caps spin-outs
       if (this.drifting) {
-        const yawAssist = -inp.steer * 2600 * Math.min(1, spd / 20) * Math.max(0, 1 - Math.abs(slideAngle) / 0.8);
+        const yawAssist = -inp.steer * 2600 * this.ik * Math.min(1, spd / 20) * Math.max(0, 1 - Math.abs(slideAngle) / 0.8);
         b.applyTorqueImpulse({ x: up.x * yawAssist * dt, y: up.y * yawAssist * dt, z: up.z * yawAssist * dt }, true);
       }
       // stability control: damp unintended slides (not while the player is handbraking)
       if (!inp.handbrake && Math.abs(slideAngle) > 0.28 && spd > 8) {
         const intent = Math.sign(-inp.steer) === Math.sign(yawRate) ? 0.4 : 1; // steering into the rotation = drifting on purpose
-        const corr = -yawRate * 1900 * Math.min(1, (Math.abs(slideAngle) - 0.28) * 3) * intent;
+        const corr = -yawRate * 1900 * this.ik * Math.min(1, (Math.abs(slideAngle) - 0.28) * 3) * intent;
         b.applyTorqueImpulse({ x: up.x * corr * dt, y: up.y * corr * dt, z: up.z * corr * dt }, true);
       }
       // drift angle limiter + speed keeper: big, holdable arcade drifts that don't spin out
       if (Math.abs(slideAngle) > 0.3 && spd > 6) {
         const over = Math.abs(slideAngle) - 0.55;
         if (over > 0 && Math.sign(yawRate) === Math.sign(-slideAngle)) {
-          const corr = -yawRate * (9000 * Math.min(1, over * 4) + (Math.abs(slideAngle) > 1.0 ? 14000 : 0));
+          const corr = -yawRate * this.ik * (9000 * Math.min(1, over * 4) + (Math.abs(slideAngle) > 1.0 ? 14000 : 0));
           b.applyTorqueImpulse({ x: up.x * corr * dt, y: up.y * corr * dt, z: up.z * corr * dt }, true);
         }
         if (inp.throttle > 0) {
@@ -308,16 +326,16 @@ export class Vehicle {
       }
       const maxYaw = 2.6;
       if (Math.abs(yawRate) > maxYaw) {
-        const corr = -(yawRate - Math.sign(yawRate) * maxYaw) * 3600;
+        const corr = -(yawRate - Math.sign(yawRate) * maxYaw) * 3600 * this.ik;
         b.applyTorqueImpulse({ x: up.x * corr * dt, y: up.y * corr * dt, z: up.z * corr * dt }, true);
       }
       // anti-flip: keep the car upright while on the ground
       const tilt = new THREE.Vector3().crossVectors(up, new THREE.Vector3(0, 1, 0));
-      b.applyTorqueImpulse({ x: tilt.x * 9000 * dt, y: 0, z: tilt.z * 9000 * dt }, true);
+      b.applyTorqueImpulse({ x: tilt.x * 9000 * this.ik * dt, y: 0, z: tilt.z * 9000 * this.ik * dt }, true);
     } else {
       // in the air: gently level out
       const tilt = new THREE.Vector3().crossVectors(up, new THREE.Vector3(0, 1, 0));
-      b.applyTorqueImpulse({ x: tilt.x * 4000 * dt, y: 0, z: tilt.z * 4000 * dt }, true);
+      b.applyTorqueImpulse({ x: tilt.x * 4000 * this.ik * dt, y: 0, z: tilt.z * 4000 * this.ik * dt }, true);
       this.drifting = false;
     }
 

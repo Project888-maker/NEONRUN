@@ -89,6 +89,8 @@ export class City {
   far = new THREE.Group();
   lights: LightSrc[] = [];
   spots: Spot[] = [];
+  /** sidewalk loops for pedestrians: rectangle centred at (x,z) with half sizes, walked 1.4 m in from the kerb */
+  walkRects: { x: number; z: number; hw: number; hd: number; district: DistrictId }[] = [];
   sounds: SoundSpot[] = [];
   steam: THREE.Vector3[] = [];
   videoScreens: { mesh: THREE.Mesh; clip: string }[] = [];
@@ -211,6 +213,7 @@ export class City {
         ? [[cx, cz - (plinth / 4 + ALLEY_W / 4), plinth, plinth / 2 - ALLEY_W / 2], [cx, cz + (plinth / 4 + ALLEY_W / 4), plinth, plinth / 2 - ALLEY_W / 2]]
         : [[cx, cz, plinth, plinth]];
       for (const [x, z, w, dd] of parts) {
+        this.walkRects.push({ x, z, hw: w / 2 - 1.4, hd: dd / 2 - 1.4, district: d });
         this.b.add('plinth', chunkOf(x, z), this.geo.box, walkMat, mtx(x, 0, z, 0, w, CURB_H, dd), undefined, LAYER_NO_REFLECT);
         this.phys.box(x, CURB_H / 2, z, w / 2, CURB_H / 2, dd / 2, 0, 0.9);
       }

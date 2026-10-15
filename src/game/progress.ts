@@ -10,6 +10,8 @@ export interface Save {
   paint: string;
   underglow: string;
   livery: string | null;
+  car: string; // 'hero' or a CAR_DEFS id
+  ownedCars: string[];
   settings: { quality: QualityLevel | 'auto'; master: number; music: number; sfx: number; cam: 'chase' | 'far' | 'hood' };
 }
 
@@ -19,7 +21,7 @@ export const UNLOCK_AT: Record<DistrictId, number> = { neon: 0, backstreets: 3, 
 
 const defaults = (): Save => ({
   credits: 300, deliveries: 0, bestStreak: 0, unlocked: ['neon'],
-  upgrades: { speed: 0, grip: 0, boost: 0 }, paint: 'gunmetal', underglow: '#21f3ff', livery: null,
+  upgrades: { speed: 0, grip: 0, boost: 0 }, paint: 'gunmetal', underglow: '#21f3ff', livery: null, car: 'hero', ownedCars: ['hero'],
   settings: { quality: 'auto', master: 0.9, music: 0.55, sfx: 0.9, cam: 'chase' },
 });
 

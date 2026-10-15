@@ -109,6 +109,28 @@ for (const [name, x, z, yaw] of places) {
   await sleep(2500);
   await shot(name);
 }
+if (want('cars')) {
+  // drive each generated car for a moment on the start avenue
+  for (const id of ['car_taxi', 'car_police', 'car_super', 'car_pickup']) {
+    await N('setInput', {});
+    await N('teleport', -382.25, -150, Math.PI);
+    await N('setCar', id);
+    await sleep(800);
+    await N('setInput', { throttle: 0.7 });
+    await sleep(1800);
+    await shot(`30_${id}`);
+  }
+  await N('setInput', {});
+  await N('setCar', 'hero');
+  for (let k = 0; k < 3; k++) {
+    console.log('behind', JSON.stringify(await N('behindTraffic', k * 2)));
+    await sleep(300);
+    await N('setInput', { throttle: 0.35 });
+    await sleep(1200);
+    await shot(`31_traffic_${k}`);
+    await N('setInput', {});
+  }
+}
 if (want('cams')) {
   await N('camMode', 'hood');
   await sleep(1500);

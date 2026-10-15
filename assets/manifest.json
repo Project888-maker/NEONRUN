@@ -1,6 +1,6 @@
 {
   "budget_usd": 25,
-  "spent_usd_est": 15.6697,
+  "spent_usd_est": 36.4297,
   "assets": {
     "_tests/probe": {
       "files": [],
@@ -3036,6 +3036,1976 @@
       "cost_usd_est": 0.6,
       "created": "2026-10-14T22:20:46.053Z",
       "seconds": 260
+    },
+    "concept/car_lux": {
+      "files": [
+        "assets/generated/concept/car_lux.png"
+      ],
+      "model": "fal-ai/gpt-image-2",
+      "prompt": "long luxury executive sedan, glossy black paint, chrome window trim, large chrome wheels. single car, three quarter front view from slightly above, the whole car fully visible and centered with margin, all four wheels clearly visible, pure white seamless studio background, soft even studio lighting, realistic proportions, photorealistic product photograph, no text, no logos, no badges, no license plate",
+      "input": {
+        "prompt": "long luxury executive sedan, glossy black paint, chrome window trim, large chrome wheels. single car, three quarter front view from slightly above, the whole car fully visible and centered with margin, all four wheels clearly visible, pure white seamless studio background, soft even studio lighting, realistic proportions, photorealistic product photograph, no text, no logos, no badges, no license plate",
+        "image_size": "landscape_4_3",
+        "quality": "high"
+      },
+      "seed": null,
+      "cost_usd_est": 0.1,
+      "created": "2026-10-15T00:32:33.410Z",
+      "seconds": 69
+    },
+    "concept/car_taxi": {
+      "files": [
+        "assets/generated/concept/car_taxi.png"
+      ],
+      "model": "fal-ai/gpt-image-2",
+      "prompt": "modern compact city taxi sedan, yellow paint with a black checker stripe along the doors, small taxi light box on the roof, black wheels. single car, three quarter front view from slightly above, the whole car fully visible and centered with margin, all four wheels clearly visible, pure white seamless studio background, soft even studio lighting, realistic proportions, photorealistic product photograph, no text, no logos, no badges, no license plate",
+      "input": {
+        "prompt": "modern compact city taxi sedan, yellow paint with a black checker stripe along the doors, small taxi light box on the roof, black wheels. single car, three quarter front view from slightly above, the whole car fully visible and centered with margin, all four wheels clearly visible, pure white seamless studio background, soft even studio lighting, realistic proportions, photorealistic product photograph, no text, no logos, no badges, no license plate",
+        "image_size": "landscape_4_3",
+        "quality": "high"
+      },
+      "seed": null,
+      "cost_usd_est": 0.1,
+      "created": "2026-10-15T00:32:38.229Z",
+      "seconds": 74
+    },
+    "concept/car_van": {
+      "files": [
+        "assets/generated/concept/car_van.png"
+      ],
+      "model": "fal-ai/gpt-image-2",
+      "prompt": "boxy electric delivery van, white body with an orange stripe, tall roof, sliding side door, steel wheels. single car, three quarter front view from slightly above, the whole car fully visible and centered with margin, all four wheels clearly visible, pure white seamless studio background, soft even studio lighting, realistic proportions, photorealistic product photograph, no text, no logos, no badges, no license plate",
+      "input": {
+        "prompt": "boxy electric delivery van, white body with an orange stripe, tall roof, sliding side door, steel wheels. single car, three quarter front view from slightly above, the whole car fully visible and centered with margin, all four wheels clearly visible, pure white seamless studio background, soft even studio lighting, realistic proportions, photorealistic product photograph, no text, no logos, no badges, no license plate",
+        "image_size": "landscape_4_3",
+        "quality": "high"
+      },
+      "seed": null,
+      "cost_usd_est": 0.1,
+      "created": "2026-10-15T00:32:38.580Z",
+      "seconds": 74
+    },
+    "concept/car_police": {
+      "files": [
+        "assets/generated/concept/car_police.png"
+      ],
+      "model": "fal-ai/gpt-image-2",
+      "prompt": "futuristic police interceptor sedan, black and white two-tone paint, red and blue roof light bar, front push bumper, dark tinted windows. single car, three quarter front view from slightly above, the whole car fully visible and centered with margin, all four wheels clearly visible, pure white seamless studio background, soft even studio lighting, realistic proportions, photorealistic product photograph, no text, no logos, no badges, no license plate",
+      "input": {
+        "prompt": "futuristic police interceptor sedan, black and white two-tone paint, red and blue roof light bar, front push bumper, dark tinted windows. single car, three quarter front view from slightly above, the whole car fully visible and centered with margin, all four wheels clearly visible, pure white seamless studio background, soft even studio lighting, realistic proportions, photorealistic product photograph, no text, no logos, no badges, no license plate",
+        "image_size": "landscape_4_3",
+        "quality": "high"
+      },
+      "seed": null,
+      "cost_usd_est": 0.1,
+      "created": "2026-10-15T00:32:39.998Z",
+      "seconds": 75
+    },
+    "concept/car_pickup": {
+      "files": [
+        "assets/generated/concept/car_pickup.png"
+      ],
+      "model": "fal-ai/gpt-image-2",
+      "prompt": "rugged pickup truck, matte olive green, black roll bar with off-road lights, chunky all-terrain tires. single car, three quarter front view from slightly above, the whole car fully visible and centered with margin, all four wheels clearly visible, pure white seamless studio background, soft even studio lighting, realistic proportions, photorealistic product photograph, no text, no logos, no badges, no license plate",
+      "input": {
+        "prompt": "rugged pickup truck, matte olive green, black roll bar with off-road lights, chunky all-terrain tires. single car, three quarter front view from slightly above, the whole car fully visible and centered with margin, all four wheels clearly visible, pure white seamless studio background, soft even studio lighting, realistic proportions, photorealistic product photograph, no text, no logos, no badges, no license plate",
+        "image_size": "landscape_4_3",
+        "quality": "high"
+      },
+      "seed": null,
+      "cost_usd_est": 0.1,
+      "created": "2026-10-15T00:33:48.352Z",
+      "seconds": 75
+    },
+    "concept/car_classic": {
+      "files": [
+        "assets/generated/concept/car_classic.png"
+      ],
+      "model": "fal-ai/gpt-image-2",
+      "prompt": "battered 1970s american muscle coupe, faded burnt orange paint, black hood stripe, chrome bumpers. single car, three quarter front view from slightly above, the whole car fully visible and centered with margin, all four wheels clearly visible, pure white seamless studio background, soft even studio lighting, realistic proportions, photorealistic product photograph, no text, no logos, no badges, no license plate",
+      "input": {
+        "prompt": "battered 1970s american muscle coupe, faded burnt orange paint, black hood stripe, chrome bumpers. single car, three quarter front view from slightly above, the whole car fully visible and centered with margin, all four wheels clearly visible, pure white seamless studio background, soft even studio lighting, realistic proportions, photorealistic product photograph, no text, no logos, no badges, no license plate",
+        "image_size": "landscape_4_3",
+        "quality": "high"
+      },
+      "seed": null,
+      "cost_usd_est": 0.1,
+      "created": "2026-10-15T00:33:57.273Z",
+      "seconds": 79
+    },
+    "concept/car_hatch_rejected": {
+      "files": [
+        "assets/generated/concept/car_hatch_rejected.png"
+      ],
+      "model": "fal-ai/gpt-image-2",
+      "prompt": "small old city hatchback, faded teal paint with scratches and rust spots, silver wheels. single car, three quarter front view from slightly above, the whole car fully visible and centered with margin, all four wheels clearly visible, pure white seamless studio background, soft even studio lighting, realistic proportions, photorealistic product photograph, no text, no logos, no badges, no license plate",
+      "input": {
+        "prompt": "small old city hatchback, faded teal paint with scratches and rust spots, silver wheels. single car, three quarter front view from slightly above, the whole car fully visible and centered with margin, all four wheels clearly visible, pure white seamless studio background, soft even studio lighting, realistic proportions, photorealistic product photograph, no text, no logos, no badges, no license plate",
+        "image_size": "landscape_4_3",
+        "quality": "high"
+      },
+      "seed": null,
+      "cost_usd_est": 0.1,
+      "created": "2026-10-15T00:32:37.996Z",
+      "seconds": 73,
+      "note": "rejected: too close to a real production car"
+    },
+    "concept/car_super_rejected": {
+      "files": [
+        "assets/generated/concept/car_super_rejected.png"
+      ],
+      "model": "fal-ai/gpt-image-2",
+      "prompt": "low wedge-shaped mid-engine supercar, metallic violet paint, black aero splitter and rear wing, black wheels. single car, three quarter front view from slightly above, the whole car fully visible and centered with margin, all four wheels clearly visible, pure white seamless studio background, soft even studio lighting, realistic proportions, photorealistic product photograph, no text, no logos, no badges, no license plate",
+      "input": {
+        "prompt": "low wedge-shaped mid-engine supercar, metallic violet paint, black aero splitter and rear wing, black wheels. single car, three quarter front view from slightly above, the whole car fully visible and centered with margin, all four wheels clearly visible, pure white seamless studio background, soft even studio lighting, realistic proportions, photorealistic product photograph, no text, no logos, no badges, no license plate",
+        "image_size": "landscape_4_3",
+        "quality": "high"
+      },
+      "seed": null,
+      "cost_usd_est": 0.1,
+      "created": "2026-10-15T00:33:52.256Z",
+      "seconds": 74,
+      "note": "rejected: too close to a real production car"
+    },
+    "concept/car_super": {
+      "files": [
+        "assets/generated/concept/car_super.png"
+      ],
+      "model": "fal-ai/gpt-image-2",
+      "prompt": "original concept hypercar with smooth rounded teardrop body, glass canopy cockpit and a single continuous light bar at front, not resembling any real production car or brand, metallic violet paint, black wheels. single car, three quarter front view from slightly above, the whole car fully visible and centered with margin, all four wheels clearly visible, pure white seamless studio background, soft even studio lighting, realistic proportions, photorealistic product photograph, no text, no logos, no badges, no license plate",
+      "input": {
+        "prompt": "original concept hypercar with smooth rounded teardrop body, glass canopy cockpit and a single continuous light bar at front, not resembling any real production car or brand, metallic violet paint, black wheels. single car, three quarter front view from slightly above, the whole car fully visible and centered with margin, all four wheels clearly visible, pure white seamless studio background, soft even studio lighting, realistic proportions, photorealistic product photograph, no text, no logos, no badges, no license plate",
+        "image_size": "landscape_4_3",
+        "quality": "high"
+      },
+      "seed": null,
+      "cost_usd_est": 0.1,
+      "created": "2026-10-15T00:35:29.868Z",
+      "seconds": 73
+    },
+    "concept/car_hatch": {
+      "files": [
+        "assets/generated/concept/car_hatch.png"
+      ],
+      "model": "fal-ai/gpt-image-2",
+      "prompt": "original design boxy retro-futuristic city hatchback with square headlights and a flat roof, not resembling any real production car, faded teal paint with scratches and rust spots, silver wheels. single car, three quarter front view from slightly above, the whole car fully visible and centered with margin, all four wheels clearly visible, pure white seamless studio background, soft even studio lighting, realistic proportions, photorealistic product photograph, no text, no logos, no badges, no license plate",
+      "input": {
+        "prompt": "original design boxy retro-futuristic city hatchback with square headlights and a flat roof, not resembling any real production car, faded teal paint with scratches and rust spots, silver wheels. single car, three quarter front view from slightly above, the whole car fully visible and centered with margin, all four wheels clearly visible, pure white seamless studio background, soft even studio lighting, realistic proportions, photorealistic product photograph, no text, no logos, no badges, no license plate",
+        "image_size": "landscape_4_3",
+        "quality": "high"
+      },
+      "seed": null,
+      "cost_usd_est": 0.1,
+      "created": "2026-10-15T00:35:30.438Z",
+      "seconds": 74
+    },
+    "model3d/car_lux": {
+      "files": [
+        "assets/generated/model3d/car_lux.glb",
+        "assets/generated/model3d/car_lux_model_urls_glb.glb",
+        "assets/generated/model3d/car_lux_model_urls_pbr_model.glb",
+        "assets/generated/model3d/car_lux_rendered_image.png"
+      ],
+      "model": "tripo3d/h3.1/image-to-3d",
+      "prompt": null,
+      "input": {
+        "image_url": "@file:assets/generated/concept/car_lux.png",
+        "texture": true,
+        "pbr": true,
+        "texture_quality": "detailed",
+        "geometry_quality": "detailed",
+        "face_limit": 30000
+      },
+      "seed": null,
+      "cost_usd_est": 0.6,
+      "created": "2026-10-15T00:39:11.251Z",
+      "seconds": 213
+    },
+    "model3d/car_taxi": {
+      "files": [
+        "assets/generated/model3d/car_taxi.glb",
+        "assets/generated/model3d/car_taxi_model_urls_glb.glb",
+        "assets/generated/model3d/car_taxi_model_urls_pbr_model.glb",
+        "assets/generated/model3d/car_taxi_rendered_image.png"
+      ],
+      "model": "tripo3d/h3.1/image-to-3d",
+      "prompt": null,
+      "input": {
+        "image_url": "@file:assets/generated/concept/car_taxi.png",
+        "texture": true,
+        "pbr": true,
+        "texture_quality": "detailed",
+        "geometry_quality": "detailed",
+        "face_limit": 30000
+      },
+      "seed": null,
+      "cost_usd_est": 0.6,
+      "created": "2026-10-15T00:39:12.187Z",
+      "seconds": 214
+    },
+    "model3d/car_van": {
+      "files": [
+        "assets/generated/model3d/car_van.glb",
+        "assets/generated/model3d/car_van_model_urls_glb.glb",
+        "assets/generated/model3d/car_van_model_urls_pbr_model.glb",
+        "assets/generated/model3d/car_van_rendered_image.png"
+      ],
+      "model": "tripo3d/h3.1/image-to-3d",
+      "prompt": null,
+      "input": {
+        "image_url": "@file:assets/generated/concept/car_van.png",
+        "texture": true,
+        "pbr": true,
+        "texture_quality": "detailed",
+        "geometry_quality": "detailed",
+        "face_limit": 30000
+      },
+      "seed": null,
+      "cost_usd_est": 0.6,
+      "created": "2026-10-15T00:39:12.420Z",
+      "seconds": 214
+    },
+    "model3d/car_police": {
+      "files": [
+        "assets/generated/model3d/car_police.glb",
+        "assets/generated/model3d/car_police_model_urls_glb.glb",
+        "assets/generated/model3d/car_police_model_urls_pbr_model.glb",
+        "assets/generated/model3d/car_police_rendered_image.png"
+      ],
+      "model": "tripo3d/h3.1/image-to-3d",
+      "prompt": null,
+      "input": {
+        "image_url": "@file:assets/generated/concept/car_police.png",
+        "texture": true,
+        "pbr": true,
+        "texture_quality": "detailed",
+        "geometry_quality": "detailed",
+        "face_limit": 30000
+      },
+      "seed": null,
+      "cost_usd_est": 0.6,
+      "created": "2026-10-15T00:39:18.202Z",
+      "seconds": 220
+    },
+    "model3d/car_hatch": {
+      "files": [
+        "assets/generated/model3d/car_hatch.glb",
+        "assets/generated/model3d/car_hatch_model_urls_glb.glb",
+        "assets/generated/model3d/car_hatch_model_urls_pbr_model.glb",
+        "assets/generated/model3d/car_hatch_rendered_image.png"
+      ],
+      "model": "tripo3d/h3.1/image-to-3d",
+      "prompt": null,
+      "input": {
+        "image_url": "@file:assets/generated/concept/car_hatch.png",
+        "texture": true,
+        "pbr": true,
+        "texture_quality": "detailed",
+        "geometry_quality": "detailed",
+        "face_limit": 30000
+      },
+      "seed": null,
+      "cost_usd_est": 0.6,
+      "created": "2026-10-15T00:39:37.823Z",
+      "seconds": 240
+    },
+    "model3d/car_pickup": {
+      "files": [
+        "assets/generated/model3d/car_pickup.glb",
+        "assets/generated/model3d/car_pickup_model_urls_glb.glb",
+        "assets/generated/model3d/car_pickup_model_urls_pbr_model.glb",
+        "assets/generated/model3d/car_pickup_rendered_image.png"
+      ],
+      "model": "tripo3d/h3.1/image-to-3d",
+      "prompt": null,
+      "input": {
+        "image_url": "@file:assets/generated/concept/car_pickup.png",
+        "texture": true,
+        "pbr": true,
+        "texture_quality": "detailed",
+        "geometry_quality": "detailed",
+        "face_limit": 30000
+      },
+      "seed": null,
+      "cost_usd_est": 0.6,
+      "created": "2026-10-15T00:41:53.022Z",
+      "seconds": 162
+    },
+    "model3d/car_classic": {
+      "files": [
+        "assets/generated/model3d/car_classic.glb",
+        "assets/generated/model3d/car_classic_model_urls_glb.glb",
+        "assets/generated/model3d/car_classic_model_urls_pbr_model.glb",
+        "assets/generated/model3d/car_classic_rendered_image.png"
+      ],
+      "model": "tripo3d/h3.1/image-to-3d",
+      "prompt": null,
+      "input": {
+        "image_url": "@file:assets/generated/concept/car_classic.png",
+        "texture": true,
+        "pbr": true,
+        "texture_quality": "detailed",
+        "geometry_quality": "detailed",
+        "face_limit": 30000
+      },
+      "seed": null,
+      "cost_usd_est": 0.6,
+      "created": "2026-10-15T00:42:24.696Z",
+      "seconds": 192
+    },
+    "model3d/car_super": {
+      "files": [
+        "assets/generated/model3d/car_super.glb",
+        "assets/generated/model3d/car_super_model_urls_glb.glb",
+        "assets/generated/model3d/car_super_model_urls_pbr_model.glb",
+        "assets/generated/model3d/car_super_rendered_image.png"
+      ],
+      "model": "tripo3d/h3.1/image-to-3d",
+      "prompt": null,
+      "input": {
+        "image_url": "@file:assets/generated/concept/car_super.png",
+        "texture": true,
+        "pbr": true,
+        "texture_quality": "detailed",
+        "geometry_quality": "detailed",
+        "face_limit": 30000
+      },
+      "seed": null,
+      "cost_usd_est": 0.6,
+      "created": "2026-10-15T00:42:25.907Z",
+      "seconds": 194
+    },
+    "person/hero": {
+      "files": [
+        "assets/generated/person/hero.png"
+      ],
+      "model": "fal-ai/gpt-image-2",
+      "prompt": "athletic courier man in his early thirties, short dark undercut hair, light stubble, black waterproof techwear jacket with subtle cyan piping, dark cargo trousers, black high-top sneakers, fingerless gloves. full body photograph of one adult person standing in a strict T-pose, arms straight out horizontally to the sides at shoulder height, palms down, legs slightly apart, feet flat, facing the camera, neutral expression, head to toe fully visible with margin, plain pure white seamless studio background, soft even studio lighting, sharp focus, photorealistic, realistic skin and fabric, no props, no bag, nothing in the hands",
+      "input": {
+        "prompt": "athletic courier man in his early thirties, short dark undercut hair, light stubble, black waterproof techwear jacket with subtle cyan piping, dark cargo trousers, black high-top sneakers, fingerless gloves. full body photograph of one adult person standing in a strict T-pose, arms straight out horizontally to the sides at shoulder height, palms down, legs slightly apart, feet flat, facing the camera, neutral expression, head to toe fully visible with margin, plain pure white seamless studio background, soft even studio lighting, sharp focus, photorealistic, realistic skin and fabric, no props, no bag, nothing in the hands",
+        "image_size": "portrait_16_9",
+        "quality": "high"
+      },
+      "seed": null,
+      "cost_usd_est": 0.1,
+      "created": "2026-10-15T00:46:37.031Z",
+      "seconds": 54
+    },
+    "person/ped_punk": {
+      "files": [
+        "assets/generated/person/ped_punk.png"
+      ],
+      "model": "fal-ai/gpt-image-2",
+      "prompt": "young punk woman, bleached short hair with pink tips, black leather jacket, ripped dark jeans, combat boots. full body photograph of one adult person standing in a strict T-pose, arms straight out horizontally to the sides at shoulder height, palms down, legs slightly apart, feet flat, facing the camera, neutral expression, head to toe fully visible with margin, plain pure white seamless studio background, soft even studio lighting, sharp focus, photorealistic, realistic skin and fabric, no props, no bag, nothing in the hands",
+      "input": {
+        "prompt": "young punk woman, bleached short hair with pink tips, black leather jacket, ripped dark jeans, combat boots. full body photograph of one adult person standing in a strict T-pose, arms straight out horizontally to the sides at shoulder height, palms down, legs slightly apart, feet flat, facing the camera, neutral expression, head to toe fully visible with margin, plain pure white seamless studio background, soft even studio lighting, sharp focus, photorealistic, realistic skin and fabric, no props, no bag, nothing in the hands",
+        "image_size": "portrait_16_9",
+        "quality": "high"
+      },
+      "seed": null,
+      "cost_usd_est": 0.1,
+      "created": "2026-10-15T00:47:30.105Z",
+      "seconds": 53
+    },
+    "person3d/ped_punk": {
+      "files": [
+        "assets/generated/person3d/ped_punk.glb",
+        "assets/generated/person3d/ped_punk_thumbnail.png"
+      ],
+      "model": "fal-ai/meshy/v6/image-to-3d",
+      "prompt": null,
+      "input": {
+        "image_url": "@file:assets/generated/person/ped_punk.png",
+        "topology": "triangle",
+        "target_polycount": 30000,
+        "should_remesh": true,
+        "enable_pbr": true,
+        "symmetry_mode": "auto",
+        "is_a_t_pose": true,
+        "should_texture": true
+      },
+      "seed": 219828770,
+      "cost_usd_est": 0.8,
+      "created": "2026-10-15T00:51:24.499Z",
+      "seconds": 223
+    },
+    "person3d/hero": {
+      "files": [
+        "assets/generated/person3d/hero.glb",
+        "assets/generated/person3d/hero_thumbnail.png"
+      ],
+      "model": "fal-ai/meshy/v6/image-to-3d",
+      "prompt": null,
+      "input": {
+        "image_url": "@file:assets/generated/person/hero.png",
+        "topology": "triangle",
+        "target_polycount": 30000,
+        "should_remesh": true,
+        "enable_pbr": true,
+        "symmetry_mode": "auto",
+        "is_a_t_pose": true,
+        "should_texture": true
+      },
+      "seed": null,
+      "cost_usd_est": 0.8,
+      "created": "2026-10-15T00:51:44.826868Z",
+      "note": "entry restored after a concurrent-write race"
+    },
+    "rig/hero": {
+      "files": [
+        "assets/generated/rig/hero.glb",
+        "assets/generated/rig/hero_basic_animations_walking_glb.glb",
+        "assets/generated/rig/hero_basic_animations_walking_armature_glb.glb",
+        "assets/generated/rig/hero_basic_animations_running_glb.glb",
+        "assets/generated/rig/hero_basic_animations_running_armature_glb.glb"
+      ],
+      "model": "fal-ai/meshy/rigging",
+      "prompt": null,
+      "input": {
+        "model_url": "@file:assets/build/people/hero_rigin.glb",
+        "height_meters": 1.82
+      },
+      "seed": null,
+      "cost_usd_est": 0.3,
+      "created": "2026-10-15T00:53:39.659Z",
+      "seconds": 34
+    },
+    "motion/wave": {
+      "files": [
+        "assets/generated/motion/wave.fbx"
+      ],
+      "model": "fal-ai/hunyuan-motion",
+      "prompt": "a person waves hello with the right hand",
+      "input": {
+        "prompt": "a person waves hello with the right hand",
+        "duration": 3,
+        "output_format": "fbx"
+      },
+      "seed": 1544035049,
+      "cost_usd_est": 0.2,
+      "created": "2026-10-15T00:54:33.064Z",
+      "seconds": 34
+    },
+    "motion/exit_car": {
+      "files": [
+        "assets/generated/motion/exit_car.fbx"
+      ],
+      "model": "fal-ai/hunyuan-motion",
+      "prompt": "a person climbs out of a car seat, stands up and closes the car door behind them",
+      "input": {
+        "prompt": "a person climbs out of a car seat, stands up and closes the car door behind them",
+        "duration": 3,
+        "output_format": "fbx"
+      },
+      "seed": 1521806126,
+      "cost_usd_est": 0.2,
+      "created": "2026-10-15T00:55:34.645Z",
+      "seconds": 13
+    },
+    "motion/jump": {
+      "files": [
+        "assets/generated/motion/jump.fbx"
+      ],
+      "model": "fal-ai/hunyuan-motion",
+      "prompt": "a person jumps up in place with both feet and lands",
+      "input": {
+        "prompt": "a person jumps up in place with both feet and lands",
+        "duration": 3,
+        "output_format": "fbx"
+      },
+      "seed": 413560102,
+      "cost_usd_est": 0.2,
+      "created": "2026-10-15T00:55:34.821Z",
+      "seconds": 13
+    },
+    "motion/idle": {
+      "files": [
+        "assets/generated/motion/idle.fbx"
+      ],
+      "model": "fal-ai/hunyuan-motion",
+      "prompt": "a person stands still relaxed, breathing, shifting weight slightly, looking around",
+      "input": {
+        "prompt": "a person stands still relaxed, breathing, shifting weight slightly, looking around",
+        "duration": 4,
+        "output_format": "fbx"
+      },
+      "seed": 1630855674,
+      "cost_usd_est": 0.2,
+      "created": "2026-10-15T00:55:40.358Z",
+      "seconds": 19
+    },
+    "motion/talk": {
+      "files": [
+        "assets/generated/motion/talk.fbx"
+      ],
+      "model": "fal-ai/hunyuan-motion",
+      "prompt": "a person stands and talks with gestures of both hands, friendly conversation",
+      "input": {
+        "prompt": "a person stands and talks with gestures of both hands, friendly conversation",
+        "duration": 3,
+        "output_format": "fbx"
+      },
+      "seed": 572302683,
+      "cost_usd_est": 0.2,
+      "created": "2026-10-15T00:55:41.022Z",
+      "seconds": 19
+    },
+    "motion/flee": {
+      "files": [
+        "assets/generated/motion/flee.fbx"
+      ],
+      "model": "fal-ai/hunyuan-motion",
+      "prompt": "a person gets scared, flinches and runs away quickly",
+      "input": {
+        "prompt": "a person gets scared, flinches and runs away quickly",
+        "duration": 3,
+        "output_format": "fbx"
+      },
+      "seed": 69317234,
+      "cost_usd_est": 0.2,
+      "created": "2026-10-15T00:55:44.839Z",
+      "seconds": 10
+    },
+    "motion/enter_car": {
+      "files": [
+        "assets/generated/motion/enter_car.fbx"
+      ],
+      "model": "fal-ai/hunyuan-motion",
+      "prompt": "a person reaches out to open a car door, then bends down and sits into the car seat",
+      "input": {
+        "prompt": "a person reaches out to open a car door, then bends down and sits into the car seat",
+        "duration": 3,
+        "output_format": "fbx"
+      },
+      "seed": 1605910703,
+      "cost_usd_est": 0.2,
+      "created": "2026-10-15T00:55:50.048Z",
+      "seconds": 28
+    },
+    "motion/shrug": {
+      "files": [
+        "assets/generated/motion/shrug.fbx"
+      ],
+      "model": "fal-ai/hunyuan-motion",
+      "prompt": "a person shrugs with both shoulders and raises palms",
+      "input": {
+        "prompt": "a person shrugs with both shoulders and raises palms",
+        "duration": 3,
+        "output_format": "fbx"
+      },
+      "seed": 304530879,
+      "cost_usd_est": 0.2,
+      "created": "2026-10-15T00:55:52.466Z",
+      "seconds": 12
+    },
+    "motion/phone": {
+      "files": [
+        "assets/generated/motion/phone.fbx"
+      ],
+      "model": "fal-ai/hunyuan-motion",
+      "prompt": "a person stands looking down at a phone held in the right hand",
+      "input": {
+        "prompt": "a person stands looking down at a phone held in the right hand",
+        "duration": 3,
+        "output_format": "fbx"
+      },
+      "seed": 1932447314,
+      "cost_usd_est": 0.2,
+      "created": "2026-10-15T00:55:52.913Z",
+      "seconds": 18
+    },
+    "motion/push": {
+      "files": [
+        "assets/generated/motion/push.fbx"
+      ],
+      "model": "fal-ai/hunyuan-motion",
+      "prompt": "a person pulls someone out of a car with both arms and throws them aside",
+      "input": {
+        "prompt": "a person pulls someone out of a car with both arms and throws them aside",
+        "duration": 3,
+        "output_format": "fbx"
+      },
+      "seed": 1992141328,
+      "cost_usd_est": 0.2,
+      "created": "2026-10-15T00:55:53.181Z",
+      "seconds": 12
+    },
+    "motion/fall": {
+      "files": [
+        "assets/generated/motion/fall.fbx"
+      ],
+      "model": "fal-ai/hunyuan-motion",
+      "prompt": "a person stumbles backwards and falls onto the ground",
+      "input": {
+        "prompt": "a person stumbles backwards and falls onto the ground",
+        "duration": 3,
+        "output_format": "fbx"
+      },
+      "seed": 4201492,
+      "cost_usd_est": 0.2,
+      "created": "2026-10-15T00:56:05.982Z",
+      "seconds": 21
+    },
+    "person/ped_elder": {
+      "files": [
+        "assets/generated/person/ped_elder.png"
+      ],
+      "model": "fal-ai/gpt-image-2",
+      "prompt": "elderly woman, purple cardigan over a long skirt, flat shoes, grey hair in a bun, glasses. full body photograph of one adult person standing in a strict T-pose, arms straight out horizontally to the sides at shoulder height, palms down, legs slightly apart, feet flat, facing the camera, neutral expression, head to toe fully visible with margin, plain pure white seamless studio background, soft even studio lighting, sharp focus, photorealistic, realistic skin and fabric, no props, no bag, nothing in the hands",
+      "input": {
+        "prompt": "elderly woman, purple cardigan over a long skirt, flat shoes, grey hair in a bun, glasses. full body photograph of one adult person standing in a strict T-pose, arms straight out horizontally to the sides at shoulder height, palms down, legs slightly apart, feet flat, facing the camera, neutral expression, head to toe fully visible with margin, plain pure white seamless studio background, soft even studio lighting, sharp focus, photorealistic, realistic skin and fabric, no props, no bag, nothing in the hands",
+        "image_size": "portrait_16_9",
+        "quality": "high"
+      },
+      "seed": null,
+      "cost_usd_est": 0.1,
+      "created": "2026-10-15T00:56:58.733Z",
+      "seconds": 53
+    },
+    "person/ped_worker": {
+      "files": [
+        "assets/generated/person/ped_worker.png"
+      ],
+      "model": "fal-ai/gpt-image-2",
+      "prompt": "dock worker man, orange high visibility jacket with reflective stripes, dark work trousers, work boots, beanie hat. full body photograph of one adult person standing in a strict T-pose, arms straight out horizontally to the sides at shoulder height, palms down, legs slightly apart, feet flat, facing the camera, neutral expression, head to toe fully visible with margin, plain pure white seamless studio background, soft even studio lighting, sharp focus, photorealistic, realistic skin and fabric, no props, no bag, nothing in the hands",
+      "input": {
+        "prompt": "dock worker man, orange high visibility jacket with reflective stripes, dark work trousers, work boots, beanie hat. full body photograph of one adult person standing in a strict T-pose, arms straight out horizontally to the sides at shoulder height, palms down, legs slightly apart, feet flat, facing the camera, neutral expression, head to toe fully visible with margin, plain pure white seamless studio background, soft even studio lighting, sharp focus, photorealistic, realistic skin and fabric, no props, no bag, nothing in the hands",
+        "image_size": "portrait_16_9",
+        "quality": "high"
+      },
+      "seed": null,
+      "cost_usd_est": 0.1,
+      "created": "2026-10-15T00:56:58.911Z",
+      "seconds": 53
+    },
+    "person/ped_suit": {
+      "files": [
+        "assets/generated/person/ped_suit.png"
+      ],
+      "model": "fal-ai/gpt-image-2",
+      "prompt": "middle aged office man, grey suit, open beige trench coat, black leather shoes, short grey hair. full body photograph of one adult person standing in a strict T-pose, arms straight out horizontally to the sides at shoulder height, palms down, legs slightly apart, feet flat, facing the camera, neutral expression, head to toe fully visible with margin, plain pure white seamless studio background, soft even studio lighting, sharp focus, photorealistic, realistic skin and fabric, no props, no bag, nothing in the hands",
+      "input": {
+        "prompt": "middle aged office man, grey suit, open beige trench coat, black leather shoes, short grey hair. full body photograph of one adult person standing in a strict T-pose, arms straight out horizontally to the sides at shoulder height, palms down, legs slightly apart, feet flat, facing the camera, neutral expression, head to toe fully visible with margin, plain pure white seamless studio background, soft even studio lighting, sharp focus, photorealistic, realistic skin and fabric, no props, no bag, nothing in the hands",
+        "image_size": "portrait_16_9",
+        "quality": "high"
+      },
+      "seed": null,
+      "cost_usd_est": 0.1,
+      "created": "2026-10-15T00:57:03.714Z",
+      "seconds": 58
+    },
+    "person/ped_vendor": {
+      "files": [
+        "assets/generated/person/ped_vendor.png"
+      ],
+      "model": "fal-ai/gpt-image-2",
+      "prompt": "older east asian street food vendor man, white apron over a blue work shirt, rolled sleeves, black trousers, rubber boots. full body photograph of one adult person standing in a strict T-pose, arms straight out horizontally to the sides at shoulder height, palms down, legs slightly apart, feet flat, facing the camera, neutral expression, head to toe fully visible with margin, plain pure white seamless studio background, soft even studio lighting, sharp focus, photorealistic, realistic skin and fabric, no props, no bag, nothing in the hands",
+      "input": {
+        "prompt": "older east asian street food vendor man, white apron over a blue work shirt, rolled sleeves, black trousers, rubber boots. full body photograph of one adult person standing in a strict T-pose, arms straight out horizontally to the sides at shoulder height, palms down, legs slightly apart, feet flat, facing the camera, neutral expression, head to toe fully visible with margin, plain pure white seamless studio background, soft even studio lighting, sharp focus, photorealistic, realistic skin and fabric, no props, no bag, nothing in the hands",
+        "image_size": "portrait_16_9",
+        "quality": "high"
+      },
+      "seed": null,
+      "cost_usd_est": 0.1,
+      "created": "2026-10-15T00:57:03.968Z",
+      "seconds": 58
+    },
+    "person/ped_student": {
+      "files": [
+        "assets/generated/person/ped_student.png"
+      ],
+      "model": "fal-ai/gpt-image-2",
+      "prompt": "young student woman, oversized grey hoodie, black leggings, white sneakers, hair in a bun. full body photograph of one adult person standing in a strict T-pose, arms straight out horizontally to the sides at shoulder height, palms down, legs slightly apart, feet flat, facing the camera, neutral expression, head to toe fully visible with margin, plain pure white seamless studio background, soft even studio lighting, sharp focus, photorealistic, realistic skin and fabric, no props, no bag, nothing in the hands",
+      "input": {
+        "prompt": "young student woman, oversized grey hoodie, black leggings, white sneakers, hair in a bun. full body photograph of one adult person standing in a strict T-pose, arms straight out horizontally to the sides at shoulder height, palms down, legs slightly apart, feet flat, facing the camera, neutral expression, head to toe fully visible with margin, plain pure white seamless studio background, soft even studio lighting, sharp focus, photorealistic, realistic skin and fabric, no props, no bag, nothing in the hands",
+        "image_size": "portrait_16_9",
+        "quality": "high"
+      },
+      "seed": null,
+      "cost_usd_est": 0.1,
+      "created": "2026-10-15T00:57:04.219Z",
+      "seconds": 58
+    },
+    "person/ped_rider": {
+      "files": [
+        "assets/generated/person/ped_rider.png"
+      ],
+      "model": "fal-ai/gpt-image-2",
+      "prompt": "delivery rider man, red waterproof jacket, black rain trousers, motorcycle boots, short curly hair. full body photograph of one adult person standing in a strict T-pose, arms straight out horizontally to the sides at shoulder height, palms down, legs slightly apart, feet flat, facing the camera, neutral expression, head to toe fully visible with margin, plain pure white seamless studio background, soft even studio lighting, sharp focus, photorealistic, realistic skin and fabric, no props, no bag, nothing in the hands",
+      "input": {
+        "prompt": "delivery rider man, red waterproof jacket, black rain trousers, motorcycle boots, short curly hair. full body photograph of one adult person standing in a strict T-pose, arms straight out horizontally to the sides at shoulder height, palms down, legs slightly apart, feet flat, facing the camera, neutral expression, head to toe fully visible with margin, plain pure white seamless studio background, soft even studio lighting, sharp focus, photorealistic, realistic skin and fabric, no props, no bag, nothing in the hands",
+        "image_size": "portrait_16_9",
+        "quality": "high"
+      },
+      "seed": null,
+      "cost_usd_est": 0.1,
+      "created": "2026-10-15T00:57:56.722Z",
+      "seconds": 53
+    },
+    "person/ped_nurse": {
+      "files": [
+        "assets/generated/person/ped_nurse.png"
+      ],
+      "model": "fal-ai/gpt-image-2",
+      "prompt": "nurse woman in her forties, light blue scrubs under a transparent raincoat, white clogs. full body photograph of one adult person standing in a strict T-pose, arms straight out horizontally to the sides at shoulder height, palms down, legs slightly apart, feet flat, facing the camera, neutral expression, head to toe fully visible with margin, plain pure white seamless studio background, soft even studio lighting, sharp focus, photorealistic, realistic skin and fabric, no props, no bag, nothing in the hands",
+      "input": {
+        "prompt": "nurse woman in her forties, light blue scrubs under a transparent raincoat, white clogs. full body photograph of one adult person standing in a strict T-pose, arms straight out horizontally to the sides at shoulder height, palms down, legs slightly apart, feet flat, facing the camera, neutral expression, head to toe fully visible with margin, plain pure white seamless studio background, soft even studio lighting, sharp focus, photorealistic, realistic skin and fabric, no props, no bag, nothing in the hands",
+        "image_size": "portrait_16_9",
+        "quality": "high"
+      },
+      "seed": null,
+      "cost_usd_est": 0.1,
+      "created": "2026-10-15T00:57:56.859Z",
+      "seconds": 58
+    },
+    "person/ped_techwear": {
+      "files": [
+        "assets/generated/person/ped_techwear.png"
+      ],
+      "model": "fal-ai/gpt-image-2",
+      "prompt": "young man in futuristic techwear, black hooded jacket with straps, tactical trousers, glowing teal LED strip on the collar. full body photograph of one adult person standing in a strict T-pose, arms straight out horizontally to the sides at shoulder height, palms down, legs slightly apart, feet flat, facing the camera, neutral expression, head to toe fully visible with margin, plain pure white seamless studio background, soft even studio lighting, sharp focus, photorealistic, realistic skin and fabric, no props, no bag, nothing in the hands",
+      "input": {
+        "prompt": "young man in futuristic techwear, black hooded jacket with straps, tactical trousers, glowing teal LED strip on the collar. full body photograph of one adult person standing in a strict T-pose, arms straight out horizontally to the sides at shoulder height, palms down, legs slightly apart, feet flat, facing the camera, neutral expression, head to toe fully visible with margin, plain pure white seamless studio background, soft even studio lighting, sharp focus, photorealistic, realistic skin and fabric, no props, no bag, nothing in the hands",
+        "image_size": "portrait_16_9",
+        "quality": "high"
+      },
+      "seed": null,
+      "cost_usd_est": 0.1,
+      "created": "2026-10-15T00:57:57.529Z",
+      "seconds": 59
+    },
+    "person3d/ped_suit": {
+      "files": [
+        "assets/generated/person3d/ped_suit.glb",
+        "assets/generated/person3d/ped_suit_thumbnail.png"
+      ],
+      "model": "fal-ai/meshy/v6/image-to-3d",
+      "prompt": null,
+      "input": {
+        "image_url": "@file:assets/generated/person/ped_suit.png",
+        "topology": "triangle",
+        "target_polycount": 30000,
+        "should_remesh": true,
+        "enable_pbr": true,
+        "symmetry_mode": "auto",
+        "is_a_t_pose": true,
+        "should_texture": true
+      },
+      "seed": 1101396601,
+      "cost_usd_est": 0.8,
+      "created": "2026-10-15T01:01:11.298Z",
+      "seconds": 194
+    },
+    "person3d/ped_elder": {
+      "files": [
+        "assets/generated/person3d/ped_elder.glb",
+        "assets/generated/person3d/ped_elder_thumbnail.png"
+      ],
+      "model": "fal-ai/meshy/v6/image-to-3d",
+      "prompt": null,
+      "input": {
+        "image_url": "@file:assets/generated/person/ped_elder.png",
+        "topology": "triangle",
+        "target_polycount": 30000,
+        "should_remesh": true,
+        "enable_pbr": true,
+        "symmetry_mode": "auto",
+        "is_a_t_pose": true,
+        "should_texture": true
+      },
+      "seed": 1813005425,
+      "cost_usd_est": 0.8,
+      "created": "2026-10-15T01:01:57.110Z",
+      "seconds": 239
+    },
+    "person3d/ped_worker": {
+      "files": [
+        "assets/generated/person3d/ped_worker.glb",
+        "assets/generated/person3d/ped_worker_thumbnail.png"
+      ],
+      "model": "fal-ai/meshy/v6/image-to-3d",
+      "prompt": null,
+      "input": {
+        "image_url": "@file:assets/generated/person/ped_worker.png",
+        "topology": "triangle",
+        "target_polycount": 30000,
+        "should_remesh": true,
+        "enable_pbr": true,
+        "symmetry_mode": "auto",
+        "is_a_t_pose": true,
+        "should_texture": true
+      },
+      "seed": 813139122,
+      "cost_usd_est": 0.8,
+      "created": "2026-10-15T01:02:11.105Z",
+      "seconds": 253
+    },
+    "person3d/ped_vendor": {
+      "files": [
+        "assets/generated/person3d/ped_vendor.glb",
+        "assets/generated/person3d/ped_vendor_thumbnail.png"
+      ],
+      "model": "fal-ai/meshy/v6/image-to-3d",
+      "prompt": null,
+      "input": {
+        "image_url": "@file:assets/generated/person/ped_vendor.png",
+        "topology": "triangle",
+        "target_polycount": 30000,
+        "should_remesh": true,
+        "enable_pbr": true,
+        "symmetry_mode": "auto",
+        "is_a_t_pose": true,
+        "should_texture": true
+      },
+      "seed": 492632565,
+      "cost_usd_est": 0.8,
+      "created": "2026-10-15T01:02:28.809Z",
+      "seconds": 271
+    },
+    "person3d/ped_student": {
+      "files": [
+        "assets/generated/person3d/ped_student.glb",
+        "assets/generated/person3d/ped_student_thumbnail.png"
+      ],
+      "model": "fal-ai/meshy/v6/image-to-3d",
+      "prompt": null,
+      "input": {
+        "image_url": "@file:assets/generated/person/ped_student.png",
+        "topology": "triangle",
+        "target_polycount": 30000,
+        "should_remesh": true,
+        "enable_pbr": true,
+        "symmetry_mode": "auto",
+        "is_a_t_pose": true,
+        "should_texture": true
+      },
+      "seed": 500513563,
+      "cost_usd_est": 0.8,
+      "created": "2026-10-15T01:02:37.567Z",
+      "seconds": 280
+    },
+    "person3d/ped_techwear": {
+      "files": [
+        "assets/generated/person3d/ped_techwear.glb",
+        "assets/generated/person3d/ped_techwear_thumbnail.png"
+      ],
+      "model": "fal-ai/meshy/v6/image-to-3d",
+      "prompt": null,
+      "input": {
+        "image_url": "@file:assets/generated/person/ped_techwear.png",
+        "topology": "triangle",
+        "target_polycount": 30000,
+        "should_remesh": true,
+        "enable_pbr": true,
+        "symmetry_mode": "auto",
+        "is_a_t_pose": true,
+        "should_texture": true
+      },
+      "seed": 1246367256,
+      "cost_usd_est": 0.8,
+      "created": "2026-10-15T01:05:14.548Z",
+      "seconds": 243
+    },
+    "person3d/ped_nurse": {
+      "files": [
+        "assets/generated/person3d/ped_nurse.glb",
+        "assets/generated/person3d/ped_nurse_thumbnail.png"
+      ],
+      "model": "fal-ai/meshy/v6/image-to-3d",
+      "prompt": null,
+      "input": {
+        "image_url": "@file:assets/generated/person/ped_nurse.png",
+        "topology": "triangle",
+        "target_polycount": 30000,
+        "should_remesh": true,
+        "enable_pbr": true,
+        "symmetry_mode": "auto",
+        "is_a_t_pose": true,
+        "should_texture": true
+      },
+      "seed": 1385849704,
+      "cost_usd_est": 0.8,
+      "created": "2026-10-15T01:05:24.323Z",
+      "seconds": 207
+    },
+    "person3d/ped_rider": {
+      "files": [
+        "assets/generated/person3d/ped_rider.glb",
+        "assets/generated/person3d/ped_rider_thumbnail.png"
+      ],
+      "model": "fal-ai/meshy/v6/image-to-3d",
+      "prompt": null,
+      "input": {
+        "image_url": "@file:assets/generated/person/ped_rider.png",
+        "topology": "triangle",
+        "target_polycount": 30000,
+        "should_remesh": true,
+        "enable_pbr": true,
+        "symmetry_mode": "auto",
+        "is_a_t_pose": true,
+        "should_texture": true
+      },
+      "seed": 500358977,
+      "cost_usd_est": 0.8,
+      "created": "2026-10-15T01:05:37.337Z",
+      "seconds": 206
+    },
+    "rig/ped_student": {
+      "files": [
+        "assets/generated/rig/ped_student.glb",
+        "assets/generated/rig/ped_student_basic_animations_walking_glb.glb",
+        "assets/generated/rig/ped_student_basic_animations_walking_armature_glb.glb",
+        "assets/generated/rig/ped_student_basic_animations_running_glb.glb",
+        "assets/generated/rig/ped_student_basic_animations_running_armature_glb.glb"
+      ],
+      "model": "fal-ai/meshy/rigging",
+      "prompt": null,
+      "input": {
+        "model_url": "@file:assets/build/people/ped_student_rigin.glb",
+        "height_meters": 1.64
+      },
+      "seed": null,
+      "cost_usd_est": 0.3,
+      "created": "2026-10-15T01:06:43.009Z",
+      "seconds": 47
+    },
+    "rig/ped_punk": {
+      "files": [
+        "assets/generated/rig/ped_punk.glb",
+        "assets/generated/rig/ped_punk_basic_animations_walking_glb.glb",
+        "assets/generated/rig/ped_punk_basic_animations_walking_armature_glb.glb",
+        "assets/generated/rig/ped_punk_basic_animations_running_glb.glb",
+        "assets/generated/rig/ped_punk_basic_animations_running_armature_glb.glb"
+      ],
+      "model": "fal-ai/meshy/rigging",
+      "prompt": null,
+      "input": {
+        "model_url": "@file:assets/build/people/ped_punk_rigin.glb",
+        "height_meters": 1.68
+      },
+      "seed": null,
+      "cost_usd_est": 0.3,
+      "created": "2026-10-15T01:06:46.283Z",
+      "seconds": 51
+    },
+    "rig/ped_vendor": {
+      "files": [
+        "assets/generated/rig/ped_vendor.glb",
+        "assets/generated/rig/ped_vendor_basic_animations_walking_glb.glb",
+        "assets/generated/rig/ped_vendor_basic_animations_walking_armature_glb.glb",
+        "assets/generated/rig/ped_vendor_basic_animations_running_glb.glb",
+        "assets/generated/rig/ped_vendor_basic_animations_running_armature_glb.glb"
+      ],
+      "model": "fal-ai/meshy/rigging",
+      "prompt": null,
+      "input": {
+        "model_url": "@file:assets/build/people/ped_vendor_rigin.glb",
+        "height_meters": 1.68
+      },
+      "seed": null,
+      "cost_usd_est": 0.3,
+      "created": "2026-10-15T01:06:56.289Z",
+      "seconds": 61
+    },
+    "rig/ped_suit": {
+      "files": [
+        "assets/generated/rig/ped_suit.glb",
+        "assets/generated/rig/ped_suit_basic_animations_walking_glb.glb",
+        "assets/generated/rig/ped_suit_basic_animations_walking_armature_glb.glb",
+        "assets/generated/rig/ped_suit_basic_animations_running_glb.glb",
+        "assets/generated/rig/ped_suit_basic_animations_running_armature_glb.glb"
+      ],
+      "model": "fal-ai/meshy/rigging",
+      "prompt": null,
+      "input": {
+        "model_url": "@file:assets/build/people/ped_suit_rigin.glb",
+        "height_meters": 1.78
+      },
+      "seed": null,
+      "cost_usd_est": 0.3,
+      "created": "2026-10-15T01:07:12.102Z",
+      "seconds": 76
+    },
+    "rig/ped_worker": {
+      "files": [
+        "assets/generated/rig/ped_worker.glb",
+        "assets/generated/rig/ped_worker_basic_animations_walking_glb.glb",
+        "assets/generated/rig/ped_worker_basic_animations_walking_armature_glb.glb",
+        "assets/generated/rig/ped_worker_basic_animations_running_glb.glb",
+        "assets/generated/rig/ped_worker_basic_animations_running_armature_glb.glb"
+      ],
+      "model": "fal-ai/meshy/rigging",
+      "prompt": null,
+      "input": {
+        "model_url": "@file:assets/build/people/ped_worker_rigin.glb",
+        "height_meters": 1.84
+      },
+      "seed": null,
+      "cost_usd_est": 0.3,
+      "created": "2026-10-15T01:07:17.512Z",
+      "seconds": 82
+    },
+    "rig/ped_elder": {
+      "files": [
+        "assets/generated/rig/ped_elder.glb",
+        "assets/generated/rig/ped_elder_basic_animations_walking_glb.glb",
+        "assets/generated/rig/ped_elder_basic_animations_walking_armature_glb.glb",
+        "assets/generated/rig/ped_elder_basic_animations_running_glb.glb",
+        "assets/generated/rig/ped_elder_basic_animations_running_armature_glb.glb"
+      ],
+      "model": "fal-ai/meshy/rigging",
+      "prompt": null,
+      "input": {
+        "model_url": "@file:assets/build/people/ped_elder_rigin.glb",
+        "height_meters": 1.58
+      },
+      "seed": null,
+      "cost_usd_est": 0.3,
+      "created": "2026-10-15T01:07:35.025Z",
+      "seconds": 52
+    },
+    "rig/ped_techwear": {
+      "files": [
+        "assets/generated/rig/ped_techwear.glb",
+        "assets/generated/rig/ped_techwear_basic_animations_walking_glb.glb",
+        "assets/generated/rig/ped_techwear_basic_animations_walking_armature_glb.glb",
+        "assets/generated/rig/ped_techwear_basic_animations_running_glb.glb",
+        "assets/generated/rig/ped_techwear_basic_animations_running_armature_glb.glb"
+      ],
+      "model": "fal-ai/meshy/rigging",
+      "prompt": null,
+      "input": {
+        "model_url": "@file:assets/build/people/ped_techwear_rigin.glb",
+        "height_meters": 1.8
+      },
+      "seed": null,
+      "cost_usd_est": 0.3,
+      "created": "2026-10-15T01:07:57.525Z",
+      "seconds": 71
+    },
+    "rig/ped_nurse": {
+      "files": [
+        "assets/generated/rig/ped_nurse.glb",
+        "assets/generated/rig/ped_nurse_basic_animations_walking_glb.glb",
+        "assets/generated/rig/ped_nurse_basic_animations_walking_armature_glb.glb",
+        "assets/generated/rig/ped_nurse_basic_animations_running_glb.glb",
+        "assets/generated/rig/ped_nurse_basic_animations_running_armature_glb.glb"
+      ],
+      "model": "fal-ai/meshy/rigging",
+      "prompt": null,
+      "input": {
+        "model_url": "@file:assets/build/people/ped_nurse_rigin.glb",
+        "height_meters": 1.66
+      },
+      "seed": null,
+      "cost_usd_est": 0.3,
+      "created": "2026-10-15T01:07:57.802Z",
+      "seconds": 62
+    },
+    "rig/ped_rider": {
+      "files": [
+        "assets/generated/rig/ped_rider.glb",
+        "assets/generated/rig/ped_rider_basic_animations_walking_glb.glb",
+        "assets/generated/rig/ped_rider_basic_animations_walking_armature_glb.glb",
+        "assets/generated/rig/ped_rider_basic_animations_running_glb.glb",
+        "assets/generated/rig/ped_rider_basic_animations_running_armature_glb.glb"
+      ],
+      "model": "fal-ai/meshy/rigging",
+      "prompt": null,
+      "input": {
+        "model_url": "@file:assets/build/people/ped_rider_rigin.glb",
+        "height_meters": 1.76
+      },
+      "seed": null,
+      "cost_usd_est": 0.3,
+      "created": "2026-10-15T01:07:59.194Z",
+      "seconds": 47
+    },
+    "talk/hero_3": {
+      "files": [
+        "assets/generated/talk/hero_3.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Hey. Stay dry out there.",
+      "input": {
+        "text": "Hey. Stay dry out there.",
+        "voice": "Liam",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:08:58.640Z",
+      "seconds": 3
+    },
+    "talk/hero_1": {
+      "files": [
+        "assets/generated/talk/hero_1.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Rough night, huh?",
+      "input": {
+        "text": "Rough night, huh?",
+        "voice": "Liam",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:08:58.740Z",
+      "seconds": 3
+    },
+    "talk/hero_4": {
+      "files": [
+        "assets/generated/talk/hero_4.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Busy street tonight.",
+      "input": {
+        "text": "Busy street tonight.",
+        "voice": "Liam",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:08:58.763Z",
+      "seconds": 3
+    },
+    "talk/hero_2": {
+      "files": [
+        "assets/generated/talk/hero_2.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "You know a shortcut to the docks?",
+      "input": {
+        "text": "You know a shortcut to the docks?",
+        "voice": "Liam",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:08:58.801Z",
+      "seconds": 3
+    },
+    "talk/hero_0": {
+      "files": [
+        "assets/generated/talk/hero_0.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Evening. Seen any drones around here?",
+      "input": {
+        "text": "Evening. Seen any drones around here?",
+        "voice": "Liam",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:08:59.198Z",
+      "seconds": 4
+    },
+    "talk/hero_5": {
+      "files": [
+        "assets/generated/talk/hero_5.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Got a light? Never mind.",
+      "input": {
+        "text": "Got a light? Never mind.",
+        "voice": "Liam",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:01.192Z",
+      "seconds": 3
+    },
+    "talk/ped_suit_1": {
+      "files": [
+        "assets/generated/talk/ped_suit_1.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Do you know what this coat cost? Back off.",
+      "input": {
+        "text": "Do you know what this coat cost? Back off.",
+        "voice": "George",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:01.936Z",
+      "seconds": 3
+    },
+    "talk/ped_suit_0": {
+      "files": [
+        "assets/generated/talk/ped_suit_0.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "I don't talk to couriers. Move along.",
+      "input": {
+        "text": "I don't talk to couriers. Move along.",
+        "voice": "George",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:03.343Z",
+      "seconds": 5
+    },
+    "talk/hero_7": {
+      "files": [
+        "assets/generated/talk/hero_7.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Need anything delivered? I'm fast.",
+      "input": {
+        "text": "Need anything delivered? I'm fast.",
+        "voice": "Liam",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:03.446Z",
+      "seconds": 5
+    },
+    "talk/hero_6": {
+      "files": [
+        "assets/generated/talk/hero_6.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Don't mind me, just passing through.",
+      "input": {
+        "text": "Don't mind me, just passing through.",
+        "voice": "Liam",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:03.512Z",
+      "seconds": 5
+    },
+    "talk/ped_suit_2": {
+      "files": [
+        "assets/generated/talk/ped_suit_2.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Make it quick, I'm late for a board call.",
+      "input": {
+        "text": "Make it quick, I'm late for a board call.",
+        "voice": "George",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:04.031Z",
+      "seconds": 3
+    },
+    "talk/ped_vendor_0": {
+      "files": [
+        "assets/generated/talk/ped_vendor_0.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Hot noodles, best in the district! Two credits!",
+      "input": {
+        "text": "Hot noodles, best in the district! Two credits!",
+        "voice": "Bill",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:04.530Z",
+      "seconds": 3
+    },
+    "talk/ped_vendor_2": {
+      "files": [
+        "assets/generated/talk/ped_vendor_2.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "You look hungry, friend. Come back later.",
+      "input": {
+        "text": "You look hungry, friend. Come back later.",
+        "voice": "Bill",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:06.076Z",
+      "seconds": 3
+    },
+    "talk/ped_punk_0": {
+      "files": [
+        "assets/generated/talk/ped_punk_0.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Nice jacket. Did you steal it?",
+      "input": {
+        "text": "Nice jacket. Did you steal it?",
+        "voice": "Jessica",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:06.141Z",
+      "seconds": 3
+    },
+    "talk/ped_vendor_1": {
+      "files": [
+        "assets/generated/talk/ped_vendor_1.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Rain is good for business. Everybody wants soup.",
+      "input": {
+        "text": "Rain is good for business. Everybody wants soup.",
+        "voice": "Bill",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:06.168Z",
+      "seconds": 3
+    },
+    "talk/ped_punk_1": {
+      "files": [
+        "assets/generated/talk/ped_punk_1.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Drones? They never come down this street. We make sure of that.",
+      "input": {
+        "text": "Drones? They never come down this street. We make sure of that.",
+        "voice": "Jessica",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:06.903Z",
+      "seconds": 3
+    },
+    "talk/ped_punk_2": {
+      "files": [
+        "assets/generated/talk/ped_punk_2.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Get lost, delivery boy.",
+      "input": {
+        "text": "Get lost, delivery boy.",
+        "voice": "Jessica",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:07.198Z",
+      "seconds": 3
+    },
+    "talk/ped_worker_0": {
+      "files": [
+        "assets/generated/talk/ped_worker_0.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Docks are closed after midnight, pal.",
+      "input": {
+        "text": "Docks are closed after midnight, pal.",
+        "voice": "Callum",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:08.718Z",
+      "seconds": 3
+    },
+    "talk/ped_student_0": {
+      "files": [
+        "assets/generated/talk/ped_student_0.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Sorry, I have an exam in the morning!",
+      "input": {
+        "text": "Sorry, I have an exam in the morning!",
+        "voice": "Lily",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:09.654Z",
+      "seconds": 3
+    },
+    "talk/ped_student_1": {
+      "files": [
+        "assets/generated/talk/ped_student_1.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Is it always this loud at night?",
+      "input": {
+        "text": "Is it always this loud at night?",
+        "voice": "Lily",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:09.781Z",
+      "seconds": 3
+    },
+    "talk/ped_worker_1": {
+      "files": [
+        "assets/generated/talk/ped_worker_1.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Twelve hour shift. Talk to me tomorrow.",
+      "input": {
+        "text": "Twelve hour shift. Talk to me tomorrow.",
+        "voice": "Callum",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:10.963Z",
+      "seconds": 5
+    },
+    "talk/ped_worker_2": {
+      "files": [
+        "assets/generated/talk/ped_worker_2.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Watch the cranes, they swing low in the fog.",
+      "input": {
+        "text": "Watch the cranes, they swing low in the fog.",
+        "voice": "Callum",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:10.987Z",
+      "seconds": 5
+    },
+    "talk/ped_student_2": {
+      "files": [
+        "assets/generated/talk/ped_student_2.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Oh hi! Wait, aren't you that courier?",
+      "input": {
+        "text": "Oh hi! Wait, aren't you that courier?",
+        "voice": "Lily",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:11.340Z",
+      "seconds": 3
+    },
+    "talk/ped_elder_0": {
+      "files": [
+        "assets/generated/talk/ped_elder_0.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "In my day it only rained on weekdays.",
+      "input": {
+        "text": "In my day it only rained on weekdays.",
+        "voice": "Matilda",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:12.255Z",
+      "seconds": 3
+    },
+    "talk/ped_elder_2": {
+      "files": [
+        "assets/generated/talk/ped_elder_2.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Such a polite boy. Off you go now.",
+      "input": {
+        "text": "Such a polite boy. Off you go now.",
+        "voice": "Matilda",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:13.524Z",
+      "seconds": 3
+    },
+    "talk/ped_techwear_0": {
+      "files": [
+        "assets/generated/talk/ped_techwear_0.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "You still drive a car with wheels? Cute.",
+      "input": {
+        "text": "You still drive a car with wheels? Cute.",
+        "voice": "Will",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:13.733Z",
+      "seconds": 3
+    },
+    "talk/ped_techwear_1": {
+      "files": [
+        "assets/generated/talk/ped_techwear_1.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Shh. I am listening to the city.",
+      "input": {
+        "text": "Shh. I am listening to the city.",
+        "voice": "Will",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:13.884Z",
+      "seconds": 3
+    },
+    "talk/ped_elder_1": {
+      "files": [
+        "assets/generated/talk/ped_elder_1.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Young man, slow down when you drive past here!",
+      "input": {
+        "text": "Young man, slow down when you drive past here!",
+        "voice": "Matilda",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:14.479Z",
+      "seconds": 5
+    },
+    "talk/ped_nurse_0": {
+      "files": [
+        "assets/generated/talk/ped_nurse_0.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Twelve hour shift, I just want to get home.",
+      "input": {
+        "text": "Twelve hour shift, I just want to get home.",
+        "voice": "Sarah",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:16.127Z",
+      "seconds": 3
+    },
+    "talk/ped_nurse_1": {
+      "files": [
+        "assets/generated/talk/ped_nurse_1.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "If you crash that thing, I will be the one patching you up.",
+      "input": {
+        "text": "If you crash that thing, I will be the one patching you up.",
+        "voice": "Sarah",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:16.304Z",
+      "seconds": 3
+    },
+    "talk/ped_nurse_2": {
+      "files": [
+        "assets/generated/talk/ped_nurse_2.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Stay safe out there, okay?",
+      "input": {
+        "text": "Stay safe out there, okay?",
+        "voice": "Sarah",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:16.444Z",
+      "seconds": 3
+    },
+    "talk/ped_techwear_2": {
+      "files": [
+        "assets/generated/talk/ped_techwear_2.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Respect. You move fast for an analog.",
+      "input": {
+        "text": "Respect. You move fast for an analog.",
+        "voice": "Will",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:16.947Z",
+      "seconds": 5
+    },
+    "talk/ped_rider_0": {
+      "files": [
+        "assets/generated/talk/ped_rider_0.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Hey, competition! Good luck tonight.",
+      "input": {
+        "text": "Hey, competition! Good luck tonight.",
+        "voice": "Chris",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:17.085Z",
+      "seconds": 3
+    },
+    "talk/ped_rider_1": {
+      "files": [
+        "assets/generated/talk/ped_rider_1.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Same route every night. The bridge is the fastest.",
+      "input": {
+        "text": "Same route every night. The bridge is the fastest.",
+        "voice": "Chris",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:18.690Z",
+      "seconds": 3
+    },
+    "talk/ped_rider_2": {
+      "files": [
+        "assets/generated/talk/ped_rider_2.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Rain makes the tips better, right?",
+      "input": {
+        "text": "Rain makes the tips better, right?",
+        "voice": "Chris",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:18.857Z",
+      "seconds": 3
+    },
+    "talk/victim_0": {
+      "files": [
+        "assets/generated/talk/victim_0.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Hey! That is my car!",
+      "input": {
+        "text": "Hey! That is my car!",
+        "voice": "Bill",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:19.072Z",
+      "seconds": 3
+    },
+    "talk/victim_2": {
+      "files": [
+        "assets/generated/talk/victim_2.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Somebody call the police!",
+      "input": {
+        "text": "Somebody call the police!",
+        "voice": "George",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:19.640Z",
+      "seconds": 3
+    },
+    "talk/victim_3": {
+      "files": [
+        "assets/generated/talk/victim_3.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Take it, just take it!",
+      "input": {
+        "text": "Take it, just take it!",
+        "voice": "Sarah",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:21.329Z",
+      "seconds": 3
+    },
+    "talk/police_0": {
+      "files": [
+        "assets/generated/talk/police_0.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "This is the police. Pull over now!",
+      "input": {
+        "text": "This is the police. Pull over now!",
+        "voice": "Daniel",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:21.356Z",
+      "seconds": 2
+    },
+    "talk/victim_1": {
+      "files": [
+        "assets/generated/talk/victim_1.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "No no no, not again!",
+      "input": {
+        "text": "No no no, not again!",
+        "voice": "Jessica",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:21.560Z",
+      "seconds": 5
+    },
+    "talk/police_1": {
+      "files": [
+        "assets/generated/talk/police_1.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Stop the vehicle! Hands where we can see them!",
+      "input": {
+        "text": "Stop the vehicle! Hands where we can see them!",
+        "voice": "Daniel",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:21.727Z",
+      "seconds": 3
+    },
+    "talk/police_2": {
+      "files": [
+        "assets/generated/talk/police_2.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "All units, suspect is heading downtown.",
+      "input": {
+        "text": "All units, suspect is heading downtown.",
+        "voice": "Daniel",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:22.186Z",
+      "seconds": 3
+    },
+    "talk/police_3": {
+      "files": [
+        "assets/generated/talk/police_3.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "You are under arrest. Stay where you are.",
+      "input": {
+        "text": "You are under arrest. Stay where you are.",
+        "voice": "Daniel",
+        "stability": 0.45
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:09:23.978Z",
+      "seconds": 3
+    },
+    "sfx/door_open": {
+      "files": [
+        "assets/generated/sfx/door_open.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "car door handle pull and door opening, close",
+      "input": {
+        "text": "car door handle pull and door opening, close",
+        "duration_seconds": 1,
+        "loop": false,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-15T01:09:37.908Z",
+      "seconds": 3
+    },
+    "sfx/door_close": {
+      "files": [
+        "assets/generated/sfx/door_close.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "car door slamming shut, solid thud, close",
+      "input": {
+        "text": "car door slamming shut, solid thud, close",
+        "duration_seconds": 1,
+        "loop": false,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-15T01:09:37.962Z",
+      "seconds": 3
+    },
+    "sfx/footstep_wet": {
+      "files": [
+        "assets/generated/sfx/footstep_wet.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "single footstep on a wet concrete sidewalk, sneaker, close",
+      "input": {
+        "text": "single footstep on a wet concrete sidewalk, sneaker, close",
+        "duration_seconds": 0.6,
+        "loop": false,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-15T01:09:38.290Z",
+      "seconds": 4
+    },
+    "sfx/carjack": {
+      "files": [
+        "assets/generated/sfx/carjack.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "struggle, grab and shove, cloth rustle, person grunts",
+      "input": {
+        "text": "struggle, grab and shove, cloth rustle, person grunts",
+        "duration_seconds": 1.5,
+        "loop": false,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-15T01:09:40.034Z",
+      "seconds": 5
+    },
+    "sfx/footsteps_run": {
+      "files": [
+        "assets/generated/sfx/footsteps_run.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "running footsteps on wet pavement, steady pace, close",
+      "input": {
+        "text": "running footsteps on wet pavement, steady pace, close",
+        "duration_seconds": 2,
+        "loop": true,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-15T01:09:40.470Z",
+      "seconds": 6
+    },
+    "sfx/body_hit": {
+      "files": [
+        "assets/generated/sfx/body_hit.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "car bumper hits a person, dull thud",
+      "input": {
+        "text": "car bumper hits a person, dull thud",
+        "duration_seconds": 1,
+        "loop": false,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-15T01:09:40.623Z",
+      "seconds": 3
+    },
+    "sfx/scream": {
+      "files": [
+        "assets/generated/sfx/scream.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "person screams in panic, short",
+      "input": {
+        "text": "person screams in panic, short",
+        "duration_seconds": 1.5,
+        "loop": false,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-15T01:09:40.638Z",
+      "seconds": 3
+    },
+    "sfx/jump_land": {
+      "files": [
+        "assets/generated/sfx/jump_land.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "person lands from a jump on wet ground, soft thud and splash",
+      "input": {
+        "text": "person lands from a jump on wet ground, soft thud and splash",
+        "duration_seconds": 0.6,
+        "loop": false,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-15T01:09:42.622Z",
+      "seconds": 3
+    },
+    "sfx/siren_close": {
+      "files": [
+        "assets/generated/sfx/siren_close.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "police car siren wailing very close, american style",
+      "input": {
+        "text": "police car siren wailing very close, american style",
+        "duration_seconds": 4,
+        "loop": true,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-15T01:09:43.180Z",
+      "seconds": 5
+    },
+    "sfx/crowd_panic": {
+      "files": [
+        "assets/generated/sfx/crowd_panic.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "crowd of people screaming and scattering",
+      "input": {
+        "text": "crowd of people screaming and scattering",
+        "duration_seconds": 3,
+        "loop": false,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-15T01:09:43.250Z",
+      "seconds": 3
+    },
+    "sfx/radio_squelch": {
+      "files": [
+        "assets/generated/sfx/radio_squelch.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "police radio squelch beep",
+      "input": {
+        "text": "police radio squelch beep",
+        "duration_seconds": 0.6,
+        "loop": false,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-15T01:09:45.422Z",
+      "seconds": 5
     }
   }
 }

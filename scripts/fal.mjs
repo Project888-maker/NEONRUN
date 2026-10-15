@@ -13,7 +13,7 @@ import { ASSETS, PRICES } from './assets.mjs';
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const OUT = path.join(ROOT, 'assets/generated');
 const MANIFEST = path.join(ROOT, 'assets/manifest.json');
-const BUDGET_USD = 25;
+const BUDGET_USD = 55; // $25 original + ~$30 top-up (Oct 15)
 const CONCURRENCY = 5;
 
 const args = process.argv.slice(2);
@@ -25,6 +25,11 @@ const manifest = fs.existsSync(MANIFEST)
   : { budget_usd: BUDGET_USD, spent_usd_est: 0, assets: {} };
 
 const save = () => {
+  // merge with what is on disk so concurrent runs never drop each other's entries
+  if (fs.existsSync(MANIFEST)) {
+    const disk = JSON.parse(fs.readFileSync(MANIFEST, 'utf8'));
+    manifest.assets = { ...disk.assets, ...manifest.assets };
+  }
   manifest.spent_usd_est = +Object.values(manifest.assets).reduce((s, a) => s + (a.cost_usd_est || 0), 0).toFixed(4);
   fs.writeFileSync(MANIFEST, JSON.stringify(manifest, null, 2));
 };
@@ -88,7 +93,7 @@ function resolveInput(input) {
   for (const [k, v] of Object.entries(input)) {
     if (typeof v === 'string' && v.startsWith('@file:')) {
       const f = path.join(ROOT, v.slice(6));
-      const mime = f.endsWith('.png') ? 'image/png' : 'image/jpeg';
+      const mime = f.endsWith('.png') ? 'image/png' : f.endsWith('.glb') ? 'model/gltf-binary' : f.endsWith('.webp') ? 'image/webp' : 'image/jpeg';
       out[k] = `data:${mime};base64,${fs.readFileSync(f).toString('base64')}`;
     } else out[k] = v;
   }
@@ -105,6 +110,8 @@ async function generate(a) {
   // Prefer the primary output; keep extra files (e.g. 3D textures, preview renders) with a suffix.
   for (let i = 0; i < files.length; i++) {
     const f = files[i];
+    // 3D services return the same model in many formats + loose textures: keep the GLB and previews only
+    if (i > 0 && (/\.(fbx|obj|stl|usdz|mtl)$/i.test(f.file_name || f.url) || /model_urls|texture_urls/.test(f.key))) continue;
     const ext = extFor(f);
     const suffix = i === 0 ? '' : `_${f.key.replace(/[^a-z0-9]+/gi, '_')}`;
     const file = path.join(dir, `${a.name}${suffix}${ext}`);

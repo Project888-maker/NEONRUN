@@ -268,4 +268,102 @@ const lines = {
 };
 for (const [k, t] of Object.entries(lines)) add('voice', k, 'fal-ai/elevenlabs/tts/eleven-v3', { text: t, voice: 'Brian', stability: 0.5 });
 
+// ================= Phase 1 (Oct 15): realistic traffic cars, all drivable =================
+PRICES['tripo3d/h3.1/image-to-3d'] = 0.6;
+const CAR = 'single car, three quarter front view from slightly above, the whole car fully visible and centered with margin, all four wheels clearly visible, pure white seamless studio background, soft even studio lighting, realistic proportions, photorealistic product photograph, no text, no logos, no badges, no license plate';
+const cars = {
+  car_taxi: 'modern compact city taxi sedan, yellow paint with a black checker stripe along the doors, small taxi light box on the roof, black wheels',
+  car_police: 'futuristic police interceptor sedan, black and white two-tone paint, red and blue roof light bar, front push bumper, dark tinted windows',
+  car_van: 'boxy electric delivery van, white body with an orange stripe, tall roof, sliding side door, steel wheels',
+  car_hatch: 'original design boxy retro-futuristic city hatchback with square headlights and a flat roof, not resembling any real production car, faded teal paint with scratches and rust spots, silver wheels',
+  car_lux: 'long luxury executive sedan, glossy black paint, chrome window trim, large chrome wheels',
+  car_pickup: 'rugged pickup truck, matte olive green, black roll bar with off-road lights, chunky all-terrain tires',
+  car_super: 'original concept hypercar with smooth rounded teardrop body, glass canopy cockpit and a single continuous light bar at front, not resembling any real production car or brand, metallic violet paint, black wheels',
+  car_classic: 'battered 1970s american muscle coupe, faded burnt orange paint, black hood stripe, chrome bumpers',
+};
+for (const [k, p] of Object.entries(cars)) add('concept', k, 'fal-ai/gpt-image-2', { prompt: `${p}. ${CAR}`, image_size: 'landscape_4_3', quality: 'high' });
+for (const k of Object.keys(cars)) add('model3d', k, 'tripo3d/h3.1/image-to-3d', { image_url: `@file:assets/generated/concept/${k}.png`, texture: true, pbr: true, texture_quality: 'detailed', geometry_quality: 'detailed', face_limit: 30000 });
+
+// ================= Phase 2/3: realistic people (rigged) =================
+PRICES['fal-ai/meshy/v6/image-to-3d'] = 0.8; // estimate
+PRICES['fal-ai/meshy/rigging'] = 0.3; // estimate
+PRICES['fal-ai/hunyuan-motion'] = 0.2; // estimate
+const PERSON = 'full body photograph of one adult person standing in a strict T-pose, arms straight out horizontally to the sides at shoulder height, palms down, legs slightly apart, feet flat, facing the camera, neutral expression, head to toe fully visible with margin, plain pure white seamless studio background, soft even studio lighting, sharp focus, photorealistic, realistic skin and fabric, no props, no bag, nothing in the hands';
+export const PEOPLE = {
+  hero: 'athletic courier man in his early thirties, short dark undercut hair, light stubble, black waterproof techwear jacket with subtle cyan piping, dark cargo trousers, black high-top sneakers, fingerless gloves',
+  ped_suit: 'middle aged office man, grey suit, open beige trench coat, black leather shoes, short grey hair',
+  ped_vendor: 'older east asian street food vendor man, white apron over a blue work shirt, rolled sleeves, black trousers, rubber boots',
+  ped_punk: 'young punk woman, bleached short hair with pink tips, black leather jacket, ripped dark jeans, combat boots',
+  ped_worker: 'dock worker man, orange high visibility jacket with reflective stripes, dark work trousers, work boots, beanie hat',
+  ped_student: 'young student woman, oversized grey hoodie, black leggings, white sneakers, hair in a bun',
+  ped_elder: 'elderly woman, purple cardigan over a long skirt, flat shoes, grey hair in a bun, glasses',
+  ped_techwear: 'young man in futuristic techwear, black hooded jacket with straps, tactical trousers, glowing teal LED strip on the collar',
+  ped_nurse: 'nurse woman in her forties, light blue scrubs under a transparent raincoat, white clogs',
+  ped_rider: 'delivery rider man, red waterproof jacket, black rain trousers, motorcycle boots, short curly hair',
+};
+for (const [k, p] of Object.entries(PEOPLE)) {
+  add('person', k, 'fal-ai/gpt-image-2', { prompt: `${p}. ${PERSON}`, image_size: 'portrait_16_9', quality: 'high' });
+  add('person3d', k, 'fal-ai/meshy/v6/image-to-3d', { image_url: `@file:assets/generated/person/${k}.png`, topology: 'triangle', target_polycount: 30000, should_remesh: true, enable_pbr: true, symmetry_mode: 'auto', is_a_t_pose: true, should_texture: true });
+}
+
+const HEIGHTS = { hero: 1.82, ped_suit: 1.78, ped_vendor: 1.68, ped_punk: 1.68, ped_worker: 1.84, ped_student: 1.64, ped_elder: 1.58, ped_techwear: 1.8, ped_nurse: 1.66, ped_rider: 1.76 };
+for (const k of Object.keys(PEOPLE)) add('rig', k, 'fal-ai/meshy/rigging', { model_url: `@file:assets/build/people/${k}_rigin.glb`, height_meters: HEIGHTS[k] });
+
+// text-to-motion clips (retargeted onto the Meshy skeleton in blender/retarget.py)
+export const MOTIONS = {
+  idle: 'a person stands still relaxed, breathing, shifting weight slightly, looking around',
+  jump: 'a person jumps up in place with both feet and lands',
+  enter_car: 'a person reaches out to open a car door, then bends down and sits into the car seat',
+  exit_car: 'a person climbs out of a car seat, stands up and closes the car door behind them',
+  talk: 'a person stands and talks with gestures of both hands, friendly conversation',
+  wave: 'a person waves hello with the right hand',
+  flee: 'a person gets scared, flinches and runs away quickly',
+  phone: 'a person stands looking down at a phone held in the right hand',
+  shrug: 'a person shrugs with both shoulders and raises palms',
+  push: 'a person pulls someone out of a car with both arms and throws them aside',
+  fall: 'a person stumbles backwards and falls onto the ground',
+};
+for (const [k, p] of Object.entries(MOTIONS)) add('motion', k, 'fal-ai/hunyuan-motion', { prompt: p, duration: k === 'idle' ? 4 : 3, output_format: 'fbx' });
+
+// ---------- street conversations (hero <-> pedestrians), carjack victims, police megaphone
+export const VOICES = { hero: 'Liam', ped_suit: 'George', ped_vendor: 'Bill', ped_punk: 'Jessica', ped_worker: 'Callum', ped_student: 'Lily', ped_elder: 'Matilda', ped_techwear: 'Will', ped_nurse: 'Sarah', ped_rider: 'Chris', police: 'Daniel' };
+export const LINES = {
+  hero: [
+    'Evening. Seen any drones around here?', 'Rough night, huh?', 'You know a shortcut to the docks?', 'Hey. Stay dry out there.',
+    'Busy street tonight.', 'Got a light? Never mind.', "Don't mind me, just passing through.", 'Need anything delivered? I\'m fast.',
+  ],
+  ped_suit: ["I don't talk to couriers. Move along.", 'Do you know what this coat cost? Back off.', "Make it quick, I'm late for a board call."],
+  ped_vendor: ['Hot noodles, best in the district! Two credits!', 'Rain is good for business. Everybody wants soup.', 'You look hungry, friend. Come back later.'],
+  ped_punk: ['Nice jacket. Did you steal it?', 'Drones? They never come down this street. We make sure of that.', 'Get lost, delivery boy.'],
+  ped_worker: ['Docks are closed after midnight, pal.', 'Twelve hour shift. Talk to me tomorrow.', 'Watch the cranes, they swing low in the fog.'],
+  ped_student: ['Sorry, I have an exam in the morning!', 'Is it always this loud at night?', "Oh hi! Wait, aren't you that courier?"],
+  ped_elder: ['In my day it only rained on weekdays.', 'Young man, slow down when you drive past here!', 'Such a polite boy. Off you go now.'],
+  ped_techwear: ['You still drive a car with wheels? Cute.', 'Shh. I am listening to the city.', 'Respect. You move fast for an analog.'],
+  ped_nurse: ['Twelve hour shift, I just want to get home.', 'If you crash that thing, I will be the one patching you up.', 'Stay safe out there, okay?'],
+  ped_rider: ['Hey, competition! Good luck tonight.', 'Same route every night. The bridge is the fastest.', 'Rain makes the tips better, right?'],
+  victim: ['Hey! That is my car!', 'No no no, not again!', 'Somebody call the police!', 'Take it, just take it!'],
+  police: ['This is the police. Pull over now!', 'Stop the vehicle! Hands where we can see them!', 'All units, suspect is heading downtown.', 'You are under arrest. Stay where you are.'],
+};
+let li = 0;
+for (const [who, list] of Object.entries(LINES)) list.forEach((t, i) => {
+  const voice = who === 'victim' ? ['Bill', 'Jessica', 'George', 'Sarah'][i % 4] : VOICES[who];
+  add('talk', `${who}_${i}`, 'fal-ai/elevenlabs/tts/eleven-v3', { text: t, voice, stability: 0.45 });
+  li++;
+});
+
+const sfx2 = {
+  footstep_wet: [0.6, false, 'single footstep on a wet concrete sidewalk, sneaker, close'],
+  footsteps_run: [2, true, 'running footsteps on wet pavement, steady pace, close'],
+  door_open: [1, false, 'car door handle pull and door opening, close'],
+  door_close: [1, false, 'car door slamming shut, solid thud, close'],
+  carjack: [1.5, false, 'struggle, grab and shove, cloth rustle, person grunts'],
+  body_hit: [1, false, 'car bumper hits a person, dull thud'],
+  scream: [1.5, false, 'person screams in panic, short'],
+  siren_close: [4, true, 'police car siren wailing very close, american style'],
+  jump_land: [0.6, false, 'person lands from a jump on wet ground, soft thud and splash'],
+  crowd_panic: [3, false, 'crowd of people screaming and scattering'],
+  radio_squelch: [0.6, false, 'police radio squelch beep'],
+};
+for (const [k, [d, loop, p]] of Object.entries(sfx2)) add('sfx', k, 'fal-ai/elevenlabs/sound-effects/v2', { text: p, duration_seconds: d, loop, prompt_influence: 0.6, output_format: 'mp3_44100_128' });
+
 export const ASSETS = A;

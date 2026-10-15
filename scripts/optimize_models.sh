@@ -12,3 +12,14 @@ for m in lm_pagoda lm_watertower lm_crane lm_gate lm_statue; do
 done
 $GT optimize $OUT/citykit.glb $OUT/citykit_opt.glb --compress meshopt --texture-compress false --simplify false --join false --instance false --flatten false --palette false && mv $OUT/citykit_opt.glb $OUT/citykit.glb
 ls -la $OUT
+# generated traffic / garage cars (processed by blender/process_car.py)
+mkdir -p public/assets/cars
+for f in assets/build/cars/car_*.glb; do
+  id=$(basename $f .glb)
+  $GT optimize $f public/assets/cars/$id.glb --compress meshopt --texture-compress webp --texture-size 1024 --simplify false --prune false --join false --flatten false
+done
+# low-detail copies used for AI traffic
+for f in assets/build/cars/car_*.glb; do
+  id=$(basename $f .glb)
+  $GT optimize $f public/assets/cars/${id}_lod.glb --compress meshopt --texture-compress webp --texture-size 512 --simplify true --simplify-ratio 0.25 --simplify-error 0.004 --prune false --join false --flatten false
+done

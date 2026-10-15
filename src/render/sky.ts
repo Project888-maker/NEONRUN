@@ -22,7 +22,7 @@ export class Sky {
           // fade into the haze colour toward the horizon and the top edge
           vec3 haze = vec3(0.05, 0.045, 0.1);
           float top = smoothstep(0.8, 1.0, uv.y);
-          float bottom = smoothstep(0.08, -0.05, uv.y);
+          float bottom = (1.0 - smoothstep(-0.05, 0.08, uv.y));
           c = mix(c * 0.9, haze, top);
           c = mix(c, vec3(0.06, 0.04, 0.09), bottom);
           gl_FragColor = vec4(c, 1.0);

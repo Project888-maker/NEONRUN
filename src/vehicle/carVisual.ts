@@ -5,6 +5,7 @@ import type { Vehicle } from './vehicle';
 import { kitParts } from '../core/assets';
 import { LAYER_NO_REFLECT } from '../render/reflector';
 import { createConeMaterial } from '../render/specialMaterials';
+import { type CarAsset, type CarLightUniforms, patchCarLights, carPaint } from './carModels';
 
 export const PAINTS: { id: string; name: string; color: [number, number, number]; metal: number }[] = [
   { id: 'gunmetal', name: 'Gunmetal', color: [1, 1, 1], metal: 0.6 },
@@ -48,10 +49,43 @@ export class CarVisual {
   beams: THREE.Mesh;
   underglowColor = new THREE.Color('#21f3ff');
   private decal?: THREE.Mesh;
+  lightU?: CarLightUniforms;
+  dims = { length: 4.8, width: 2.06, height: 1.3 };
+  readonly isHero: boolean;
 
-  constructor(car: GLTF | null, kit: GLTF, envMap: THREE.Texture | null) {
+  constructor(car: GLTF | null, kit: GLTF, envMap: THREE.Texture | null, asset?: CarAsset) {
     this.root.add(this.body);
-    if (car) {
+    this.isHero = !asset;
+    if (asset) {
+      // generated car: body with texture-driven lights + its own baked wheels
+      const sp = asset.spec;
+      this.dims = { length: sp.length, width: sp.width, height: sp.height };
+      for (const b of asset.body) {
+        let mat = b.material;
+        if (mat.name !== 'liner' && (mat as THREE.MeshStandardMaterial).map) {
+          const pm = carPaint(mat as THREE.MeshStandardMaterial, envMap);
+          this.lightU = patchCarLights(pm, sp.length / 2, false);
+          mat = pm;
+          this.paintMat = pm;
+        }
+        const mesh = new THREE.Mesh(b.geometry, mat);
+        if (mat === this.paintMat) this.bodyMesh = mesh;
+        this.body.add(mesh);
+      }
+      for (const k of ['FL', 'FR', 'RL', 'RR'] as const) {
+        this.wheelLocal[k] = new THREE.Vector3(...sp.wheels[k]);
+        const pivot = new THREE.Group();
+        const spinner = new THREE.Group();
+        for (const w of asset.wheels[k]) {
+          const wm = (w.material as THREE.MeshStandardMaterial).map ? carPaint(w.material as THREE.MeshStandardMaterial, envMap) : w.material;
+          spinner.add(new THREE.Mesh(w.geometry, wm));
+        }
+        pivot.add(spinner);
+        pivot.position.copy(this.wheelLocal[k]);
+        this.root.add(pivot);
+        this.wheels.push(pivot);
+      }
+    } else if (car) {
       const scene = car.scene;
       scene.traverse((o) => {
         if (o.name.startsWith('wheel_')) this.wheelLocal[o.name.slice(6)] = o.getWorldPosition(new THREE.Vector3());
@@ -81,12 +115,12 @@ export class CarVisual {
       box.position.y = 0.8;
       this.body.add(box);
     }
-    if (!this.wheelLocal.FL) {
+    if (!asset && !this.wheelLocal.FL) {
       this.wheelLocal = { FL: new THREE.Vector3(0.84, 0.35, 1.43), FR: new THREE.Vector3(-0.84, 0.35, 1.43), RL: new THREE.Vector3(0.84, 0.35, -1.38), RR: new THREE.Vector3(-0.84, 0.35, -1.38) };
     }
-    // wheels from the Blender kit (axis along X)
-    const parts = kitParts(kit, 'hero_wheel');
-    for (const k of ['FL', 'FR', 'RL', 'RR']) {
+    // hero: wheels from the Blender kit (axis along X)
+    const parts = asset ? [] : kitParts(kit, 'hero_wheel');
+    if (!asset) for (const k of ['FL', 'FR', 'RL', 'RR']) {
       const pivot = new THREE.Group(); // steering pivot
       const spinner = new THREE.Group(); // spin about X
       for (const p of parts) {
@@ -104,9 +138,10 @@ export class CarVisual {
     }
 
     // headlights: two spot lights with volumetric beam cones
-    for (const sx of [0.62, -0.62]) {
+    const D = this.dims, hl = D.length / 2, hx = D.width * 0.3, hy = Math.min(0.75, D.height * 0.45);
+    for (const sx of [hx, -hx]) {
       const s = new THREE.SpotLight(0xdde8ff, 260, 85, 0.42, 0.55, 1.4);
-      s.position.set(sx, 0.7, 2.25);
+      s.position.set(sx, hy, hl - 0.15);
       s.target.position.set(sx * 1.4, -0.4, 20);
       this.root.add(s, s.target);
       this.headLights.push(s);
@@ -118,8 +153,8 @@ export class CarVisual {
     const beams = new THREE.InstancedMesh(beamGeo, beamMat, 2);
     const cols = new Float32Array([0.85, 0.9, 1, 0.85, 0.9, 1]);
     beams.geometry.setAttribute('aColor', new THREE.InstancedBufferAttribute(cols, 3));
-    [0.62, -0.62].forEach((sx, i) => {
-      const m = new THREE.Matrix4().compose(new THREE.Vector3(sx, 0.68, 2.3), new THREE.Quaternion().setFromEuler(new THREE.Euler(0.06, 0, 0)), new THREE.Vector3(4.5, 3, 26));
+    [hx, -hx].forEach((sx, i) => {
+      const m = new THREE.Matrix4().compose(new THREE.Vector3(sx, hy, hl - 0.1), new THREE.Quaternion().setFromEuler(new THREE.Euler(0.06, 0, 0)), new THREE.Vector3(4.5, 3, 26));
       beams.setMatrixAt(i, m);
     });
     beams.layers.set(LAYER_NO_REFLECT);
@@ -127,14 +162,14 @@ export class CarVisual {
     this.beams = beams;
     this.root.add(beams);
 
-    this.tailLight = new THREE.PointLight(0xff1010, 6, 8, 2);
-    this.tailLight.position.set(0, 0.85, -2.6);
+    this.tailLight = new THREE.PointLight(0xff1010, 2.5, 7, 2);
+    this.tailLight.position.set(0, 0.35, -hl - 1.1); // behind the car, lighting the road rather than the bumper
     this.root.add(this.tailLight);
 
     // underglow: emissive blurred quad on the ground + a small point light
     const ugTex = radialTexture();
     this.underglow = new THREE.Mesh(
-      new THREE.PlaneGeometry(3.0, 5.6).rotateX(-Math.PI / 2),
+      new THREE.PlaneGeometry(D.width * 1.45, D.length * 1.15).rotateX(-Math.PI / 2),
       new THREE.MeshBasicMaterial({ map: ugTex, color: this.underglowColor.clone().multiplyScalar(0.8), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }),
     );
     this.underglow.position.y = 0.03;
@@ -145,7 +180,7 @@ export class CarVisual {
 
     // contact shadow (multiply-darkening blob)
     const shTex = radialTexture('rgba(0,0,0,0.9)', 'rgba(0,0,0,0)');
-    this.shadow = new THREE.Mesh(new THREE.PlaneGeometry(2.8, 5.6).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ map: shTex, transparent: true, depthWrite: false }));
+    this.shadow = new THREE.Mesh(new THREE.PlaneGeometry(D.width * 1.35, D.length * 1.15).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ map: shTex, transparent: true, depthWrite: false }));
     this.shadow.position.y = 0.02;
     this.shadow.renderOrder = -1;
     this.root.add(this.shadow);
@@ -156,17 +191,18 @@ export class CarVisual {
     flameGeo.rotateX(Math.PI / 2); // apex at origin pointing -Z... flame extends backwards
     for (const sx of [0.42, -0.42]) {
       const f = new THREE.Mesh(flameGeo, new THREE.MeshBasicMaterial({ color: new THREE.Color(0.15, 0.35, 2.2), transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false }));
-      f.position.set(sx, 0.42, -2.45);
+      f.position.set(sx, 0.42, -hl + 0.05);
       f.visible = false;
       this.root.add(f);
       this.flames.push(f);
     }
     this.flameLight = new THREE.PointLight(0x55aaff, 0, 9, 2);
-    this.flameLight.position.set(0, 0.5, -3.0);
+    this.flameLight.position.set(0, 0.5, -hl - 0.6);
     this.root.add(this.flameLight);
   }
 
   setPaint(id: string) {
+    if (!this.isHero) return; // generated cars keep their own paint job
     const p = PAINTS.find((q) => q.id === id) ?? PAINTS[0];
     if (this.paintMat) {
       this.paintMat.color.setRGB(...p.color);
@@ -226,7 +262,8 @@ export class CarVisual {
     });
     const braking = v.braking;
     if (this.brakeMat) this.brakeMat.emissiveIntensity = braking ? 14 : 0.3;
-    this.tailLight.intensity = braking ? 22 : 6;
+    if (this.lightU) this.lightU.uBrake.value = braking ? 1 : 0;
+    this.tailLight.intensity = braking ? 9 : 2.5;
     // underglow pulse + boost flames
     const pulse = 1 + 0.08 * Math.sin(this.t * 3);
     this.underLight.intensity = 18 * pulse;

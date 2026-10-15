@@ -8,12 +8,21 @@ import { trafficState } from '../render/specialMaterials';
 import { createConeMaterial } from '../render/specialMaterials';
 import { LAYER_NO_REFLECT } from '../render/reflector';
 import { Rng } from './city';
+import { type CarAsset, type CarDef, patchCarLights, carPaint } from '../vehicle/carModels';
 
 const MODELS = ['car_sedan', 'car_taxi', 'car_van', 'car_hatch'] as const;
+
+/** A traffic model: instanced parts (body + optional per-corner wheels) and its size. */
+interface TModel {
+  id: string; weight: number; length: number; width: number; height: number; wheelR: number;
+  wheelPos: Record<string, THREE.Vector3>;
+  parts: { im: THREE.InstancedMesh; wheel: string | null; brake?: THREE.InstancedBufferAttribute }[];
+}
 const PAINT = [0x1a1a1f, 0x8a8f99, 0x2b3f66, 0x5c1015, 0xd8d8dc, 0x0f3b2e, 0x3d2a52, 0x111111];
 
 interface TCar {
   model: number;
+  spin: number; braking: boolean; lastSpeed: number;
   edge: GEdge; from: number; // node we came from
   s: number; lane: number; speed: number; maxSpeed: number;
   // turning curve
@@ -29,14 +38,47 @@ export class Traffic {
   group = new THREE.Group();
   cars: TCar[] = [];
   private meshes: { im: THREE.InstancedMesh; model: number; paint: boolean }[] = [];
+  models: TModel[] = [];
   private beams: THREE.InstancedMesh;
   private rng = new Rng(99);
   private m4 = new THREE.Matrix4();
   private q = new THREE.Quaternion();
   onHonk: (p: THREE.Vector3) => void = () => {};
 
-  constructor(private graph: RoadGraph, private phys: Physics, kit: GLTF, private count: number, private nodeIndex: (x: number, z: number) => [number, number] | null) {
-    MODELS.forEach((name, mi) => {
+  constructor(private graph: RoadGraph, private phys: Physics, kit: GLTF, private count: number, private nodeIndex: (x: number, z: number) => [number, number] | null, cars: { asset: CarAsset; def: CarDef }[] = [], envMap: THREE.Texture | null = null) {
+    // realistic generated cars (preferred)
+    for (const { asset, def } of cars) {
+      if (def.traffic <= 0) continue;
+      const sp = asset.spec;
+      const m: TModel = {
+        id: def.id, weight: def.traffic, length: sp.length, width: sp.width, height: sp.height, wheelR: sp.wheelRadius,
+        wheelPos: Object.fromEntries(Object.entries(sp.wheels).map(([k, v]) => [k, new THREE.Vector3(...v)])), parts: [],
+      };
+      const mk = (geo: THREE.BufferGeometry, src: THREE.Material, wheel: string | null) => {
+        let mat: THREE.Material = src;
+        let brake: THREE.InstancedBufferAttribute | undefined;
+        const g = geo.clone();
+        if (src.name !== 'liner' && (src as THREE.MeshStandardMaterial).map) {
+          const pm = carPaint(src as THREE.MeshStandardMaterial, envMap);
+          pm.clearcoat = 0.6;
+          if (!wheel) {
+            patchCarLights(pm, sp.length / 2, true);
+            brake = new THREE.InstancedBufferAttribute(new Float32Array(count), 1).setUsage(THREE.DynamicDrawUsage);
+            g.setAttribute('aBrake', brake);
+          }
+          mat = pm;
+        }
+        const im = new THREE.InstancedMesh(g, mat, count);
+        im.count = 0;
+        im.frustumCulled = false;
+        this.group.add(im);
+        m.parts.push({ im, wheel, brake });
+      };
+      for (const b of asset.body) mk(b.geometry, b.material, null);
+      for (const [k, list] of Object.entries(asset.wheels)) for (const w of list) mk(w.geometry, w.material, k);
+      this.models.push(m);
+    }
+    if (!this.models.length) MODELS.forEach((name, mi) => {
       for (const part of [...kitParts(kit, name), ...kitParts(kit, `${name}_glass`)]) {
         const mat = (part.material as THREE.MeshStandardMaterial).clone();
         const paint = mat.name.startsWith('paint_') && name !== 'car_taxi';
@@ -79,15 +121,23 @@ export class Traffic {
       const s = this.rng.range(12, Math.max(13, e.len - 14));
       const pos = this.lanePoint(e, from, s, lane);
       if (this.cars.some((c) => c.pos.distanceToSquared(pos) < 100)) continue;
-      const model = this.rng.int(0, MODELS.length - 1);
+      let model = this.rng.int(0, MODELS.length - 1);
+      let hw = model === 2 ? 1.0 : 0.9, hh = model === 2 ? 1.0 : 0.72, hl = model === 2 ? 2.6 : 2.25;
+      if (this.models.length) {
+        // weighted pick among generated models
+        let r = this.rng.next() * this.models.reduce((a, m) => a + m.weight, 0);
+        model = 0;
+        for (let i = 0; i < this.models.length; i++) { r -= this.models[i].weight; if (r <= 0) { model = i; break; } }
+        const M = this.models[model];
+        hw = M.width * 0.45; hh = M.height * 0.42; hl = M.length * 0.48;
+      }
       const body = this.phys.world.createRigidBody(RAPIER.RigidBodyDesc.kinematicPositionBased().setTranslation(pos.x, 0, pos.z));
-      const hw = model === 2 ? 1.0 : 0.9, hh = model === 2 ? 1.0 : 0.72, hl = model === 2 ? 2.6 : 2.25;
       this.phys.world.createCollider(RAPIER.ColliderDesc.cuboid(hw, hh, hl).setTranslation(0, hh + 0.15, 0).setFriction(0.3).setCollisionGroups(groups(GROUP_TRAFFIC, GROUP_CAR | GROUP_WORLD)), body);
       const B = this.graph.nodes[this.graph.other(e, from)];
       return {
         model, edge: e, from, s, lane, speed: 8, maxSpeed: e.alley ? 7 : this.rng.range(11, 17), turning: false, t: 0, curveLen: 0,
         pos, yaw: Math.atan2(B.x - this.graph.nodes[from].x, B.z - this.graph.nodes[from].z), body, stunned: 0,
-        color: new THREE.Color(this.rng.pick(PAINT)), honk: 0,
+        color: new THREE.Color(this.rng.pick(PAINT)), honk: 0, spin: 0, braking: false, lastSpeed: 8,
       };
     }
     return null;
@@ -215,7 +265,8 @@ export class Traffic {
       c.body.setNextKinematicRotation({ x: 0, y: Math.sin(c.yaw / 2), z: 0, w: Math.cos(c.yaw / 2) });
     }
 
-    // render
+    if (this.models.length) { this.renderModels(dt); void playerBody; return; }
+    // render (legacy kit models)
     const counts = new Map<THREE.InstancedMesh, number>();
     for (const m of this.meshes) { m.im.count = 0; counts.set(m.im, 0); }
     let bi = 0;
@@ -242,6 +293,48 @@ export class Traffic {
     this.beams.count = Math.min(bi, this.count * 2);
     this.beams.instanceMatrix.needsUpdate = true;
     void playerBody; void PITCH; void lineCoord;
+  }
+
+  private wm = new THREE.Matrix4();
+  private wq = new THREE.Quaternion();
+  private renderModels(dt: number) {
+    const cnt = this.models.map((m) => 0);
+    for (const M of this.models) for (const p of M.parts) p.im.count = 0;
+    let bi = 0;
+    const one = new THREE.Vector3(1, 1, 1);
+    for (const c of this.cars) {
+      const M = this.models[c.model];
+      const i = cnt[c.model]++;
+      this.q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), c.yaw);
+      this.m4.compose(c.pos, this.q, one);
+      c.spin += (c.speed / M.wheelR) * dt;
+      c.braking = c.speed < c.lastSpeed - 0.05 || c.speed < 0.3;
+      c.lastSpeed = c.speed;
+      const steer = c.turning && c.curve ? THREE.MathUtils.clamp(-(c.curve.getTangent(Math.min(1, c.t + 0.15)).cross(c.curve.getTangent(c.t)).y) * 6, -0.5, 0.5) : 0;
+      for (const p of M.parts) {
+        if (p.wheel) {
+          const wp = M.wheelPos[p.wheel];
+          this.wq.setFromEuler(new THREE.Euler(c.spin, p.wheel[0] === 'F' ? steer : 0, 0, 'YXZ'));
+          this.wm.compose(wp, this.wq, one).premultiply(this.m4);
+          p.im.setMatrixAt(i, this.wm);
+        } else {
+          p.im.setMatrixAt(i, this.m4);
+          if (p.brake) p.brake.setX(i, c.braking ? 1 : 0);
+        }
+        p.im.count = cnt[c.model];
+      }
+      const hx = M.width * 0.33, hz = M.length / 2 - 0.1, hy = M.height * 0.45;
+      for (const sx of [hx, -hx]) {
+        const p = new THREE.Vector3(sx, hy, hz).applyQuaternion(this.q).add(c.pos);
+        this.beams.setMatrixAt(bi++, new THREE.Matrix4().compose(p, this.q.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0.08, 0, 0))), new THREE.Vector3(3.2, 2.4, 16)));
+      }
+    }
+    for (const M of this.models) for (const p of M.parts) {
+      p.im.instanceMatrix.needsUpdate = true;
+      if (p.brake) p.brake.needsUpdate = true;
+    }
+    this.beams.count = Math.min(bi, this.count * 2);
+    this.beams.instanceMatrix.needsUpdate = true;
   }
 
   /** Light sources from traffic headlights/taillights for the ground light pool. */

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
+import { CAR_DEFS, bakeCar, type CarAsset, type CarSpec } from '../vehicle/carModels';
 
 const BASE = './assets/';
 
@@ -16,6 +17,8 @@ export interface Assets {
   car: GLTF | null;
   landmarks: Record<string, GLTF>;
   liveries: Record<string, THREE.Texture>;
+  cars: Record<string, CarAsset>;
+  carsLod: Record<string, CarAsset>;
 }
 
 export class Loader {
@@ -88,9 +91,17 @@ export class Loader {
     jobs.push(this.gltf('models/hero_car.glb').then((g) => (car = g)));
     const landmarks: Record<string, GLTF> = {};
     for (const l of ['lm_pagoda', 'lm_watertower', 'lm_crane', 'lm_gate', 'lm_statue']) jobs.push(this.gltf(`models/${l}.glb`).then((g) => { if (g) landmarks[l] = g; }));
+    const cars: Record<string, CarAsset> = {};
+    const carsLod: Record<string, CarAsset> = {};
+    for (const d of CAR_DEFS) {
+      jobs.push(Promise.all([this.json<CarSpec>(`cars/${d.id}.json`), this.gltf(`cars/${d.id}.glb`), this.gltf(`cars/${d.id}_lod.glb`)]).then(([spec, g, gl]) => {
+        if (g) cars[d.id] = bakeCar(g, spec);
+        if (gl) carsLod[d.id] = bakeCar(gl, spec);
+      }).catch((e) => console.warn('car load failed', d.id, e)));
+    }
     await Promise.all(jobs);
     if (!kit) throw new Error('citykit.glb failed to load');
-    return { tex, signs, ads, kit, car, landmarks, liveries };
+    return { tex, signs, ads, kit, car, landmarks, liveries, cars, carsLod };
   }
 }
 
