@@ -34,6 +34,16 @@ Living document: decisions, known issues, and how to rebuild every asset.
 - **On foot**: Rapier kinematic character controller (capsule, autostep, snap to ground); camera-relative movement; enter/exit sequences use the generated clips. Stealing a traffic car swaps its instanced LOD for a full drivable car, ejects a pedestrian driver who falls and runs, and adds wanted stars.
 - **Police**: wanted level 0–5, up to four kinematic cruisers routed by A* on the road graph (direct pursuit within 38 m), roadblocks at junctions ahead of the player from three stars. Busted after a few seconds stopped next to a cruiser; stars drop every 12 s spent more than 95 m from all police.
 - **Story** (`src/game/campaign.ts`): twelve missions built from reusable steps (go to, stop, on-foot, interact, tail, gates, drift, escape) plus per-mission meters (cargo, comfort, distance, drift). Mission positions snap to the nearest shopfront spot of the seeded city, so they are stable. Lines are in `scripts/story.mjs`, which feeds both the TTS spec and `story.json` (subtitles).
+- **Feedback round (gait, police, startup, touch)**:
+  - Walk/run playback rate is derived from each clip's measured ground speed: how fast the foot on the floor moves back relative to the hips (`gaitSpeeds` in `people.ts`). So the planted foot stays put; traces show it holding within 2 cm (walk) and 4–10 cm (run) while down. The hero's run is 4.4 m/s to match the generated jog clip.
+  - Foot grounding keeps the lower foot at the bind-pose ankle height (the retargeted clips floated about 8 cm).
+  - Characters are lit by the same neon light pools as the street, plus the real point lights, which follow the hero on foot. They also have a contact shadow.
+  - Get in / get out is a scripted door↔seat move. The body turn baked into the generated clips is measured per clip (`heading()`) and compensated, so the hero never spins around outside the car.
+  - The idle clip was regenerated: the first one swayed about ±14°.
+  - Police hold a slot behind the player and never drive into the car; kinematic contact used to launch it. They also no longer orbit junctions: the route used to start at a node already behind the cruiser. `tests/police.test.ts` checks they close to under 12 m on a stopped player but never under 5.5 m, and keep following a moving one. The car also has an anti-rollover assist (`tests/rollover.test.ts`).
+  - Startup: shaders are compiled for every character, car and the police before the title, and one full frame is rendered behind the loading screen. Full-detail cars stream in after the title. Every download has a timeout, and a lost WebGL context reloads one quality step lower.
+  - The car reflection probe renders one cube face per frame instead of all six every few frames, which removed the periodic hitch.
+  - Touch layout: sized in vmin with safe-area insets, separate driving and on-foot button sets, context buttons only when usable, and a rotate prompt for phones held upright. `scripts/shots_mobile.mjs` checks phone and tablet sizes and reports overlapping controls.
 - **Textures**: KTX2 needs the external `toktx` binary, which is not installable here, so textures are WebP (gltf-transform `--texture-compress webp`) and geometry is meshopt-compressed.
 
 ## Rebuilding assets
@@ -53,6 +63,10 @@ node scripts/story_json.mjs                 # campaign subtitles
 
 ## Testing
 - `npx tsx tests/physics.test.ts` — driving model telemetry
+- `npx tsx tests/rollover.test.ts` — hard knocks must end on the wheels (fails without the anti-rollover assist)
+- `npx tsx tests/police.test.ts` — pursuit closes in, boxes the player, never touches the car
+- `node scripts/shots.mjs <url> <dir> stride` — prints both hero feet per frame while walking and running; a planted foot must hold its position for several frames
+- `node scripts/shots.mjs <url> <dir> gait` / `police` — get in/out frames; police pressure (closest cruiser distance, car stays upright)
 - `npx vite preview` then `node scripts/shots.mjs "http://localhost:4173/?debug&q=high&fixed" screenshots [scenarios]` — headless Chromium screenshots + console errors. Scenarios include `drive`, `cars`, `foot` (exit, walk, talk, carjack) and `story` (teleports through every mission; `STORY=m1,m4` limits it). `?fixed` makes the sim advance 1/30 s per frame so software rendering still produces representative sim time.
 - URL flags: `?debug` (fps / draw calls overlay), `?q=low|med|high`, `?touch` (force touch controls), `?fixed`, `?allmissions` (open every story mission).
 
@@ -87,7 +101,7 @@ Requests that failed or were replaced:
 - Audio was verified to load and decode without errors, but couldn't be listened to here. Engine loop crossfade points are tuned by ear-less heuristics.
 - In the artifact build it is unknown whether the sandbox CSP permits WebAssembly compilation (Rapier). If the artifact hangs on "Loading", use `npm run preview` locally or the Vercel route above.
 - Rain intensity, fog density and bloom were tuned only on screenshots.
-- People are image-to-3D: hands and faces are good at street distance but soft up close. Retargeted motion has no foot locking, so feet can slide slightly at some walk speeds.
+- People are image-to-3D: hands and faces are good at street distance but soft up close. Gait playback matches movement speed, but there is no true foot IK, so a planted foot can still creep a few centimetres per step.
 - Pedestrians walk the sidewalk loops around blocks and don't cross roads. Cars knock them down, but there is no ragdoll.
 - The tailed van and police cars are kinematic and pass through traffic cars instead of crashing into them; the van stops behind traffic directly ahead.
 - Story missions were verified by a teleporting playthrough in headless Chromium, not played end to end at real speed, so timers may need tuning.

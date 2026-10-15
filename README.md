@@ -49,7 +49,7 @@ npm run build && npm run preview
 | M | Big map |
 | Esc / P | Pause |
 
-Gamepads and touch (on phones and tablets) are supported.
+Gamepads and touch (phones and tablets, landscape) are supported. On touch screens the left thumb steers or walks with a stick, the right thumb has GAS/BRAKE/DRIFT/BOOST (or RUN/JUMP on foot), drag the right side to look around, and EXIT / GET IN / STEAL / TALK buttons appear when you can use them.
 
 URL flags:
 - `?q=low|med|high` forces graphics quality (otherwise auto-detect plus adaptive downgrade).

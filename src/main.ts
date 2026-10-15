@@ -16,8 +16,8 @@ import { Vehicle } from './vehicle/vehicle';
 import { CarVisual, PAINTS, UNDERGLOW } from './vehicle/carVisual';
 import { CAR_DEFS, carDef } from './vehicle/carModels';
 import { HeroOnFoot, FootCam } from './game/onfoot';
-import { Crowd, PED_TYPES, type PedType, lerpAngle } from './world/people';
-import { Police } from './game/police';
+import { Crowd, Person, PED_TYPES, type PedType, lerpAngle } from './world/people';
+import { Police, carMesh } from './game/police';
 import { ChaseCam } from './vehicle/chaseCam';
 import { AudioSys } from './audio/audio';
 import { Hud } from './game/hud';
@@ -40,6 +40,20 @@ const autoLevel = autoDetectQuality(renderer.getContext() as WebGL2RenderingCont
 let qLevel: QualityLevel = (params.get('q') as QualityLevel) || (save.settings.quality === 'auto' ? autoLevel : save.settings.quality);
 let Q: QualitySettings = qualitySettings(qLevel);
 renderer.setPixelRatio(Q.pixelRatio);
+
+// If the browser drops the WebGL context (GPU memory pressure, mostly on phones and older laptops) the canvas
+// stays black for good. Step quality down one notch and reload instead of leaving a dead screen.
+canvas.addEventListener('webglcontextlost', (e) => {
+  e.preventDefault();
+  const order: QualityLevel[] = ['high', 'med', 'low'];
+  const next = order[Math.min(2, order.indexOf(qLevel) + 1)];
+  save.settings.quality = next;
+  writeSave(save);
+  const el = $('loadlabel');
+  show('loading', true);
+  el.textContent = `Graphics reset · restarting on ${next} quality…`;
+  setTimeout(() => location.reload(), 1200);
+}, false);
 
 const scene = new THREE.Scene();
 const FOG_COLOR = new THREE.Color(0x0b0a18);
@@ -78,6 +92,8 @@ let lightGrid = new Map<string, LightSrc[]>();
 let cubeRT: THREE.WebGLCubeRenderTarget | null = null;
 let cubeCam: THREE.CubeCamera | null = null;
 let cubeFrame = 0;
+let cubeFace = 0;
+let probeHook: ((dt: number) => void) | null = null;
 
 let state: 'loading' | 'title' | 'playing' | 'paused' = 'loading';
 let simTime = 0;
@@ -87,8 +103,8 @@ const SPAWN = new THREE.Vector3(lineCoord(4) + 1.75, 0.6, -150);
 const SPAWN_YAW = Math.PI;
 
 // ------------------------------------------------------------------ boot
+const loader = new Loader();
 async function boot() {
-  const loader = new Loader();
   const fill = $('loadfill'), label = $('loadlabel');
   const setP = (p: number, l: string) => { fill.style.width = `${Math.round(p * 100)}%`; label.textContent = l; };
   loader.onProgress = (p, l) => setP(p * 0.55, `Loading ${l.split('/').pop()}`);
@@ -99,14 +115,49 @@ async function boot() {
   setP(0.72, 'Generating city…');
   await new Promise((r) => setTimeout(r, 30));
   buildWorld();
-  setP(0.9, 'Compiling shaders…');
+  setP(0.85, 'Compiling shaders…');
   await new Promise((r) => setTimeout(r, 30));
-  renderer.compile(scene, camera);
+  await warmUp((p) => setP(0.85 + p * 0.15, 'Compiling shaders…'));
   setP(1, 'Ready');
   hud.setCredits(save.credits);
   hud.unlocked = save.unlocked;
   showTitle();
   (window as any).__neon = debugApi();
+  // stream the full-detail drivable cars in the background; swap the one being driven when it arrives
+  loader.loadFullCars(A.cars, (id) => {
+    if (id === carId && mode === 'drive' && state !== 'loading') spawnPlayerCar(id, carPos.clone().setY(carPos.y + 0.05), vehicle.yaw(), carVel.clone());
+    void warmCompile([carMesh(A.cars[id], envTex).root]);
+  }, save.car);
+}
+
+/**
+ * Compile every shader the game will need before play starts (characters, all cars, police, effects)
+ * and render one full frame behind the loading screen. Without this the first seconds of driving
+ * stall while the GPU compiles, which can look like a frozen black screen on slower devices.
+ */
+async function warmUp(progress: (p: number) => void) {
+  const extras: THREE.Object3D[] = [];
+  for (const g of Object.values(A.people)) if (g) extras.push(new Person(g, 'warm').root);
+  // meshes only: extra lights here would change the light count that every shader is compiled for
+  for (const a of Object.values(A.carsLod)) extras.push(carMesh(a, envTex).root);
+  progress(0.2);
+  await warmCompile(extras);
+  progress(0.7);
+  // one real frame (reflection + post chain) at the spawn point
+  camera.position.set(SPAWN.x, 3, SPAWN.z + 9);
+  camera.lookAt(SPAWN);
+  try { reflector.update(renderer, scene, camera); post.render(1 / 60); } catch (e) { console.warn('warm-up frame failed', e); }
+  progress(1);
+}
+async function warmCompile(objs: THREE.Object3D[]) {
+  const g = new THREE.Group();
+  g.position.copy(SPAWN);
+  objs.forEach((o, i) => { o.position.set((i % 6) * 3, 0, Math.floor(i / 6) * 3); g.add(o); });
+  scene.add(g);
+  // parallel (non-blocking) compile where the GPU driver supports it, plain compile otherwise
+  if (renderer.extensions.has('KHR_parallel_shader_compile')) await renderer.compileAsync(scene, camera);
+  else renderer.compile(scene, camera);
+  scene.remove(g);
 }
 
 function buildWorld() {
@@ -190,7 +241,7 @@ function buildWorld() {
   scene.add(skyTraffic.points);
 
   envTex = env;
-  if (!A.cars[save.car] && save.car !== 'hero') save.car = 'hero';
+  if (!A.carsLod[save.car] && save.car !== 'hero') save.car = 'hero';
   spawnPlayerCar(save.car, SPAWN, SPAWN_YAW);
   cubeRT = new THREE.WebGLCubeRenderTarget(128, { type: THREE.HalfFloatType, generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter });
   cubeCam = new THREE.CubeCamera(0.5, 160, cubeRT);
@@ -220,7 +271,7 @@ function buildWorld() {
   scene.add(missions.group);
   for (const d of save.unlocked) city.unlock(d);
   campaign = new Campaign({
-    phys, city, graph, hud, audio, save, envMap: env, cars: A.cars, people: A.people as any,
+    phys, city, graph, hud, audio, save, envMap: env, cars: A.carsLod, people: A.people as any,
     placePlayer: (x, z, yaw) => placePlayer(x, z, yaw),
     spawnParked: (id, x, z, yaw) => {
       const m = makeCar(id, new THREE.Vector3(x, 0.8, z), yaw);
@@ -297,7 +348,8 @@ let carId = 'hero';
 
 /** Build a car (visual + physics) without making it the player's. */
 function makeCar(id: string, pos: THREE.Vector3, yaw: number) {
-  const asset = id === 'hero' ? undefined : A.cars[id];
+  // full-detail model once it has streamed in, the traffic version until then
+  const asset = id === 'hero' ? undefined : A.cars[id] ?? A.carsLod[id];
   const def = id === 'hero' ? HERO_DEF : carDef(id)!;
   const c = new CarVisual(asset ? null : A.car, A.kit, envTex, asset);
   const wp = Object.fromEntries(Object.entries(c.wheelLocal).map(([k, v]) => [k, v.clone()]));
@@ -325,7 +377,8 @@ function evictParked() {
 
 /** Put the player back in their own car on a road (story mission start). */
 function placePlayer(x: number, z: number, yaw: number) {
-  if (hero && mode !== 'drive') { hero.hide(); hero.busy = 0; }
+  if (hero && mode !== 'drive') { hero.hide(); hero.busy = 0; hero.frozen = false; }
+  carSeq = null;
   mode = 'drive';
   seqDone = null;
   talking = 0;
@@ -542,7 +595,7 @@ function renderGarage() {
   $('liveries').innerHTML = `<div class="swatch ${!save.livery ? 'on' : ''}" data-liv="" style="display:flex;align-items:center;justify-content:center;font-size:11px;color:#8c9bb8">NONE</div>` +
     Object.keys(A.liveries).map((l) => `<div class="swatch ${save.livery === l ? 'on' : ''}" data-liv="${l}" style="background-image:url(./assets/livery/${l}.png)"></div>`).join('');
   const bar = (v: number, max: number) => `<div class="pips">${[0, 1, 2, 3, 4].map((i) => `<i class="${i < Math.round((v / max) * 5) ? 'on' : ''}"></i>`).join('')}</div>`;
-  $('cars').innerHTML = [HERO_DEF, ...CAR_DEFS.filter((d) => A.cars[d.id])].map((d) => {
+  $('cars').innerHTML = [HERO_DEF, ...CAR_DEFS.filter((d) => A.carsLod[d.id])].map((d) => {
     const owned = save.ownedCars.includes(d.id), current = save.car === d.id;
     return `<div class="card car-card ${current ? 'current' : ''}"><div class="c-head">${d.name}</div><div class="desc">${d.desc}</div>
       <div class="stat">Speed ${bar(d.topSpeed, 70)}</div><div class="stat">Power ${bar(d.power, 1.45)}</div><div class="stat">Grip ${bar(d.grip, 1.15)}</div>
@@ -625,6 +678,8 @@ function setQuality(l: QualityLevel) {
   smoke.setScale(innerHeight * Q.pixelRatio, camera.fov);
 }
 
+if (isMobile() || params.has('touch')) document.body.classList.add('touch');
+
 function startDrive(story?: MissionDef) {
   show('title', false);
   show('tap', false);
@@ -671,29 +726,77 @@ function quitToTitle() {
 
 // ------------------------------------------------------------------ touch controls
 function setupTouch() {
-  const steer = $('t-steer'), knob = $('t-knob');
-  let id: number | null = null, x0 = 0;
-  steer.addEventListener('pointerdown', (e) => { id = e.pointerId; x0 = e.clientX; knob.style.left = `${e.clientX}px`; knob.style.bottom = `${innerHeight - e.clientY}px`; steer.setPointerCapture(e.pointerId); });
-  let y0 = 0;
-  steer.addEventListener('pointerdown', (e) => { y0 = e.clientY; });
-  steer.addEventListener('pointermove', (e) => { if (e.pointerId !== id) return; input.touch.steer = THREE.MathUtils.clamp((e.clientX - x0) / 70, -1, 1); input.touch.moveY = THREE.MathUtils.clamp((y0 - e.clientY) / 70, -1, 1); });
-  const end = (e: PointerEvent) => { if (e.pointerId !== id) return; id = null; input.touch.steer = 0; input.touch.moveY = 0; };
-  steer.addEventListener('pointerup', end);
-  steer.addEventListener('pointercancel', end);
+  // virtual stick: appears under the thumb, knob follows the finger, clamped to the ring
+  const zone = $('t-steer'), base = $('t-base'), knob = $('t-knob');
+  let id: number | null = null, ox = 0, oy = 0;
+  const radius = () => base.offsetWidth * 0.42;
+  zone.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    id = e.pointerId; ox = e.clientX; oy = e.clientY;
+    base.classList.add('free');
+    base.style.left = `${ox}px`; base.style.bottom = `${innerHeight - oy}px`;
+    zone.setPointerCapture(e.pointerId);
+  });
+  zone.addEventListener('pointermove', (e) => {
+    if (e.pointerId !== id) return;
+    const R = radius();
+    let dx = e.clientX - ox, dy = e.clientY - oy;
+    const l = Math.hypot(dx, dy);
+    if (l > R) { dx *= R / l; dy *= R / l; }
+    knob.style.transform = `translate(${dx}px, ${dy}px)`;
+    input.touch.steer = dx / R;
+    input.touch.moveY = -dy / R;
+  });
+  const end = (e: PointerEvent) => {
+    if (e.pointerId !== id) return;
+    id = null; input.touch.steer = 0; input.touch.moveY = 0;
+    knob.style.transform = '';
+    base.classList.remove('free'); base.style.left = ''; base.style.bottom = '';
+  };
+  zone.addEventListener('pointerup', end);
+  zone.addEventListener('pointercancel', end);
+
+  // on foot: drag the right side of the screen to look around
+  const look = $('t-look');
+  let lid: number | null = null, lx = 0, ly = 0;
+  look.addEventListener('pointerdown', (e) => { lid = e.pointerId; lx = e.clientX; ly = e.clientY; look.setPointerCapture(e.pointerId); });
+  look.addEventListener('pointermove', (e) => {
+    if (e.pointerId !== lid) return;
+    footCam.yaw -= (e.clientX - lx) * 0.006;
+    footCam.pitch = THREE.MathUtils.clamp(footCam.pitch + (e.clientY - ly) * 0.004, -0.35, 0.9);
+    lx = e.clientX; ly = e.clientY;
+  });
+  const lend = (e: PointerEvent) => { if (e.pointerId === lid) lid = null; };
+  look.addEventListener('pointerup', lend);
+  look.addEventListener('pointercancel', lend);
+
   const hold = (el: string, on: () => void, off: () => void) => {
     const b = $(el);
-    b.addEventListener('pointerdown', (e) => { e.preventDefault(); on(); });
-    b.addEventListener('pointerup', off);
-    b.addEventListener('pointerleave', off);
-    b.addEventListener('pointercancel', off);
+    b.addEventListener('pointerdown', (e) => { e.preventDefault(); b.classList.add('held'); b.setPointerCapture(e.pointerId); on(); });
+    const up = () => { b.classList.remove('held'); off(); };
+    b.addEventListener('pointerup', up);
+    b.addEventListener('pointercancel', up);
+    b.addEventListener('lostpointercapture', up);
   };
   hold('t-gas', () => (input.touch.throttle = 1), () => (input.touch.throttle = 0));
   hold('t-brake', () => (input.touch.brake = 1), () => (input.touch.brake = 0));
   hold('t-drift', () => (input.touch.handbrake = true), () => (input.touch.handbrake = false));
   hold('t-boost', () => (input.touch.boost = true), () => (input.touch.boost = false));
+  hold('t-run', () => (input.touch.run = true), () => (input.touch.run = false));
+  const tap = (el: string, code: string) => $(el).addEventListener('pointerdown', (e) => { e.preventDefault(); input.pressed.add(code); });
+  tap('t-jump', 'Space');
+  tap('t-action', 'KeyE');
+  tap('t-talk', 'KeyT');
   $('t-pause').addEventListener('click', pause);
-  $('t-action').addEventListener('pointerdown', (e) => { e.preventDefault(); input.pressed.add('KeyE'); });
-  $('t-talk').addEventListener('pointerdown', (e) => { e.preventDefault(); input.pressed.add('KeyT'); });
+}
+
+/** Context buttons on touch screens: shown only when the action is possible right now. */
+function setTouchCtx(action: string | null, talk: string | null) {
+  const a = $('t-action'), t = $('t-talk');
+  a.classList.toggle('hidden', !action);
+  t.classList.toggle('hidden', !talk);
+  if (action && a.textContent !== action) a.textContent = action;
+  if (talk && t.textContent !== talk) t.textContent = talk;
 }
 setupTouch();
 
@@ -738,7 +841,9 @@ function updateLightPools() {
     C[i].set(c.l.color.r, c.l.color.g, c.l.color.b).multiplyScalar(c.l.radius > 20 ? 0.9 : 1.2);
   }
   // real point lights: strongest static lights near the car (they tint the car paint)
-  const near = cand.filter((c) => c.l.pos.distanceTo(carPos) < 28 && !dynLights.includes(c.l as any)).slice(0, Q.realLights);
+  // on foot the real lights gather around the hero (they light skin and clothes), in the car around the car paint
+  const lightFocus = mode === 'drive' ? carPos : playerPos;
+  const near = cand.filter((c) => c.l.pos.distanceTo(lightFocus) < 28 && !dynLights.includes(c.l as any)).slice(0, Q.realLights);
   realLights.forEach((rl, i) => {
     const c = near[i];
     if (!c) { rl.intensity = 0; return; }
@@ -859,25 +964,70 @@ function busted() {
     show('busted', false);
     police.clear();
     hud.toast(`Busted · fine ${fine.toLocaleString()} CR`);
-    if (mode !== 'drive' && hero) { hero.hide(); mode = 'drive'; }
+    if (mode !== 'drive' && hero) { hero.hide(); hero.frozen = false; carSeq = null; seqDone = null; mode = 'drive'; }
     resetCar();
   }, 2600);
 }
 
-/** Leave the current car: it stays parked, the hero steps out of the driver door. */
+/**
+ * Scripted get-in / get-out. The visible hero moves between the driver door and the seat while the
+ * body turns from facing the door to facing along the car. The generated clips turn the body by
+ * themselves (to sit down / stand up); that turn is measured per clip and compensated, so the body
+ * always faces the right way and he never ends up spinning around outside the car.
+ */
+interface CarSeq {
+  t: number; clip: 'enter_car' | 'exit_car'; clipT0: number; rate: number;
+  from: THREE.Vector3; to: THREE.Vector3; moveA: number; moveB: number;
+  bodyFrom: number; bodyTo: number; turnA: number; turnB: number;
+}
+let carSeq: CarSeq | null = null;
+const smooth01 = (x: number) => { const k = THREE.MathUtils.clamp(x, 0, 1); return k * k * (3 - 2 * k); };
+
+function updateCarSeq(dt: number) {
+  if (!carSeq || !hero) return;
+  const q = carSeq;
+  q.t += dt;
+  const k = smooth01((q.t - q.moveA) / Math.max(1e-3, q.moveB - q.moveA));
+  const p = q.from.clone().lerp(q.to, k);
+  const body = lerpAngle(q.bodyFrom, q.bodyTo, smooth01((q.t - q.turnA) / Math.max(1e-3, q.turnB - q.turnA)));
+  const clipT = Math.min(hero.person.clipDuration(q.clip), q.clipT0 + q.t * q.rate);
+  hero.person.place(p.x, p.y, p.z, body - hero.person.heading(q.clip, clipT));
+}
+
+/** seat position (driver side, slightly forward of centre) and door for a car */
+function seatOf(pos: THREE.Vector3, yaw: number, halfWidth: number) {
+  return new THREE.Vector3(halfWidth * 0.32, 0, 0.15).applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw).add(pos).setY(0.12);
+}
+
+/** Leave the current car: it stays parked, the hero swings out of the driver seat and stands up at the door. */
 function startExit() {
   if (!hero || vehicle.speedAbs > 7) return;
   mode = 'exit';
   const yaw = vehicle.yaw();
   const door = carDoor(carPos, yaw, car.dims.width / 2);
+  const seat = seatOf(carPos, yaw, car.dims.width / 2);
   hero.spawn(door, yaw + Math.PI / 2);
-  const d = hero.person.play('exit_car', { loop: false, fade: 0.05, speed: 1.7, restart: true });
-  hero.busy = d / 1.7;
+  hero.frozen = true;
+  const D = hero.person.clipDuration('exit_car');
+  const rate = 1.6, clipT0 = D * 0.35; // start once the legs are swinging out; the car hides the seated part
+  hero.person.play('exit_car', { loop: false, fade: 0.05, speed: rate, restart: true, from: clipT0 });
+  const dur = (D - clipT0) / rate;
+  carSeq = { t: 0, clip: 'exit_car', clipT0, rate, from: seat, to: door, moveA: 0, moveB: dur * 0.5, bodyFrom: yaw, bodyTo: yaw + Math.PI / 2, turnA: 0, turnB: dur * 0.55 };
+  updateCarSeq(0);
+  hero.busy = dur;
   audio.play('door_open', { pos: door, volume: 0.8 });
-  setTimeout(() => audio.play('door_close', { pos: door, volume: 0.9 }), (d / 1.7) * 700);
+  setTimeout(() => audio.play('door_close', { pos: door, volume: 0.9 }), dur * 750);
   footCam.reset(yaw);
-  seqT = d / 1.7;
-  seqDone = () => { mode = 'foot'; };
+  seqT = dur;
+  seqDone = () => {
+    carSeq = null;
+    if (!hero) return;
+    hero.frozen = false;
+    hero.place(door);
+    hero.person.yaw = yaw + Math.PI / 2;
+    hero.person.play('idle', { fade: 0.35 });
+    mode = 'foot';
+  };
   if (!matchMedia('(pointer: coarse)').matches) canvas.requestPointerLock?.();
 }
 
@@ -927,11 +1077,24 @@ function startEnter() {
   }
   setTimeout(() => {
     if (!hero) return;
-    const ed = hero.person.play('enter_car', { loop: false, fade: 0.1, speed: 1.8, restart: true });
-    hero.busy = ed / 1.8;
+    // reach for the handle at the door, then slide into the seat while turning to face forward
+    const cPos = tgt.kind === 'traffic' ? tgt.tc.pos.clone() : (() => { const t = tgt.o.vehicle.body.translation(); return new THREE.Vector3(t.x, 0, t.z); })();
+    const cYaw = tgt.kind === 'traffic' ? tgt.tc.yaw : tgt.o.vehicle.yaw();
+    const halfW = tgt.kind === 'traffic' ? (traffic.models[tgt.tc.model]?.width ?? 1.9) / 2 : tgt.o.car.dims.width / 2;
+    const seat = seatOf(cPos, cYaw, halfW);
+    const D = hero.person.clipDuration('enter_car');
+    const rate = 1.6, clipEnd = D * 0.72; // stop once seated; the rest of the clip is settling in
+    hero.frozen = true;
+    hero.person.play('enter_car', { loop: false, fade: 0.12, speed: rate, restart: true });
+    const dur = clipEnd / rate, reach = (D * 0.25) / rate;
+    carSeq = { t: 0, clip: 'enter_car', clipT0: 0, rate, from: tgt.door.clone().setY(0.05), to: seat, moveA: reach, moveB: dur, bodyFrom: cYaw - Math.PI / 2, bodyTo: cYaw, turnA: reach * 0.8, turnB: dur * 0.95 };
+    updateCarSeq(0);
+    hero.busy = dur;
     if (tgt.kind === 'own') audio.play('door_open', { pos: tgt.door });
-    seqT = ed / 1.8;
+    seqT = dur;
     seqDone = () => {
+      carSeq = null;
+      hero!.frozen = false;
       audio.play('door_close', { pos: tgt.door, volume: 0.9 });
       hero!.hide();
       if (tgt.kind === 'traffic') {
@@ -981,6 +1144,7 @@ function handleInteractions() {
   if (mode === 'drive') {
     if (e && hero) startExit();
     setContext(null);
+    setTouchCtx(hero && vehicle.speedAbs < 7 ? 'EXIT' : null, null);
   } else if (mode === 'foot' && hero) {
     const story = campaign.interaction && campaign.interaction.at.distanceTo(hero.pos.setY(campaign.interaction.at.y)) < 2.8 ? campaign.interaction : null;
     if (e) startEnter();
@@ -988,7 +1152,9 @@ function handleInteractions() {
     const tgt = enterTarget();
     const ped = talking > 0 || story ? null : crowd.nearest(hero.pos, 2.8);
     setContext(story ? `<b>T</b> · ${story.label}` : tgt ? `<b>E</b> · ${tgt.kind === 'traffic' ? 'Steal car' : 'Get in'}` : ped ? '<b>T</b> · Talk' : null);
-  } else setContext(null);
+    setTouchCtx(tgt ? (tgt.kind === 'traffic' ? 'STEAL' : 'GET IN') : null, story ? 'GIVE' : ped ? 'TALK' : null);
+  } else { setContext(null); setTouchCtx(null, null); }
+  document.body.classList.toggle('on-foot', mode !== 'drive');
 }
 
 function resetCar() {
@@ -1073,6 +1239,7 @@ function frame(now: number) {
     }
     // the hero on foot (also during get-in / get-out animations)
     if (hero && hero.active) hero.update(dtReal, mode === 'foot' ? input.readFoot() : { x: 0, z: 0, run: false, jump: false }, footCam.yaw);
+    updateCarSeq(dtReal);
     if (driving || !hero) {
       playerPos.copy(carPos); playerVel.copy(carVel);
       chase.update(dtReal, carPos, carQuat, carVel, vehicle.speed, vehicle.boosting, vehicle.drifting, vehicle.body);
@@ -1082,6 +1249,7 @@ function frame(now: number) {
       playerPos.copy(hp);
       footCam.update(dtReal, hp, input.keys, hero.collider);
     }
+    probeHook?.(dtReal);
     crowd.update(dtReal, playerPos, driving ? { pos: carPos, vel: carVel, halfLen: car.dims.length / 2, halfWid: car.dims.width / 2, yaw: vehicle.yaw(), speed: vehicle.speedAbs } : null);
     const pol = police.update(dtReal, simTime, playerPos, playerVel, !driving);
     audio.siren(pol.nearestPos && pol.nearest < 160 ? pol.nearestPos : null);
@@ -1141,16 +1309,24 @@ function frame(now: number) {
     post.chroma.offset.set(0.0006 + (vehicle.boosting ? 0.0025 : 0), 0.0004 + (vehicle.boosting ? 0.0015 : 0));
   }
   renderer.info.reset();
-  // car reflection probe: refresh every few frames (High: 6, Med: 15), off on Low
+  // car reflection probe: one cube face per frame (High) or every other frame (Med), off on Low.
+  // Rendering all six faces at once every few frames caused visible hitches.
   if (state === 'playing' && cubeCam && cubeRT && car.paintMat && qLevel !== 'low') {
-    if (cubeFrame++ % (qLevel === 'high' ? 6 : 15) === 0) {
+    const tick = cubeFrame++;
+    if (tick === 0) { cubeCam.position.copy(carPos).add(new THREE.Vector3(0, 1.2, 0)); car.root.visible = false; cubeCam.update(renderer, scene); car.root.visible = true; }
+    else if (qLevel === 'high' || tick % 2 === 0) {
+      const face = cubeFace++ % 6;
+      if (face === 0) { cubeCam.position.copy(carPos).add(new THREE.Vector3(0, 1.2, 0)); cubeCam.updateMatrixWorld(true); }
       car.root.visible = false;
-      cubeCam.position.copy(carPos).add(new THREE.Vector3(0, 1.2, 0));
-      cubeCam.update(renderer, scene);
-      cubeRT.texture.needsPMREMUpdate = true;
+      const prev = renderer.getRenderTarget();
+      cubeRT.texture.generateMipmaps = face === 5;
+      renderer.setRenderTarget(cubeRT, face);
+      renderer.render(scene, cubeCam.children[face] as THREE.Camera);
+      renderer.setRenderTarget(prev);
       car.root.visible = true;
-      if (car.paintMat.envMap !== cubeRT.texture) { car.paintMat.envMap = cubeRT.texture; car.paintMat.envMapIntensity = 1.3; car.paintMat.needsUpdate = true; }
+      if (face === 5) cubeRT.texture.needsPMREMUpdate = true;
     }
+    if (car.paintMat.envMap !== cubeRT.texture) { car.paintMat.envMap = cubeRT.texture; car.paintMat.envMapIntensity = 1.3; car.paintMat.needsUpdate = true; }
   } else if (car && car.paintMat && cubeRT && car.paintMat.envMap === cubeRT.texture && qLevel === 'low') {
     car.paintMat.envMap = scene.environment; car.paintMat.needsUpdate = true;
   }
@@ -1232,8 +1408,30 @@ function debugApi() {
     mission: () => ({ state: missions.state, timer: missions.timer, target: missions.target?.toArray() }),
     story: (id: string) => { const d = MISSIONS.find((m) => m.id === id); if (d) startStory(d); return !!d; },
     storyState: () => ({ id: campaign.active?.id, state: campaign.state, step: campaign.idx, steps: campaign.steps.length, timer: campaign.timer, target: campaign.target?.toArray().map((n) => Math.round(n)), damage: Math.round(campaign.damage), comfort: Math.round(campaign.comfort), drift: Math.round(campaign.driftBank + campaign.driftChain), heat: police.heat, mode }),
+    /** raw per-frame world positions of both hero feet (for checking that a planted foot stays put) */
+    footTrace: (frames = 16) => new Promise((done) => {
+      if (!hero) return done(null);
+      const f: THREE.Object3D[] = [];
+      hero.person.root.traverse((o) => { if (/(left|right)foot$/i.test(o.name)) f.push(o); });
+      const out: string[] = [];
+      let n = 0;
+      probeHook = () => {
+        const p = f.map((o) => o.getWorldPosition(new THREE.Vector3()));
+        out.push(p.map((v, i) => `${i ? 'R' : 'L'}(${v.x.toFixed(2)},${v.z.toFixed(2)} h${(v.y - hero!.pos.y).toFixed(2)})`).join(' '));
+        if (++n >= frames) { probeHook = null; done(out); }
+      };
+    }),
+    policeInfo: () => ({ heat: police.heat, units: police.units.map((u) => +u.pos.distanceTo(playerPos).toFixed(1)), upright: !vehicle.isUpsideDown(), up: +new THREE.Vector3(0, 1, 0).applyQuaternion(carQuat).y.toFixed(2), kmh: +(vehicle.speedAbs * 3.6).toFixed(0) }),
     storyInteract: () => { campaign.interaction?.run(); return !!campaign.interaction; },
     storyNext: () => { (campaign as any).next(); },
+    /** on foot: stand at the driver door of the player's own car */
+    heroToOwnDoor: () => {
+      if (!hero) return null;
+      const door = carDoor(carPos, vehicle.yaw(), car.dims.width / 2);
+      hero.place(door.clone().setY(0.2));
+      footCam.yaw = vehicle.yaw() + Math.PI / 2 + 0.6;
+      return door.toArray().map(Math.round);
+    },
     /** on foot: stand at the driver door of the most recently parked car */
     toParkedDoor: () => {
       const p = parkedCars[parkedCars.length - 1];

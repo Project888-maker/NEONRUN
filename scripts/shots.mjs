@@ -164,6 +164,54 @@ if (want('foot')) {
   await shot('47_police');
   await N('setInput', {});
 }
+if (want('stride')) {
+  await N('setInput', {});
+  await N('exitCar'); await sleep(2800);
+  await N('setInput', { footZ: 1 }); await sleep(1500);
+  console.log('trace walk\n  ' + (await N('footTrace', 16)).join('\n  '));
+  await N('setInput', { footZ: 1, run: true }); await sleep(1500);
+  console.log('trace run\n  ' + (await N('footTrace', 16)).join('\n  '));
+  await N('setInput', {});
+}
+if (want('police')) {
+  // police pressure: they should close in and box the car, never shove it over
+  await N('heat', 3);
+  let minUp = 1, minDist = Infinity;
+  const watch = async (label) => { const i = await N('policeInfo'); minUp = Math.min(minUp, i.up); for (const d of i.units) minDist = Math.min(minDist, d); console.log('police', label, JSON.stringify(i)); };
+  await N('setInput', { throttle: 0.5 });
+  for (let k = 0; k < 6; k++) { await sleep(2000); await watch(`drive${k}`); }
+  await shot('80_police_drive');
+  await N('setInput', { brake: 1 });
+  for (let k = 0; k < 5; k++) { await sleep(1500); await watch(`stopped${k}`); }
+  await shot('81_police_stop');
+  await N('setInput', {});
+  console.log('police summary', JSON.stringify({ minUp, closestCruiser_m: minDist }));
+}
+if (want('gait')) {
+  // get-out / idle / walk / run / get-in frames
+  await N('setInput', {});
+  await N('exitCar');
+  await sleep(500); await shot('70_exit_a');
+  await sleep(500); await shot('70_exit_b');
+  await sleep(1400);
+  await shot('71_idle');
+  await N('setInput', { footZ: 1 }); await sleep(1500);
+  await shot('72_walk');
+  await N('setInput', { footZ: 1, run: true }); await sleep(1500);
+  await shot('73_run');
+  await N('setInput', {});
+  await sleep(800);
+  console.log('door', JSON.stringify(await N('toParkedDoor')));
+  // walk back to the own car: place at its door
+  await N('heroToOwnDoor');
+  await sleep(300);
+  await N('enterCar');
+  await sleep(450); await shot('74_enter_a');
+  await sleep(450); await shot('74_enter_b');
+  await sleep(450); await shot('74_enter_c');
+  await sleep(1200);
+  console.log('mode after enter', await N('mode'));
+}
 if (want('respawn')) {
   // regression: re-creating the Night Courier after another car used to measure its wheels relative to the old car (it flipped)
   await N('setCar', 'car_taxi'); await sleep(500);

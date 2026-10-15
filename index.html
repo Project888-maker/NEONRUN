@@ -171,15 +171,26 @@
 
   <!-- touch controls -->
   <div id="touch" class="hidden">
-    <div id="t-steer"><div id="t-knob"></div></div>
-    <button id="t-gas">GAS</button>
-    <button id="t-brake">BRK</button>
-    <button id="t-drift">DRIFT</button>
-    <button id="t-boost">BOOST</button>
-    <button id="t-pause">II</button>
-    <button id="t-action">E</button>
-    <button id="t-talk">TALK</button>
+    <div id="t-look"></div>
+    <div id="t-steer"><div id="t-base"><div id="t-knob"></div></div></div>
+    <div class="t-pad drive-set">
+      <button id="t-drift">DRIFT</button>
+      <button id="t-boost">BOOST</button>
+      <button id="t-brake">BRAKE</button>
+      <button id="t-gas">GAS</button>
+    </div>
+    <div class="t-pad foot-set">
+      <button id="t-jump">JUMP</button>
+      <button id="t-run">RUN</button>
+    </div>
+    <div class="t-ctx">
+      <button id="t-talk" class="hidden">TALK</button>
+      <button id="t-action" class="hidden">EXIT</button>
+    </div>
+    <button id="t-pause" aria-label="Pause">II</button>
   </div>
+
+  <div id="rotate"><div class="r-phone"></div>Turn your phone sideways to play</div>
 
   <div id="tap" class="hidden">Tap / press any key to start</div>
 

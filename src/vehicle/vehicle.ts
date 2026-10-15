@@ -291,6 +291,18 @@ export class Vehicle {
     const drag = vel.clone().multiplyScalar(-this.speedAbs * 0.42 * dt);
     b.applyImpulse({ x: drag.x, y: drag.y, z: drag.z }, true);
 
+    // ---- anti-rollover: past ~30° of roll/pitch, torque the car back toward upright and damp the tumble
+    if (up.y < 0.87 && up.y > -0.2) {
+      const axis = up.clone().cross(new THREE.Vector3(0, 1, 0));
+      const tilt = Math.asin(Math.min(1, axis.length()));
+      if (axis.lengthSq() > 1e-6) {
+        axis.normalize();
+        const tumble = ang.dot(axis);
+        const k = this.mass * 2.2 * (tilt * 9 - tumble * 1.6) * dt;
+        b.applyTorqueImpulse({ x: axis.x * k, y: axis.y * k, z: axis.z * k }, true);
+      }
+    }
+
     // ---- assists
     const yawRate = ang.dot(up);
     if (grounded >= 2) {

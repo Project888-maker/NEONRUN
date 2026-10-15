@@ -174,10 +174,18 @@ export class Police {
         u.routeT = 1.5;
         const a = this.graph.nearestNode(u.pos.x, u.pos.z), b = this.graph.nearestNode(player.x, player.z);
         u.route = this.graph.route(a, b).map((i) => new THREE.Vector3(this.graph.nodes[i].x, 0, this.graph.nodes[i].z));
+        // the nearest node is often already behind the cruiser: chasing it made units U-turn and orbit junctions
+        const f = new THREE.Vector3(Math.sin(u.yaw), 0, Math.cos(u.yaw));
+        while (u.route.length > 1 && u.route[0].clone().sub(u.pos).dot(f) < 4) u.route.shift();
       }
-      let target = player.clone().addScaledVector(playerVel, 0.6);
+      // close in on a point behind the player (each unit takes its own slot) instead of aiming at the car itself:
+      // police are kinematic, so touching the player's car would launch it
+      const pv = playerVel.clone().setY(0);
+      const back = pv.lengthSq() > 4 ? pv.clone().normalize().multiplyScalar(-1) : player.clone().sub(u.pos).setY(0).normalize().multiplyScalar(-1);
+      const side = new THREE.Vector3(-back.z, 0, back.x).multiplyScalar(((this.units.indexOf(u) % 3) - 1) * 3.2);
+      let target = player.clone().addScaledVector(back, 9).add(side);
       if (d > 38) {
-        while (u.route.length && u.route[0].distanceTo(u.pos) < 8) u.route.shift();
+        while (u.route.length && u.route[0].distanceTo(u.pos) < 12) u.route.shift();
         if (u.route.length) target = u.route[0];
       }
       const to = target.clone().sub(u.pos).setY(0);
@@ -187,10 +195,16 @@ export class Police {
       while (dy > Math.PI) dy -= Math.PI * 2;
       while (dy < -Math.PI) dy += Math.PI * 2;
       u.yaw += THREE.MathUtils.clamp(dy, -dt * 2.4, dt * 2.4);
-      const maxV = d < 12 ? Math.max(4, playerVel.length() + 3) : 31;
+      // near the player: match their speed (a little faster to keep up), never faster than that
+      const maxV = d < 25 ? Math.max(2, pv.length() + (d > 12 ? 4 : 1)) : 28;
       const corner = Math.max(0.35, 1 - Math.abs(dy) * 0.9);
-      u.speed = THREE.MathUtils.lerp(u.speed, Math.min(maxV, dist * 2) * corner, Math.min(1, dt * 1.6));
-      u.pos.addScaledVector(new THREE.Vector3(Math.sin(u.yaw), 0, Math.cos(u.yaw)), u.speed * dt);
+      u.speed = THREE.MathUtils.lerp(u.speed, Math.min(maxV, dist * 1.5) * corner, Math.min(1, dt * 1.6));
+      const step = new THREE.Vector3(Math.sin(u.yaw), 0, Math.cos(u.yaw)).multiplyScalar(u.speed * dt);
+      // contact guard: never move into the player's car (or another cruiser)
+      const next = u.pos.clone().add(step);
+      const blocked = next.distanceTo(player) < 6.2 && next.distanceTo(player) < u.pos.distanceTo(player)
+        || this.units.some((o) => o !== u && next.distanceTo(o.pos) < 5.5 && next.distanceTo(o.pos) < u.pos.distanceTo(o.pos));
+      if (blocked) u.speed = 0; else u.pos.copy(next);
       u.body.setNextKinematicTranslation({ x: u.pos.x, y: 0, z: u.pos.z });
       u.body.setNextKinematicRotation({ x: 0, y: Math.sin(u.yaw / 2), z: 0, w: Math.cos(u.yaw / 2) });
       u.root.position.copy(u.pos);
@@ -228,7 +242,7 @@ export class Police {
 
     // busted / evade
     const slow = playerVel.length() < (onFoot ? 99 : 3);
-    if (this.heat > 0 && nearest < (onFoot ? 5 : 8) && slow) {
+    if (this.heat > 0 && nearest < (onFoot ? 6 : 9.5) && slow) {
       this.bustT += dt;
       if (this.bustT > (onFoot ? 1.5 : 2.5)) { this.bustT = 0; this.onBusted(); }
     } else this.bustT = Math.max(0, this.bustT - dt);

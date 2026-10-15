@@ -1,6 +1,6 @@
 {
   "budget_usd": 25,
-  "spent_usd_est": 40.7356,
+  "spent_usd_est": 40.9356,
   "assets": {
     "_tests/probe": {
       "files": [],
@@ -5978,6 +5978,22 @@
       "cost_usd_est": 0.03,
       "created": "2026-10-15T01:48:12.010Z",
       "seconds": 5
+    },
+    "motion/idle_calm": {
+      "files": [
+        "assets/generated/motion/idle_calm.fbx"
+      ],
+      "model": "fal-ai/hunyuan-motion",
+      "prompt": "a person stands completely still in a neutral relaxed pose, arms hanging at the sides, feet planted shoulder width apart, only slow subtle breathing, no swaying, no weight shifting",
+      "input": {
+        "prompt": "a person stands completely still in a neutral relaxed pose, arms hanging at the sides, feet planted shoulder width apart, only slow subtle breathing, no swaying, no weight shifting",
+        "duration": 4,
+        "output_format": "fbx"
+      },
+      "seed": 817064807,
+      "cost_usd_est": 0.2,
+      "created": "2026-10-15T20:34:38.722Z",
+      "seconds": 13
     }
   }
 }

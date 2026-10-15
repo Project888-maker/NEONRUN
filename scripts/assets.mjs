@@ -403,3 +403,6 @@ const sfx3 = {
   camera_flash: [0.8, false, 'surveillance camera shutter click with electronic beep'],
 };
 for (const [k, [d, loop, p]] of Object.entries(sfx3)) add('sfx', k, 'fal-ai/elevenlabs/sound-effects/v2', { text: p, duration_seconds: d, loop, prompt_influence: 0.6, output_format: 'mp3_44100_128' });
+
+// ---------- feedback round: calmer idle (the first one swayed side to side)
+add('motion', 'idle_calm', 'fal-ai/hunyuan-motion', { prompt: 'a person stands completely still in a neutral relaxed pose, arms hanging at the sides, feet planted shoulder width apart, only slow subtle breathing, no swaying, no weight shifting', duration: 4, output_format: 'fbx' });

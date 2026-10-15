@@ -39,32 +39,41 @@ export class Loader {
     this.onProgress(this.total ? this.done / this.total : 1, label);
   }
 
+  /** Resolve with `fallback` if a request stalls, so one hung download can never freeze the loading screen. */
+  private guard<T>(path: string, p: (done: (v: T) => void) => void, fallback: T, ms = 45000): Promise<T> {
+    return new Promise((res) => {
+      let settled = false;
+      const done = (v: T) => { if (settled) return; settled = true; clearTimeout(timer); this.tick(path); res(v); };
+      const timer = setTimeout(() => { console.warn('load timed out', path); done(fallback); }, ms);
+      p(done);
+    });
+  }
+
   tex(path: string, srgb = true): Promise<THREE.Texture> {
     this.total++;
-    return new Promise((res) => {
+    return this.guard(path, (done) => {
       this.tl.load(BASE + path, (t) => {
         if (srgb) t.colorSpace = THREE.SRGBColorSpace;
         t.anisotropy = 8;
-        this.tick(path);
-        res(t);
-      }, undefined, () => { console.warn('missing texture', path); this.tick(path); res(new THREE.Texture()); });
-    });
+        done(t);
+      }, undefined, () => { console.warn('missing texture', path); done(new THREE.Texture()); });
+    }, new THREE.Texture());
   }
 
   gltf(path: string): Promise<GLTF | null> {
     this.total++;
-    return new Promise((res) => {
-      this.gl.load(BASE + path, (g) => { this.tick(path); res(g); }, undefined, async () => {
+    return this.guard<GLTF | null>(path, (done) => {
+      this.gl.load(BASE + path, (g) => done(g), undefined, async () => {
         // fallback for hosts that don't serve .glb: the same model as base64 inside <path>.json
         try {
           const r = await fetch(BASE + path + '.json');
           if (!r.ok) throw new Error(String(r.status));
           const b64: string = (await r.json()).glb;
           const bin = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
-          this.gl.parse(bin.buffer, BASE + 'models/', (g) => { this.tick(path); res(g); }, (e) => { console.warn('model parse failed', path, e); this.tick(path); res(null); });
-        } catch (e) { console.warn('missing model', path, e); this.tick(path); res(null); }
+          this.gl.parse(bin.buffer, BASE + 'models/', (g) => done(g), (e) => { console.warn('model parse failed', path, e); done(null); });
+        } catch (e) { console.warn('missing model', path, e); done(null); }
       });
-    });
+    }, null);
   }
 
   async json<T>(path: string): Promise<T> {
@@ -95,9 +104,10 @@ export class Loader {
     for (const l of ['lm_pagoda', 'lm_watertower', 'lm_crane', 'lm_gate', 'lm_statue']) jobs.push(this.gltf(`models/${l}.glb`).then((g) => { if (g) landmarks[l] = g; }));
     const cars: Record<string, CarAsset> = {};
     const carsLod: Record<string, CarAsset> = {};
+    // boot needs only the light traffic versions; full-detail cars stream in after the title (loadFullCars)
     for (const d of CAR_DEFS) {
-      jobs.push(Promise.all([this.json<CarSpec>(`cars/${d.id}.json`), this.gltf(`cars/${d.id}.glb`), this.gltf(`cars/${d.id}_lod.glb`)]).then(([spec, g, gl]) => {
-        if (g) cars[d.id] = bakeCar(g, spec);
+      jobs.push(Promise.all([this.json<CarSpec>(`cars/${d.id}.json`), this.gltf(`cars/${d.id}_lod.glb`)]).then(([spec, gl]) => {
+        this.specs[d.id] = spec;
         if (gl) carsLod[d.id] = bakeCar(gl, spec);
       }).catch((e) => console.warn('car load failed', d.id, e)));
     }
@@ -110,6 +120,18 @@ export class Loader {
     await Promise.all(jobs);
     if (!kit) throw new Error('citykit.glb failed to load');
     return { tex, signs, ads, kit, car, landmarks, liveries, cars, carsLod, people, lines };
+  }
+  private specs: Record<string, CarSpec> = {};
+
+  /** Full-detail drivable cars, loaded in the background one at a time once the game is up. */
+  async loadFullCars(into: Record<string, CarAsset>, onCar: (id: string) => void, first?: string) {
+    const ids = CAR_DEFS.map((d) => d.id).sort((a, b) => (a === first ? -1 : b === first ? 1 : 0));
+    for (const id of ids) {
+      const spec = this.specs[id];
+      if (!spec || into[id]) continue;
+      const g = await this.gltf(`cars/${id}.glb`);
+      if (g) { into[id] = bakeCar(g, spec); onCar(id); }
+    }
   }
 }
 

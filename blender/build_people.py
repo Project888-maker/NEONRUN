@@ -144,6 +144,9 @@ def build(cid, check=False):
     # text-to-motion clips
     for name in MOTIONS:
         fbx = os.path.join(GEN, 'motion', f'{name}.fbx')
+        calm = os.path.join(GEN, 'motion', f'{name}_calm.fbx')
+        if os.path.exists(calm):
+            fbx = calm  # regenerated, steadier version (the first idle swayed side to side)
         if not os.path.exists(fbx):
             continue
         before = set(o.name for o in scene.objects)

@@ -64,8 +64,12 @@ export class HeroOnFoot {
     this.body.setTranslation({ x: 0, y: -50, z: 0 }, true);
   }
 
+  /** while true a scripted sequence (getting in / out of a car) drives the visible person; physics is paused */
+  frozen = false;
+
   update(dt: number, inp: FootInput, camYaw: number) {
     if (!this.active) return;
+    if (this.frozen) { this.person.update(dt, false); return; }
     const t = this.body.translation();
     let move = new THREE.Vector3();
     const busy = this.busy > 0;
@@ -77,7 +81,7 @@ export class HeroOnFoot {
       move.addScaledVector(fwd, inp.z).addScaledVector(right, inp.x);
       if (move.lengthSq() > 1) move.normalize();
     }
-    const target = move.length() * (inp.run ? 6.2 : 2.1);
+    const target = move.length() * (inp.run ? 4.4 : 1.6);
     this.speed = THREE.MathUtils.lerp(this.speed, target, Math.min(1, dt * 8));
     if (move.lengthSq() > 0.01) this.person.yaw = lerpAngle(this.person.yaw, Math.atan2(move.x, move.z), Math.min(1, dt * 10));
     const dir = new THREE.Vector3(Math.sin(this.person.yaw), 0, Math.cos(this.person.yaw));
@@ -96,13 +100,15 @@ export class HeroOnFoot {
     // animation selection
     if (!busy) {
       if (!this.grounded) { /* jump clip keeps playing */ }
-      else if (this.speed > 3.6) this.person.play('run', { speed: this.speed / 5.5 });
-      else if (this.speed > 0.35) this.person.play('walk', { speed: Math.max(0.6, this.speed / 1.5) });
+      // clip rate follows the real ground speed so the planted foot doesn't slide
+      else if (this.speed > 2.7) this.person.play('run', { speed: Math.max(0.7, this.person.gaitRate('run', this.speed)) });
+      else if (this.speed > 0.35) this.person.play('walk', { speed: Math.max(0.45, this.person.gaitRate('walk', this.speed)) });
       else this.person.play('idle', { fade: 0.35 });
     }
     // footsteps
     if (this.grounded && this.speed > 0.5) {
-      this.stepT -= dt * (this.speed > 3.6 ? 2.9 : 1.9);
+      // two footsteps per gait cycle
+      this.stepT -= dt * 2 * (this.speed > 2.7 ? this.speed / this.person.gait.run : this.speed / this.person.gait.walk);
       if (this.stepT <= 0) { this.stepT = 1; this.onStep(); }
     }
     this.person.update(dt);

@@ -4,6 +4,7 @@ import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js
 import type { City } from './city';
 import { CURB_H, type DistrictId } from './layout';
 import { Rng } from './city';
+import { poolUniforms, MAX_POOLS } from '../render/groundMaterial';
 
 /** Animation names baked by blender/build_people.py */
 export type Anim = 'walk' | 'run' | 'idle' | 'jump' | 'enter_car' | 'exit_car' | 'talk' | 'wave' | 'flee' | 'phone' | 'shrug' | 'push' | 'fall';
@@ -19,6 +20,149 @@ const DISTRICT_MIX: Record<DistrictId, Partial<Record<PedType, number>>> = {
   docks: { ped_worker: 5, ped_rider: 1, ped_suit: 1 },
 };
 
+/** Neon light pools (the same ones that light the wet street) also light people, so they sit in the scene. */
+function patchPersonMaterial(mat: THREE.MeshStandardMaterial) {
+  if (mat.userData.personPatched) return;
+  mat.userData.personPatched = true;
+  // generated PBR maps can read as chrome under city reflections: keep skin and cloth dielectric
+  mat.metalness = Math.min(mat.metalness, 0.15);
+  mat.roughness = Math.max(mat.roughness, 0.55);
+  mat.envMapIntensity = 0.9;
+  mat.onBeforeCompile = (sh) => {
+    sh.uniforms.uPoolPos = poolUniforms.uPoolPos;
+    sh.uniforms.uPoolCol = poolUniforms.uPoolCol;
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', `#include <common>\nuniform vec4 uPoolPos[${MAX_POOLS}];\nuniform vec3 uPoolCol[${MAX_POOLS}];`)
+      .replace('#include <lights_fragment_end>', `#include <lights_fragment_end>
+        {
+          vec3 pAcc = vec3(0.0);
+          for (int i = 0; i < ${MAX_POOLS}; i++) {
+            vec4 lp = uPoolPos[i];
+            vec3 lv = (viewMatrix * vec4(lp.xyz, 1.0)).xyz + vViewPosition;
+            float d = length(lv);
+            float att = clamp(1.0 - d / (lp.w * 1.15), 0.0, 1.0);
+            att *= att;
+            float wrap = clamp(dot(normal, lv / max(d, 1e-3)) * 0.6 + 0.4, 0.0, 1.0);
+            pAcc += uPoolCol[i] * att * wrap;
+          }
+          // capped so a nearby bright source (car headlights) tints instead of bleaching the character
+          reflectedLight.directDiffuse += min(pAcc * 0.35, vec3(0.9)) * diffuseColor.rgb;
+        }`);
+  };
+  mat.needsUpdate = true;
+}
+
+let shadowTex: THREE.Texture | null = null;
+function contactShadow() {
+  if (!shadowTex) {
+    const c = document.createElement('canvas');
+    c.width = c.height = 64;
+    const g = c.getContext('2d')!;
+    const gr = g.createRadialGradient(32, 32, 2, 32, 32, 32);
+    gr.addColorStop(0, 'rgba(0,0,0,0.75)'); gr.addColorStop(0.5, 'rgba(0,0,0,0.35)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
+    shadowTex = new THREE.CanvasTexture(c);
+  }
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 1.1).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 }));
+  m.renderOrder = 1;
+  return m;
+}
+
+/** Body heading over time for clips that turn the character (get in / out of a car), relative to the idle stance. */
+const headingCache = new WeakMap<GLTF, Record<string, number[]>>();
+const HEADING_SAMPLES = 48;
+function headingTables(gltf: GLTF) {
+  let h = headingCache.get(gltf);
+  if (h) return h;
+  h = {};
+  const root = cloneSkinned(gltf.scene);
+  let hips: THREE.Object3D | undefined;
+  root.traverse((o) => { if (/^hips$/i.test(o.name)) hips = o; });
+  const mixer = new THREE.AnimationMixer(root);
+  const q = new THREE.Quaternion();
+  const sample = (clip: THREE.AnimationClip, t: number) => {
+    const a = mixer.clipAction(clip);
+    a.play();
+    mixer.setTime(t);
+    root.updateMatrixWorld(true);
+    hips!.getWorldQuaternion(q);
+    a.stop();
+    return q.clone();
+  };
+  const idle = gltf.animations.find((c) => c.name === 'idle');
+  if (hips && idle) {
+    const ref = sample(idle, 0).invert();
+    for (const name of ['enter_car', 'exit_car']) {
+      const clip = gltf.animations.find((c) => c.name === name);
+      if (!clip) continue;
+      const out: number[] = [];
+      let prev = 0;
+      for (let i = 0; i <= HEADING_SAMPLES; i++) {
+        const r = sample(clip, (clip.duration * i) / HEADING_SAMPLES).multiply(ref);
+        const v = new THREE.Vector3(0, 0, 1).applyQuaternion(r);
+        let y = Math.atan2(v.x, v.z);
+        while (y - prev > Math.PI) y -= Math.PI * 2; // unwrap so interpolation never spins the long way
+        while (y - prev < -Math.PI) y += Math.PI * 2;
+        out.push(y); prev = y;
+      }
+      h[name] = out;
+    }
+  }
+  mixer.stopAllAction();
+  headingCache.set(gltf, h);
+  return h;
+}
+
+/**
+ * Natural ground speed (m/s) of a gait clip at timeScale 1, measured the way the ground sees it:
+ * how fast the foot that is on the floor (the lower one, near its lowest height) moves backward
+ * relative to the hips. A stride-range estimate is wrong for running, where each foot is down for
+ * only about a third of the cycle and swings far ahead of where it lands.
+ */
+const gaitCache = new WeakMap<GLTF, Record<string, number>>();
+function gaitSpeeds(gltf: GLTF) {
+  let g = gaitCache.get(gltf);
+  if (g) return g;
+  g = {};
+  const root = cloneSkinned(gltf.scene);
+  const feet: THREE.Object3D[] = [];
+  let hips: THREE.Object3D | undefined;
+  root.traverse((o) => { if (/(left|right)foot$/i.test(o.name)) feet.push(o); if (/^hips$/i.test(o.name)) hips = o; });
+  const mixer = new THREE.AnimationMixer(root);
+  for (const name of ['walk', 'run']) {
+    const clip = gltf.animations.find((c) => c.name === name);
+    if (!clip || feet.length < 2 || !hips) continue;
+    const a = mixer.clipAction(clip);
+    a.play();
+    const N = 96, dt = clip.duration / N;
+    const fp = new THREE.Vector3(), hp = new THREE.Vector3();
+    const rel: number[][] = [[], []], hgt: number[][] = [[], []];
+    for (let i = 0; i <= N; i++) {
+      mixer.setTime(i * dt);
+      root.updateMatrixWorld(true);
+      hips.getWorldPosition(hp);
+      feet.forEach((f, k) => { f.getWorldPosition(fp); rel[k].push(fp.z - hp.z); hgt[k].push(fp.y); }); // characters face +z
+    }
+    a.stop();
+    const v: number[] = [];
+    for (let k = 0; k < 2; k++) {
+      const floor = Math.min(...hgt[k]);
+      for (let i = 0; i < N; i++) {
+        const lower = hgt[k][i] <= hgt[1 - k][i];
+        if (lower && hgt[k][i] < floor + 0.03) v.push(-(rel[k][i + 1] - rel[k][i]) / dt); // backward = ground speed
+      }
+    }
+    v.sort((x, y) => x - y);
+    const med = v.length ? v[Math.floor(v.length / 2)] : 0;
+    if (med > 0.3) g[name] = med;
+  }
+  mixer.stopAllAction();
+  gaitCache.set(gltf, g);
+  return g;
+}
+
+const UNGROUNDED = new Set(['jump', 'fall', 'enter_car', 'exit_car', 'push']);
+
 /** A rigged, animated human (pedestrian or the hero). */
 export class Person {
   root: THREE.Object3D;
@@ -27,6 +171,15 @@ export class Person {
   current: THREE.AnimationAction | null = null;
   currentName = '';
   yaw = 0;
+  /** natural ground speed of the walk / run clips (m/s at timeScale 1) */
+  gait: { walk: number; run: number };
+  private feet: THREE.Object3D[] = [];
+  ankle = 0.08;
+  private baseY = 0;
+  footOff = 0;
+  private grounding = true;
+  private shadow: THREE.Mesh;
+  private tmp = new THREE.Vector3();
 
   constructor(gltf: GLTF, public type: string) {
     this.root = cloneSkinned(gltf.scene);
@@ -34,19 +187,40 @@ export class Person {
       const m = o as THREE.SkinnedMesh;
       if (m.isMesh) {
         m.frustumCulled = false; // skinned bounds don't follow the animation
-        const mat = m.material as THREE.MeshStandardMaterial;
-        mat.envMapIntensity = 0.6;
+        patchPersonMaterial(m.material as THREE.MeshStandardMaterial);
       }
+      if (/(left|right)foot$/i.test(o.name)) this.feet.push(o);
     });
+    // ankle height in the bind pose = where the foot bones sit when standing on the ground
+    this.root.updateMatrixWorld(true);
+    if (this.feet.length) this.ankle = Math.max(0.03, Math.min(...this.feet.map((f) => f.getWorldPosition(this.tmp).y)) - this.root.position.y);
+    this.shadow = contactShadow();
+    this.root.add(this.shadow);
     this.mixer = new THREE.AnimationMixer(this.root);
     for (const clip of gltf.animations) this.actions.set(clip.name, this.mixer.clipAction(clip));
+    const g = gaitSpeeds(gltf);
+    this.gait = { walk: g.walk ?? 1.25, run: g.run ?? 4.5 };
+    this.gltf = gltf;
   }
+  private gltf: GLTF;
+
+  /** How far the clip has turned the body at time t (radians, relative to the idle stance). */
+  heading(name: 'enter_car' | 'exit_car', t: number) {
+    const tab = headingTables(this.gltf)[name];
+    const clip = this.actions.get(name)?.getClip();
+    if (!tab || !clip) return 0;
+    const f = THREE.MathUtils.clamp(t / clip.duration, 0, 1) * HEADING_SAMPLES;
+    const i = Math.min(HEADING_SAMPLES - 1, Math.floor(f));
+    return THREE.MathUtils.lerp(tab[i], tab[i + 1], f - i);
+  }
+  clipDuration(name: Anim) { return this.actions.get(name)?.getClip().duration ?? 0; }
 
   has(name: string) { return this.actions.has(name); }
 
-  play(name: Anim, opts: { fade?: number; loop?: boolean; speed?: number; restart?: boolean } = {}) {
+  play(name: Anim, opts: { fade?: number; loop?: boolean; speed?: number; restart?: boolean; from?: number } = {}) {
     const a = this.actions.get(name);
     if (!a) return 0;
+    this.grounding = !UNGROUNDED.has(name);
     if (this.currentName === name && !opts.restart) { a.timeScale = opts.speed ?? 1; return a.getClip().duration; }
     a.reset();
     a.setLoop(opts.loop === false ? THREE.LoopOnce : THREE.LoopRepeat, Infinity);
@@ -56,15 +230,34 @@ export class Person {
     a.setEffectiveWeight(1);
     if (this.current && this.current !== a) a.crossFadeFrom(this.current, opts.fade ?? 0.25, false);
     a.play();
+    if (opts.from) a.time = opts.from;
     this.current = a;
     this.currentName = name;
     return a.getClip().duration;
   }
 
-  update(dt: number) { this.mixer.update(dt); }
+  /** Playback rate that makes a gait clip cover exactly `speed` m/s (no foot sliding). */
+  gaitRate(clip: 'walk' | 'run', speed: number) { return speed / this.gait[clip]; }
+
+  /** Advance the animation; `ground` keeps the planted foot on the floor (fixes floating / sinking). */
+  update(dt: number, ground = true) {
+    this.mixer.update(dt);
+    const want = ground && this.grounding && this.feet.length > 0;
+    if (want) {
+      this.root.position.y = this.baseY + this.footOff;
+      this.root.updateMatrixWorld(true);
+      let lo = Infinity;
+      for (const f of this.feet) lo = Math.min(lo, f.getWorldPosition(this.tmp).y);
+      const err = this.baseY + this.ankle - lo;
+      this.footOff = THREE.MathUtils.clamp(this.footOff + err * Math.min(1, dt * 12), -0.35, 0.35);
+    } else this.footOff *= Math.max(0, 1 - dt * 4);
+    this.root.position.y = this.baseY + this.footOff;
+    this.shadow.position.y = -this.footOff + 0.03;
+  }
 
   place(x: number, y: number, z: number, yaw: number) {
-    this.root.position.set(x, y, z);
+    this.baseY = y;
+    this.root.position.set(x, y + this.footOff, z);
     this.yaw = yaw;
     this.root.rotation.y = yaw;
   }
@@ -142,7 +335,7 @@ export class Crowd {
       const p = this.take(type);
       const ped: Ped = { p, type, rect: ri, s, dir: this.rng.chance(0.5) ? 1 : -1, speed: this.rng.range(1.15, 1.55), state: 'walk', t: this.rng.range(4, 15), pos, vel: new THREE.Vector3(), id: this.nextId++ };
       if (type === 'ped_elder') ped.speed = 0.9;
-      p.play('walk', { speed: ped.speed / 1.35 });
+      p.play('walk', { speed: p.gaitRate('walk', ped.speed) });
       p.mixer.setTime(this.rng.next() * 2);
       this.peds.push(ped);
       return;
@@ -179,8 +372,8 @@ export class Crowd {
     const away = p.pos.clone().sub(from).setY(0);
     if (away.lengthSq() < 0.01) away.set(1, 0, 0);
     away.normalize();
-    p.vel.copy(away).multiplyScalar(4.2);
-    p.p.play(p.p.has('run') ? 'run' : 'flee', { fade: 0.15, speed: 1.1 });
+    p.vel.copy(away).multiplyScalar(3.4);
+    p.p.play(p.p.has('run') ? 'run' : 'flee', { fade: 0.15, speed: p.p.has('run') ? p.p.gaitRate('run', 3.4) : 1.1 });
     if (this.rng.chance(0.35)) this.onScream(p.pos);
   }
 
@@ -227,7 +420,7 @@ export class Crowd {
           break;
         }
         case 'idle': case 'phone': case 'wave': case 'talk':
-          if (p.t <= 0) { p.state = 'walk'; p.t = this.rng.range(6, 18); if (this.rng.chance(0.3)) p.dir = (p.dir * -1) as 1 | -1; p.p.play('walk', { fade: 0.4, speed: p.speed / 1.35 }); }
+          if (p.t <= 0) { p.state = 'walk'; p.t = this.rng.range(6, 18); if (this.rng.chance(0.3)) p.dir = (p.dir * -1) as 1 | -1; p.p.play('walk', { fade: 0.4, speed: p.p.gaitRate('walk', p.speed) }); }
           break;
         case 'flee': {
           p.pos.addScaledVector(p.vel, dt);
@@ -239,7 +432,7 @@ export class Crowd {
             const r = this.city.walkRects[p.rect];
             tmp.set(THREE.MathUtils.clamp(p.pos.x, r.x - r.hw, r.x + r.hw), 0, THREE.MathUtils.clamp(p.pos.z, r.z - r.hd, r.z + r.hd));
             p.s = this.arcOf(p.rect, tmp);
-            p.p.play('walk', { fade: 0.4, speed: p.speed / 1.35 });
+            p.p.play('walk', { fade: 0.4, speed: p.p.gaitRate('walk', p.speed) });
           }
           break;
         }
@@ -252,7 +445,7 @@ export class Crowd {
       p.p.place(p.pos.x, ground, p.pos.z, p.p.yaw);
       // animation LOD: far crowds update at a lower rate
       const d = p.pos.distanceTo(player);
-      if (d < 60 || (this.frame + p.id) % 3 === 0) p.p.update(d < 60 ? dt : dt * 3);
+      if (d < 60 || (this.frame + p.id) % 3 === 0) p.p.update(d < 60 ? dt : dt * 3, d < 45);
     }
     this.frame++;
   }
