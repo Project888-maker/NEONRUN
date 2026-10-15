@@ -197,7 +197,8 @@ function buildWorld() {
   }
 
   rain = new Rain(20000);
-  rain.mesh.geometry.setDrawRange(0, Q.rainCount * 2);
+  rain.setCount(Q.rainCount);
+  if (params.has('raingain')) rain.uniforms.uGain.value = +params.get('raingain')!;
   splashes = new Splashes(600);
   splashes.mesh.count = Q.splashCount;
   fogLayers = new FogLayers(70);
@@ -670,7 +671,7 @@ function setQuality(l: QualityLevel) {
   reflector.every = Q.reflectionEvery;
   reflector.setSize(innerWidth * Q.pixelRatio, innerHeight * Q.pixelRatio);
   if (post.ao) post.ao.enabled = Q.ao;
-  rain.mesh.geometry.setDrawRange(0, Q.rainCount * 2);
+  rain.setCount(Q.rainCount);
   splashes.mesh.count = Q.splashCount;
   (traffic as any).count = Q.traffic;
   if (crowd) crowd.target = l === 'high' ? 22 : l === 'med' ? 14 : 8;
@@ -1297,7 +1298,7 @@ function frame(now: number) {
     train.update(dtReal);
     skyTraffic.update(simTime, camera.position);
     sky.update(camera, simTime);
-    rain.update(camera, carVel);
+    rain.update(camera, playerVel, innerHeight * Q.pixelRatio);
     splashes.update(camera);
     fogLayers.update(dtReal, camera.position, 1);
     smoke.update(dtReal);
@@ -1421,6 +1422,13 @@ function debugApi() {
         if (++n >= frames) { probeHook = null; done(out); }
       };
     }),
+    heroYaw: () => hero?.person.yaw ?? 0,
+    rainInfo: () => {
+      const u = rain.uniforms, g = rain.mesh.geometry as THREE.InstancedBufferGeometry;
+      return { inScene: !!rain.mesh.parent, visible: rain.mesh.visible, layers: rain.mesh.layers.mask, camLayers: camera.layers.mask, instanceCount: g.instanceCount, index: g.index?.count,
+        cam: u.uCam.value.toArray().map((v) => +v.toFixed(1)), camVel: u.uCamVel.value.toArray().map((v) => +v.toFixed(2)), px: u.uPx.value, gain: u.uGain.value, time: +u.uTime.value.toFixed(2),
+        programs: (renderer.info.programs ?? []).filter((p: any) => /ShaderMaterial/.test(p.name)).length, calls: renderer.info.render.calls };
+    },
     policeInfo: () => ({ heat: police.heat, units: police.units.map((u) => +u.pos.distanceTo(playerPos).toFixed(1)), upright: !vehicle.isUpsideDown(), up: +new THREE.Vector3(0, 1, 0).applyQuaternion(carQuat).y.toFixed(2), kmh: +(vehicle.speedAbs * 3.6).toFixed(0) }),
     storyInteract: () => { campaign.interaction?.run(); return !!campaign.interaction; },
     storyNext: () => { (campaign as any).next(); },

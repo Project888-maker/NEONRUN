@@ -1,62 +1,108 @@
 import * as THREE from 'three';
 import { LAYER_NO_REFLECT } from '../render/reflector';
-import { poolUniforms } from '../render/groundMaterial';
+import { poolUniforms, MAX_POOLS } from '../render/groundMaterial';
 
-/** GPU rain streaks that wrap around the camera. */
+/**
+ * GPU rain. Each drop is a thin camera-facing streak whose length is how far it travels during one
+ * camera exposure (~1/30 s), relative to the viewer: about 30 cm when standing, longer and slanted
+ * from a fast car — like real footage. Drops fall at a real 7–9.5 m/s (not 26 m/s), and they are only
+ * visible where light hits them: each drop takes its colour from the nearby neon signs, street lamps
+ * and headlights (the same light pools that light the wet road), so rain glows in light and nearly
+ * disappears in the dark.
+ */
 export class Rain {
-  mesh: THREE.LineSegments;
+  mesh: THREE.Mesh;
   uniforms = {
     uTime: poolUniforms.uTime,
+    uPoolPos: poolUniforms.uPoolPos,
+    uPoolCol: poolUniforms.uPoolCol,
     uCam: { value: new THREE.Vector3() },
-    uVel: { value: new THREE.Vector3(1.5, -26, 0.5) },
+    uCamVel: { value: new THREE.Vector3() },
+    uWind: { value: new THREE.Vector2(0.9, 0.35) },
     uIntensity: { value: 1 },
+    uPx: { value: 0.0011 }, // metres per pixel at 1 m distance (set from fov / screen height)
+    uGain: { value: 1 },
   };
+  private geo: THREE.InstancedBufferGeometry;
 
   constructor(count: number) {
-    const pos = new Float32Array(count * 2 * 3);
-    const end = new Float32Array(count * 2);
-    const seed = new Float32Array(count * 2);
+    const g = new THREE.InstancedBufferGeometry();
+    // quad: x across the streak (-1..1), y along it (0 = tail, 1 = head)
+    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array([-1, 0, 0, 1, 0, 0, 1, 1, 0, -1, 1, 0]), 3));
+    g.setIndex([0, 1, 2, 0, 2, 3]);
+    const off = new Float32Array(count * 3), seed = new Float32Array(count * 2);
     for (let i = 0; i < count; i++) {
-      const x = Math.random() * 60 - 30, y = Math.random() * 30, z = Math.random() * 60 - 30;
-      for (let k = 0; k < 2; k++) {
-        pos.set([x, y, z], (i * 2 + k) * 3);
-        end[i * 2 + k] = k;
-        seed[i * 2 + k] = Math.random();
-      }
+      off.set([Math.random() * 40 - 20, Math.random() * 24, Math.random() * 40 - 20], i * 3);
+      seed.set([Math.random(), Math.random()], i * 2);
     }
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    g.setAttribute('aEnd', new THREE.BufferAttribute(end, 1));
-    g.setAttribute('aSeed', new THREE.BufferAttribute(seed, 1));
+    g.setAttribute('aOff', new THREE.InstancedBufferAttribute(off, 3));
+    g.setAttribute('aSeed', new THREE.InstancedBufferAttribute(seed, 2));
+    g.instanceCount = count;
+    this.geo = g;
     const m = new THREE.ShaderMaterial({
       uniforms: this.uniforms,
       vertexShader: /* glsl */ `
-        uniform float uTime; uniform vec3 uCam; uniform vec3 uVel; uniform float uIntensity;
-        attribute float aEnd; attribute float aSeed;
-        varying float vA;
+        uniform float uTime; uniform vec3 uCam; uniform vec3 uCamVel; uniform vec2 uWind; uniform float uIntensity; uniform float uPx;
+        uniform vec4 uPoolPos[${MAX_POOLS}]; uniform vec3 uPoolCol[${MAX_POOLS}];
+        attribute vec3 aOff; attribute vec2 aSeed;
+        varying vec2 vUv; varying vec3 vCol; varying float vA;
         void main(){
-          vec3 p = position;
-          float sp = 0.8 + aSeed * 0.4;
-          p.y = mod(p.y - 26.0 * sp * uTime - uCam.y + 15.0, 30.0) + uCam.y - 15.0;
-          p.xz = mod(p.xz + vec2(1.5, 0.5) * uTime - uCam.xz + 30.0, 60.0) - 30.0 + uCam.xz;
-          p += uVel * sp * 0.028 * aEnd;
-          vec4 mv = modelViewMatrix * vec4(p, 1.0);
-          float d = -mv.z;
-          vA = (1.0 - aEnd * 0.85) * smoothstep(1.5, 7.0, d) * (1.0 - smoothstep(18.0, 30.0, d)) * uIntensity * step(aSeed, uIntensity + 0.001);
-          gl_Position = projectionMatrix * mv;
+          float speed = 7.0 + aSeed.x * 2.5;                         // terminal velocity of 2–4 mm drops
+          vec3 vel = vec3(uWind.x, -speed, uWind.y);
+          vec3 p = aOff;
+          p.y = mod(aOff.y - speed * uTime - (uCam.y - 8.0), 24.0) + uCam.y - 8.0;
+          p.xz = mod(aOff.xz + uWind * uTime - uCam.xz + 20.0, 40.0) - 20.0 + uCam.xz;
+          // motion blur during the exposure, as seen from the (possibly moving) camera
+          vec3 rel = vel - uCamVel;
+          vec3 streak = rel * 0.034 + normalize(rel) * 0.03;               // ~1/30 s exposure + drop size
+          vec4 head = viewMatrix * vec4(p, 1.0);
+          vec4 tail = viewMatrix * vec4(p - streak, 1.0);
+          vec3 axis = head.xyz - tail.xyz;
+          vec3 side = normalize(cross(axis, head.xyz + vec3(1e-4)));
+          float dist = max(0.05, -head.z);
+          float w = max(0.0008, dist * uPx * 0.5);                      // ~1 mm drop, about one pixel wide
+          vec3 pos = mix(tail.xyz, head.xyz, position.y) + side * position.x * w;
+          gl_Position = projectionMatrix * vec4(pos, 1.0);
+          // light falling on the drop: dim sky glow + every nearby light pool (signs, lamps, headlights)
+          vec3 L = vec3(0.10, 0.11, 0.135);
+          for (int i = 0; i < ${MAX_POOLS}; i++) {
+            vec4 lp = uPoolPos[i];
+            float a = clamp(1.0 - distance(p, lp.xyz) / (lp.w * 1.5), 0.0, 1.0);
+            L += uPoolCol[i] * a * a;
+          }
+          vCol = L;
+          // drops act as tiny lenses that catch the light around them, so they read brighter than their size;
+          // far ones still thin out a little
+          float cover = clamp(0.004 / w, 0.55, 1.0);
+          vA = smoothstep(0.35, 1.6, dist) * (1.0 - smoothstep(13.0, 21.0, dist)) * step(aSeed.y, uIntensity) * cover;
+          vUv = position.xy;
         }`,
-      fragmentShader: `varying float vA; void main(){ gl_FragColor = vec4(vec3(0.55, 0.62, 0.75) * vA * 0.11, 1.0); }`,
+      fragmentShader: /* glsl */ `
+        uniform float uGain;
+        varying vec2 vUv; varying vec3 vCol; varying float vA;
+        void main(){
+          float across = 1.0 - abs(vUv.x);
+          float along = smoothstep(0.0, 0.35, vUv.y) * (1.0 - smoothstep(0.8, 1.0, vUv.y));
+          float a = across * across * along * vA;
+          gl_FragColor = vec4(min(vCol, vec3(2.0)) * a * 0.85 * uGain, 1.0);
+        }`,
+      // falling drops put the tail above the head, which flips the quad's winding: draw both faces
+      side: THREE.DoubleSide,
       transparent: true, blending: THREE.AdditiveBlending, depthWrite: false,
     });
-    this.mesh = new THREE.LineSegments(g, m);
+    this.mesh = new THREE.Mesh(g, m);
     this.mesh.frustumCulled = false;
     this.mesh.layers.set(LAYER_NO_REFLECT);
   }
 
-  update(cam: THREE.Camera, carVel: THREE.Vector3) {
+  /** How many drops to draw (quality setting). */
+  setCount(n: number) { this.geo.instanceCount = Math.min(n, (this.geo.getAttribute('aOff') as THREE.InstancedBufferAttribute).count); }
+
+  /** viewerVel: velocity of the camera's subject (car or walking hero), which stretches and tilts streaks */
+  update(cam: THREE.PerspectiveCamera, viewerVel: THREE.Vector3, screenHeight = innerHeight) {
     this.uniforms.uCam.value.copy(cam.position);
-    // streaks tilt with the car's motion (relative wind)
-    this.uniforms.uVel.value.set(1.5 - carVel.x * 0.9, -26, 0.5 - carVel.z * 0.9);
+    this.uniforms.uCamVel.value.lerp(viewerVel, 0.25);
+    this.uniforms.uPx.value = (2 * Math.tan(THREE.MathUtils.degToRad(cam.fov) / 2)) / Math.max(200, screenHeight);
   }
 }
 

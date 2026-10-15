@@ -42,11 +42,16 @@ function patchPersonMaterial(mat: THREE.MeshStandardMaterial) {
             float d = length(lv);
             float att = clamp(1.0 - d / (lp.w * 1.15), 0.0, 1.0);
             att *= att;
-            float wrap = clamp(dot(normal, lv / max(d, 1e-3)) * 0.6 + 0.4, 0.0, 1.0);
+            // very soft wrap: generated meshes have bumpy normals, and a hard N·L turned neon light
+            // into coloured blotches across the clothes
+            float wrap = clamp(dot(normal, lv / max(d, 1e-3)) * 0.35 + 0.65, 0.0, 1.0);
             pAcc += uPoolCol[i] * att * wrap;
           }
+          // partly desaturated (light bounced off wet streets and walls reads as a tint, not paint) and
           // capped so a nearby bright source (car headlights) tints instead of bleaching the character
-          reflectedLight.directDiffuse += min(pAcc * 0.35, vec3(0.9)) * diffuseColor.rgb;
+          float pl = dot(pAcc, vec3(0.299, 0.587, 0.114));
+          pAcc = mix(vec3(pl), pAcc, 0.5);
+          reflectedLight.directDiffuse += min(pAcc * 0.4, vec3(0.8)) * diffuseColor.rgb;
         }`);
   };
   mat.needsUpdate = true;

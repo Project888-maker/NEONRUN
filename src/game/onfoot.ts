@@ -83,7 +83,8 @@ export class HeroOnFoot {
     }
     const target = move.length() * (inp.run ? 4.4 : 1.6);
     this.speed = THREE.MathUtils.lerp(this.speed, target, Math.min(1, dt * 8));
-    if (move.lengthSq() > 0.01) this.person.yaw = lerpAngle(this.person.yaw, Math.atan2(move.x, move.z), Math.min(1, dt * 10));
+    // turn only for a real input (not stick noise), so standing still means standing still
+    if (move.lengthSq() > 0.04) this.person.yaw = lerpAngle(this.person.yaw, Math.atan2(move.x, move.z), Math.min(1, dt * 10));
     const dir = new THREE.Vector3(Math.sin(this.person.yaw), 0, Math.cos(this.person.yaw));
     // gravity + jump
     if (this.grounded && inp.jump && !busy) { this.vy = 5.2; this.grounded = false; this.person.play('jump', { loop: false, fade: 0.1, speed: 1.4 }); this.onJump(); }

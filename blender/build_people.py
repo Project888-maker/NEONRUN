@@ -29,6 +29,14 @@ MAP = {
     'L_Hip': 'LeftUpLeg', 'L_Knee': 'LeftLeg', 'L_Ankle': 'LeftFoot', 'L_Foot': 'LeftToeBase',
     'R_Hip': 'RightUpLeg', 'R_Knee': 'RightLeg', 'R_Ankle': 'RightFoot', 'R_Foot': 'RightToeBase',
 }
+# limb segments (target bone -> the bone at the far end of it), used to align rest directions
+SEGMENTS = {
+    'Spine02': 'Spine01', 'Spine01': 'Spine', 'Spine': 'neck', 'neck': 'Head',
+    'LeftShoulder': 'LeftArm', 'LeftArm': 'LeftForeArm', 'LeftForeArm': 'LeftHand',
+    'RightShoulder': 'RightArm', 'RightArm': 'RightForeArm', 'RightForeArm': 'RightHand',
+    'LeftUpLeg': 'LeftLeg', 'LeftLeg': 'LeftFoot', 'LeftFoot': 'LeftToeBase',
+    'RightUpLeg': 'RightLeg', 'RightLeg': 'RightFoot', 'RightFoot': 'RightToeBase',
+}
 # keep root motion (vertical only) for these clips; everything is in place horizontally
 MOTIONS = ['idle', 'jump', 'enter_car', 'exit_car', 'talk', 'wave', 'flee', 'phone', 'shrug', 'push', 'fall']
 
@@ -64,6 +72,21 @@ def retarget(src, dst, action_name, frame_range, mapping=None):
     # rest data
     src_rest = {s: world_rot(src, src.data.bones[s], rest=True)[0] for s in MAP if s in src.data.bones}
     dst_rest = {t: world_rot(dst, dst.data.bones[t], rest=True)[0] for t in MAP.values() if t in dst.data.bones}
+    # Rest poses differ: the generated character's T-pose has legs spread and arms out, the motion
+    # skeleton stands with legs together. Copying rotations relative to rest kept that difference in
+    # every frame (wide stance, stiff arms). Align each limb segment's rest direction first, so the
+    # target bone points where the source bone points.
+    inv = {v: k for k, v in MAP.items()}
+    def rest_head(arm, name):
+        return arm.matrix_world @ arm.data.bones[name].head_local
+    align = {}
+    for t, c in SEGMENTS.items():
+        sname, cname = inv.get(t), inv.get(c)
+        if t in dst.data.bones and c in dst.data.bones and sname in src.data.bones and cname in src.data.bones:
+            dd = rest_head(dst, c) - rest_head(dst, t)
+            sd = rest_head(src, cname) - rest_head(src, sname)
+            if dd.length > 1e-4 and sd.length > 1e-4:
+                align[t] = dd.normalized().rotation_difference(sd.normalized())
     # leg length ratio for hips height
     def leg(arm, hip, ank):
         return (arm.matrix_world @ arm.data.bones[hip].head_local - arm.matrix_world @ arm.data.bones[ank].head_local).length
@@ -82,7 +105,7 @@ def retarget(src, dst, action_name, frame_range, mapping=None):
                 continue
             sq, sp = world_rot(src, src.pose.bones[s])
             delta = sq @ src_rest[s].inverted()
-            want = (delta @ dst_rest[t]).normalized()
+            want = (delta @ align.get(t, Quaternion()) @ dst_rest[t]).normalized()
             pb = dst.pose.bones[t]
             # world -> armature space rotation, keep current head position
             cur = dst.matrix_world @ pb.matrix

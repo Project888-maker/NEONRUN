@@ -44,6 +44,15 @@ Living document: decisions, known issues, and how to rebuild every asset.
   - Startup: shaders are compiled for every character, car and the police before the title, and one full frame is rendered behind the loading screen. Full-detail cars stream in after the title. Every download has a timeout, and a lost WebGL context reloads one quality step lower.
   - The car reflection probe renders one cube face per frame instead of all six every few frames, which removed the periodic hitch.
   - Touch layout: sized in vmin with safe-area insets, separate driving and on-foot button sets, context buttons only when usable, and a rotate prompt for phones held upright. `scripts/shots_mobile.mjs` checks phone and tablet sizes and reports overlapping controls.
+- **Feedback round 2 (idle twist, character look, rain)**:
+  - The "tilting" on phones was the hero turning toward tiny joystick movements from a resting thumb. Sticks now have a radial dead zone, and the hero only turns for a real input.
+  - Retargeting now aligns each limb segment's rest direction before copying rotations. The generated T-pose has legs spread and arms out, while the motion skeleton stands with legs together; without the alignment every clip kept a wide straddle and stiff arms.
+  - Character lighting from the neon pools uses a very soft wrap and is half desaturated: the bumpy normals of generated meshes turned a hard N·L into green/red blotches. The hero ships at full geometry with a 2048 texture.
+  - Rain was rebuilt (`Rain` in `weather.ts`):
+    - the old rain was 1-px lines falling at 26 m/s with 0.75 m streaks and one flat colour, which looked like running water
+    - drops are now camera-facing streaks falling at 7–9.5 m/s, as long as the drop travels in a ~1/30 s exposure relative to the viewer: short when standing, long and slanted at speed
+    - each drop is lit by the nearby light pools (signs, lamps, headlights), so rain glows near light and fades in the dark
+    - the streak quads are double-sided: a falling drop's tail sits above its head, which flips the winding, so with back-face culling nothing was drawn
 - **Textures**: KTX2 needs the external `toktx` binary, which is not installable here, so textures are WebP (gltf-transform `--texture-compress webp`) and geometry is meshopt-compressed.
 
 ## Rebuilding assets

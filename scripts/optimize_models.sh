@@ -27,5 +27,10 @@ done
 mkdir -p public/assets/people
 for f in assets/build/people/*.glb; do
   id=$(basename $f .glb); case $id in *_rigin) continue;; esac
-  $GT optimize $f public/assets/people/$id.glb --compress meshopt --texture-compress webp --texture-size 1024 --simplify true --simplify-ratio 0.5 --simplify-error 0.001 --prune false --join false --flatten false
+  if [ "$id" = hero ]; then
+    # the player character is seen up close: keep full geometry and a sharper texture
+    $GT optimize $f public/assets/people/$id.glb --compress meshopt --texture-compress webp --texture-size 2048 --simplify false --prune false --join false --flatten false
+  else
+    $GT optimize $f public/assets/people/$id.glb --compress meshopt --texture-compress webp --texture-size 1024 --simplify true --simplify-ratio 0.5 --simplify-error 0.001 --prune false --join false --flatten false
+  fi
 done

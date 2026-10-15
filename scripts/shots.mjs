@@ -164,6 +164,23 @@ if (want('foot')) {
   await shot('47_police');
   await N('setInput', {});
 }
+if (want('rain')) {
+  // rain only: standing still, then driving (streaks lengthen and slant with speed)
+  console.log('rain', JSON.stringify(await N('rainInfo')));
+  await shot('93_rain_still');
+  await N('setInput', { throttle: 1 }); await sleep(3500);
+  await shot('94_rain_speed');
+  await N('setInput', {});
+}
+if (want('look')) {
+  // hero standing under the neon (front and back) and the rain, on foot and driving
+  await N('setInput', { throttle: 0.6 }); await sleep(2500); await N('setInput', { brake: 1 }); await sleep(1500); await N('setInput', {});
+  await shot('90_rain_drive');
+  await N('exitCar'); await sleep(3000);
+  await shot('91_foot_back');
+  await N('camYaw', (await N('heroYaw')) + Math.PI); await sleep(1200);
+  await shot('92_foot_front');
+}
 if (want('stride')) {
   await N('setInput', {});
   await N('exitCar'); await sleep(2800);

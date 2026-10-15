@@ -42,6 +42,10 @@ export class Input {
       jump = jump || !!p.buttons[0]?.pressed;
     }
     if (this.touch.steer || this.touch.moveY) { x = this.touch.steer; z = this.touch.moveY; }
+    // radial dead zone: a thumb resting on the stick (or a slightly drifting gamepad stick) must not
+    // count as input — it used to make the hero twist back and forth on the spot
+    const mag = Math.hypot(x, z);
+    if (mag < 0.2) { x = 0; z = 0; } else if (mag < 1) { const k = (mag - 0.2) / 0.8 / mag; x *= k; z *= k; }
     // touch: RUN button, or push the stick all the way out
     run = run || this.touch.run || (!!(this.touch.steer || this.touch.moveY) && Math.hypot(x, z) > 0.95);
     if (this.scripted) { x = (this.scripted as any).footX ?? 0; z = (this.scripted as any).footZ ?? 0; run = !!(this.scripted as any).run; jump = !!(this.scripted as any).jump; }
@@ -70,7 +74,7 @@ export class Input {
     if (this.touch.throttle || this.touch.brake || this.touch.steer || this.touch.handbrake || this.touch.boost) {
       throttle = Math.max(throttle, this.touch.throttle);
       brake = Math.max(brake, this.touch.brake);
-      if (this.touch.steer) steerRaw = this.touch.steer;
+      if (Math.abs(this.touch.steer) > 0.1) steerRaw = Math.sign(this.touch.steer) * (Math.abs(this.touch.steer) - 0.1) / 0.9; // dead zone for a resting thumb
       handbrake = handbrake || this.touch.handbrake;
       boost = boost || this.touch.boost;
     }
