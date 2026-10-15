@@ -51,6 +51,13 @@ export class HeroOnFoot {
     this.vy = 0;
   }
 
+  /** Snap to a point (e.g. a car door) without resetting animation. */
+  place(p: THREE.Vector3) {
+    this.body.setTranslation({ x: p.x, y: p.y, z: p.z }, true);
+    this.body.setNextKinematicTranslation({ x: p.x, y: p.y, z: p.z });
+    this.person.place(p.x, p.y, p.z, this.person.yaw);
+  }
+
   hide() {
     this.active = false;
     this.person.root.visible = false;

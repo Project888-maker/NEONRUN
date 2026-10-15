@@ -177,6 +177,8 @@ export class CarVisual {
     this.underLight = new THREE.PointLight(this.underglowColor, 18, 7, 2);
     this.underLight.position.set(0, 0.25, 0);
     this.root.add(this.underLight);
+    // underglow is a Night Courier mod: generated cars (stolen, bought, story) ship without it
+    if (!this.isHero) { this.underglow.visible = false; this.underLight.visible = false; this.underglowColor.setRGB(0, 0, 0); }
 
     // contact shadow (multiply-darkening blob)
     const shTex = radialTexture('rgba(0,0,0,0.9)', 'rgba(0,0,0,0)');
@@ -211,6 +213,7 @@ export class CarVisual {
   }
 
   setUnderglow(hex: string) {
+    if (!this.isHero) return;
     this.underglowColor.set(hex);
     (this.underglow.material as THREE.MeshBasicMaterial).color.copy(this.underglowColor).multiplyScalar(0.8);
     this.underLight.color.copy(this.underglowColor);

@@ -3,7 +3,7 @@ import type { VehicleInput } from '../vehicle/vehicle';
 /** Keyboard + gamepad + touch input merged into one VehicleInput. */
 export class Input {
   keys = new Set<string>();
-  touch = { steer: 0, throttle: 0, brake: 0, handbrake: false, boost: false };
+  touch = { steer: 0, throttle: 0, brake: 0, handbrake: false, boost: false, moveY: 0 };
   pressed = new Set<string>(); // edge-triggered this frame
   private steerSmooth = 0;
   scripted: Partial<VehicleInput> | null = null; // for automated tests / screenshots
@@ -25,6 +25,27 @@ export class Input {
     return had;
   }
   endFrame() { this.pressed.clear(); }
+
+  /** On-foot movement: x = strafe right, z = forward (camera relative). */
+  readFoot() {
+    const k = this.keys;
+    let x = (k.has('KeyD') ? 1 : 0) - (k.has('KeyA') ? 1 : 0);
+    let z = (k.has('KeyW') || k.has('ArrowUp') ? 1 : 0) - (k.has('KeyS') || k.has('ArrowDown') ? 1 : 0);
+    let run = k.has('ShiftLeft') || k.has('ShiftRight');
+    let jump = this.pressed.has('Space');
+    const pads = navigator.getGamepads ? navigator.getGamepads() : [];
+    for (const p of pads) {
+      if (!p) continue;
+      if (Math.abs(p.axes[0] ?? 0) > 0.15) x = p.axes[0];
+      if (Math.abs(p.axes[1] ?? 0) > 0.15) z = -p.axes[1];
+      run = run || !!p.buttons[1]?.pressed || (p.buttons[7]?.value ?? 0) > 0.5;
+      jump = jump || !!p.buttons[0]?.pressed;
+    }
+    if (this.touch.steer || this.touch.moveY) { x = this.touch.steer; z = this.touch.moveY; run = run || Math.hypot(x, z) > 0.85 || this.touch.throttle > 0; }
+    if (this.touch.handbrake) jump = true;
+    if (this.scripted) { x = (this.scripted as any).footX ?? 0; z = (this.scripted as any).footZ ?? 0; run = !!(this.scripted as any).run; jump = !!(this.scripted as any).jump; }
+    return { x, z, run, jump };
+  }
 
   read(dt: number): VehicleInput {
     if (this.scripted) return { throttle: 0, brake: 0, steer: 0, handbrake: false, boost: false, ...this.scripted };

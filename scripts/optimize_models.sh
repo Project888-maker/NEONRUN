@@ -23,3 +23,9 @@ for f in assets/build/cars/car_*.glb; do
   id=$(basename $f .glb)
   $GT optimize $f public/assets/cars/${id}_lod.glb --compress meshopt --texture-compress webp --texture-size 512 --simplify true --simplify-ratio 0.25 --simplify-error 0.004 --prune false --join false --flatten false
 done
+# rigged people (blender/build_people.py)
+mkdir -p public/assets/people
+for f in assets/build/people/*.glb; do
+  id=$(basename $f .glb); case $id in *_rigin) continue;; esac
+  $GT optimize $f public/assets/people/$id.glb --compress meshopt --texture-compress webp --texture-size 1024 --simplify true --simplify-ratio 0.5 --simplify-error 0.001 --prune false --join false --flatten false
+done

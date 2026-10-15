@@ -22,6 +22,26 @@ function glowTex() {
   return new THREE.CanvasTexture(c);
 }
 
+/** A standalone (non-instanced) car mesh from a generated car asset: body + four wheel pivots (FL, FR, RL, RR). */
+export function carMesh(asset: CarAsset, envMap: THREE.Texture | null) {
+  const sp = asset.spec;
+  const root = new THREE.Group();
+  for (const b of asset.body) {
+    let mat = b.material;
+    if ((mat as THREE.MeshStandardMaterial).map) { const pm = carPaint(mat as THREE.MeshStandardMaterial, envMap); patchCarLights(pm, sp.length / 2, false); mat = pm; }
+    root.add(new THREE.Mesh(b.geometry, mat));
+  }
+  const wheels: THREE.Object3D[] = [];
+  for (const k of ['FL', 'FR', 'RL', 'RR'] as const) {
+    const piv = new THREE.Group();
+    piv.position.set(...sp.wheels[k]);
+    for (const w of asset.wheels[k]) piv.add(new THREE.Mesh(w.geometry, w.material));
+    root.add(piv);
+    wheels.push(piv);
+  }
+  return { root, wheels };
+}
+
 /** Wanted level + pursuing police cruisers. */
 export class Police {
   group = new THREE.Group();
@@ -29,6 +49,10 @@ export class Police {
   units: Unit[] = [];
   light: THREE.PointLight;
   private evade = 0;
+  /** parked cruisers blocking a junction ahead of the player (heat 3+) */
+  private blocks: { units: Unit[]; age: number; at: THREE.Vector3 }[] = [];
+  private blockT = 8;
+  onRoadblock: (pos: THREE.Vector3) => void = () => {};
   private bustT = 0;
   private spawnT = 0;
   private tex = glowTex();
@@ -54,6 +78,45 @@ export class Police {
     this.onHeat(0);
     for (const u of this.units) this.removeUnit(u);
     this.units = [];
+    for (const b of this.blocks) b.units.forEach((u) => this.removeUnit(u));
+    this.blocks = [];
+  }
+
+  /** Two cruisers parked nose-to-nose across the road at a junction 80–150 m ahead of where the player is heading. */
+  private spawnRoadblock(player: THREE.Vector3, vel: THREE.Vector3) {
+    if (vel.length() < 6) return;
+    const dir = vel.clone().setY(0).normalize();
+    let best: { x: number; z: number } | null = null, bs = -Infinity;
+    for (const n of this.graph.nodes) {
+      if (n.alley) continue;
+      const rel = new THREE.Vector3(n.x - player.x, 0, n.z - player.z);
+      const d = rel.length();
+      if (d < 80 || d > 150) continue;
+      const align = rel.normalize().dot(dir);
+      if (align < 0.9) continue;
+      if (align - d / 1000 > bs) { bs = align - d / 1000; best = n; }
+    }
+    if (!best) return;
+    const at = new THREE.Vector3(best.x, 0, best.z);
+    if (this.blocks.some((b) => b.at.distanceTo(at) < 5)) return;
+    // the road the player is on runs along the dominant axis of travel; block it just before the junction
+    const along = Math.abs(dir.x) > Math.abs(dir.z) ? new THREE.Vector3(Math.sign(dir.x), 0, 0) : new THREE.Vector3(0, 0, Math.sign(dir.z));
+    const across = new THREE.Vector3(along.z, 0, -along.x);
+    const c = at.clone().addScaledVector(along, -14);
+    const units: Unit[] = [];
+    for (const side of [-1, 1]) {
+      const p = c.clone().addScaledVector(across, side * 3.2);
+      const yaw = Math.atan2(across.x * -side, across.z * -side) + side * 0.5;
+      const u = this.makeUnit(p, yaw);
+      if (!u) continue;
+      u.speed = 0;
+      u.body.setNextKinematicTranslation({ x: p.x, y: 0, z: p.z });
+      u.body.setNextKinematicRotation({ x: 0, y: Math.sin(yaw / 2), z: 0, w: Math.cos(yaw / 2) });
+      u.root.position.copy(p);
+      u.root.rotation.y = yaw;
+      units.push(u);
+    }
+    if (units.length) { this.blocks.push({ units, age: 0, at }); this.onRoadblock(c); }
   }
 
   private removeUnit(u: Unit) {
@@ -64,20 +127,7 @@ export class Police {
   private makeUnit(pos: THREE.Vector3, yaw: number): Unit | null {
     if (!this.asset) return null;
     const sp = this.asset.spec;
-    const root = new THREE.Group();
-    for (const b of this.asset.body) {
-      let mat = b.material;
-      if ((mat as THREE.MeshStandardMaterial).map) { const pm = carPaint(mat as THREE.MeshStandardMaterial, this.envMap); patchCarLights(pm, sp.length / 2, false); mat = pm; }
-      root.add(new THREE.Mesh(b.geometry, mat));
-    }
-    const wheels: THREE.Object3D[] = [];
-    for (const k of ['FL', 'FR', 'RL', 'RR'] as const) {
-      const piv = new THREE.Group();
-      piv.position.set(...sp.wheels[k]);
-      for (const w of this.asset.wheels[k]) piv.add(new THREE.Mesh(w.geometry, w.material));
-      root.add(piv);
-      wheels.push(piv);
-    }
+    const { root, wheels } = carMesh(this.asset, this.envMap);
     // light bar glow sprites (red / blue)
     const bar: THREE.Sprite[] = [];
     for (const [x, col] of [[0.35, 0xff1020], [-0.35, 0x2050ff]] as const) {
@@ -150,6 +200,23 @@ export class Police {
       const ph = Math.floor((t + u.spoke) * 6) % 2;
       u.bar[0].material.opacity = ph ? 1 : 0.1;
       u.bar[1].material.opacity = ph ? 0.1 : 1;
+    }
+    // roadblocks
+    if (this.heat >= 3) {
+      this.blockT -= dt;
+      if (this.blockT <= 0 && this.blocks.length < 2) { this.blockT = 22; this.spawnRoadblock(player, playerVel); }
+    }
+    for (let i = this.blocks.length - 1; i >= 0; i--) {
+      const b = this.blocks[i];
+      b.age += dt;
+      const d = b.at.distanceTo(player);
+      if (d < nearest) { nearest = d; nearestUnit = b.units[0]; }
+      for (const u of b.units) {
+        const ph = Math.floor((t + u.spoke) * 6) % 2;
+        u.bar[0].material.opacity = ph ? 1 : 0.1;
+        u.bar[1].material.opacity = ph ? 0.1 : 1;
+      }
+      if (this.heat === 0 || d > 260 || b.age > 70) { b.units.forEach((u) => this.removeUnit(u)); this.blocks.splice(i, 1); }
     }
     // shared flashing light at the nearest cruiser
     if (nearestUnit) {

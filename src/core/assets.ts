@@ -19,6 +19,8 @@ export interface Assets {
   liveries: Record<string, THREE.Texture>;
   cars: Record<string, CarAsset>;
   carsLod: Record<string, CarAsset>;
+  people: Record<string, GLTF>;
+  lines: Record<string, string[]>;
 }
 
 export class Loader {
@@ -99,9 +101,15 @@ export class Loader {
         if (gl) carsLod[d.id] = bakeCar(gl, spec);
       }).catch((e) => console.warn('car load failed', d.id, e)));
     }
+    const people: Record<string, GLTF> = {};
+    for (const id of ['hero', 'ped_suit', 'ped_vendor', 'ped_punk', 'ped_worker', 'ped_student', 'ped_elder', 'ped_techwear', 'ped_nurse', 'ped_rider']) {
+      jobs.push(this.gltf(`people/${id}.glb`).then((g) => { if (g) people[id] = g; }));
+    }
+    let lines: Record<string, string[]> = {};
+    jobs.push(this.json<Record<string, string[]>>('audio/talk/lines.json').then((l) => (lines = l)).catch(() => {}));
     await Promise.all(jobs);
     if (!kit) throw new Error('citykit.glb failed to load');
-    return { tex, signs, ads, kit, car, landmarks, liveries, cars, carsLod };
+    return { tex, signs, ads, kit, car, landmarks, liveries, cars, carsLod, people, lines };
   }
 }
 

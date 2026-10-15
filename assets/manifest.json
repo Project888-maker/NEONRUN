@@ -1,6 +1,6 @@
 {
   "budget_usd": 25,
-  "spent_usd_est": 36.4297,
+  "spent_usd_est": 40.7356,
   "assets": {
     "_tests/probe": {
       "files": [],
@@ -5005,6 +5005,978 @@
       "seed": null,
       "cost_usd_est": 0.03,
       "created": "2026-10-15T01:09:45.422Z",
+      "seconds": 5
+    },
+    "talk/story_m1_win": {
+      "files": [
+        "assets/generated/talk/story_m1_win.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Not bad for a first night. Stick around, courier.",
+      "input": {
+        "text": "Not bad for a first night. Stick around, courier.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:42:58.649Z",
+      "seconds": 3
+    },
+    "talk/story_m2_mara": {
+      "files": [
+        "assets/generated/talk/story_m2_mara.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "You're the new runner? Good. Tell Sol the rain came early this year. He'll know what it means.",
+      "input": {
+        "text": "You're the new runner? Good. Tell Sol the rain came early this year. He'll know what it means.",
+        "voice": "Aria",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:42:58.693Z",
+      "seconds": 3
+    },
+    "talk/story_m2_park": {
+      "files": [
+        "assets/generated/talk/story_m2_park.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "This is as far as the car goes. Get out and walk it in.",
+      "input": {
+        "text": "This is as far as the car goes. Get out and walk it in.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:42:58.765Z",
+      "seconds": 3
+    },
+    "talk/story_m2_brief": {
+      "files": [
+        "assets/generated/talk/story_m2_brief.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Client won't let cars near her stall. Park up at the market, walk the package in, and hand it to Mara. Personally.",
+      "input": {
+        "text": "Client won't let cars near her stall. Park up at the market, walk the package in, and hand it to Mara. Personally.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.0114,
+      "created": "2026-10-15T01:42:59.253Z",
+      "seconds": 4
+    },
+    "talk/story_m1_brief": {
+      "files": [
+        "assets/generated/talk/story_m1_brief.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Welcome to the night shift. Simple job: grab the parcel on the strip, drop it across the district. Don't break anything. Including yourself.",
+      "input": {
+        "text": "Welcome to the night shift. Simple job: grab the parcel on the strip, drop it across the district. Don't break anything. Including yourself.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.014000000000000002,
+      "created": "2026-10-15T01:43:00.881Z",
+      "seconds": 5
+    },
+    "talk/story_m2_win": {
+      "files": [
+        "assets/generated/talk/story_m2_win.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Mara likes you. That's rare. Don't let it go to your head.",
+      "input": {
+        "text": "Mara likes you. That's rare. Don't let it go to your head.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:43:01.352Z",
+      "seconds": 3
+    },
+    "talk/story_m3_half": {
+      "files": [
+        "assets/generated/talk/story_m3_half.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "That one hurt. Half the crate's rattling. Easy now.",
+      "input": {
+        "text": "That one hurt. Half the crate's rattling. Easy now.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:43:01.437Z",
+      "seconds": 3
+    },
+    "talk/story_m3_win": {
+      "files": [
+        "assets/generated/talk/story_m3_win.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Not a single crack. The collector is impressed. So am I.",
+      "input": {
+        "text": "Not a single crack. The collector is impressed. So am I.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:43:01.921Z",
+      "seconds": 3
+    },
+    "talk/story_m3_fail": {
+      "files": [
+        "assets/generated/talk/story_m3_fail.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "I heard that from here. That's a crate of very expensive sand now.",
+      "input": {
+        "text": "I heard that from here. That's a crate of very expensive sand now.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:43:03.504Z",
+      "seconds": 3
+    },
+    "talk/story_m3_brief": {
+      "files": [
+        "assets/generated/talk/story_m3_brief.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Crate of antique glass lenses for the Backstreets. Every bump costs us. Smash it, and you are paying for it.",
+      "input": {
+        "text": "Crate of antique glass lenses for the Backstreets. Every bump costs us. Smash it, and you are paying for it.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.0108,
+      "created": "2026-10-15T01:43:03.529Z",
+      "seconds": 5
+    },
+    "talk/story_m4_got": {
+      "files": [
+        "assets/generated/talk/story_m4_got.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "That's the one. Now get it to the garage before the cops get curious.",
+      "input": {
+        "text": "That's the one. Now get it to the garage before the cops get curious.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:43:04.204Z",
+      "seconds": 3
+    },
+    "talk/story_m4_win": {
+      "files": [
+        "assets/generated/talk/story_m4_win.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Clean lift. The garage says thanks. Debt settled.",
+      "input": {
+        "text": "Clean lift. The garage says thanks. Debt settled.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:43:04.515Z",
+      "seconds": 3
+    },
+    "talk/story_m4_brief": {
+      "files": [
+        "assets/generated/talk/story_m4_brief.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Someone owes us a car. Orange muscle coupe, parked in the Backstreets. Take it to the chop garage. The owner may object.",
+      "input": {
+        "text": "Someone owes us a car. Orange muscle coupe, parked in the Backstreets. Take it to the chop garage. The owner may object.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.012,
+      "created": "2026-10-15T01:43:06.193Z",
+      "seconds": 5
+    },
+    "talk/story_m5_close": {
+      "files": [
+        "assets/generated/talk/story_m5_close.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Too close. Back off, or they'll make you.",
+      "input": {
+        "text": "Too close. Back off, or they'll make you.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:43:06.338Z",
+      "seconds": 3
+    },
+    "talk/story_m5_far": {
+      "files": [
+        "assets/generated/talk/story_m5_far.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "You're losing them. Close the gap.",
+      "input": {
+        "text": "You're losing them. Close the gap.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:43:06.857Z",
+      "seconds": 3
+    },
+    "talk/story_m5_win": {
+      "files": [
+        "assets/generated/talk/story_m5_win.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Got their drop point. Now we know where they nest.",
+      "input": {
+        "text": "Got their drop point. Now we know where they nest.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:43:07.306Z",
+      "seconds": 3
+    },
+    "talk/story_m5_brief": {
+      "files": [
+        "assets/generated/talk/story_m5_brief.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "A rival crew's been stealing our clients. Their van just pulled out. Follow it, stay out of sight, and find their drop.",
+      "input": {
+        "text": "A rival crew's been stealing our clients. Their van just pulled out. Follow it, stay out of sight, and find their drop.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.0119,
+      "created": "2026-10-15T01:43:08.371Z",
+      "seconds": 5
+    },
+    "talk/story_m5_fail": {
+      "files": [
+        "assets/generated/talk/story_m5_fail.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "They're gone. Or they saw you. Either way, the trail's cold.",
+      "input": {
+        "text": "They're gone. Or they saw you. Either way, the trail's cold.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:43:08.806Z",
+      "seconds": 3
+    },
+    "talk/story_m6_cheer": {
+      "files": [
+        "assets/generated/talk/story_m6_cheer.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Yeah! Keep it sideways!",
+      "input": {
+        "text": "Yeah! Keep it sideways!",
+        "voice": "Charlie",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:43:09.385Z",
+      "seconds": 3
+    },
+    "talk/story_m6_win": {
+      "files": [
+        "assets/generated/talk/story_m6_win.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "The crew paid out. You just made us some friends.",
+      "input": {
+        "text": "The crew paid out. You just made us some friends.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:43:09.922Z",
+      "seconds": 3
+    },
+    "talk/story_m6_brief": {
+      "files": [
+        "assets/generated/talk/story_m6_brief.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "The street crew is betting on you. Twenty-five hundred drift points before the clock dies. Make it loud.",
+      "input": {
+        "text": "The street crew is betting on you. Twenty-five hundred drift points before the clock dies. Make it loud.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.0104,
+      "created": "2026-10-15T01:43:10.941Z",
+      "seconds": 5
+    },
+    "talk/story_m7_vip_in": {
+      "files": [
+        "assets/generated/talk/story_m7_vip_in.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Drive. And if you scratch this suit, you'll never work in this city again.",
+      "input": {
+        "text": "Drive. And if you scratch this suit, you'll never work in this city again.",
+        "voice": "Roger",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:43:11.606Z",
+      "seconds": 3
+    },
+    "talk/story_m7_vip_hit": {
+      "files": [
+        "assets/generated/talk/story_m7_vip_hit.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Do you mind? I am trying to read.",
+      "input": {
+        "text": "Do you mind? I am trying to read.",
+        "voice": "Roger",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:43:12.006Z",
+      "seconds": 3
+    },
+    "talk/story_m7_vip_out": {
+      "files": [
+        "assets/generated/talk/story_m7_vip_out.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Adequate. You may keep the change.",
+      "input": {
+        "text": "Adequate. You may keep the change.",
+        "voice": "Roger",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:43:12.464Z",
+      "seconds": 3
+    },
+    "talk/story_m7_brief": {
+      "files": [
+        "assets/generated/talk/story_m7_brief.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "High paying executive needs a ride across downtown. Smooth driving only. He tips in comfort.",
+      "input": {
+        "text": "High paying executive needs a ride across downtown. Smooth driving only. He tips in comfort.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:43:12.984Z",
+      "seconds": 5
+    },
+    "talk/story_m7_win": {
+      "files": [
+        "assets/generated/talk/story_m7_win.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "He tipped. He never tips.",
+      "input": {
+        "text": "He tipped. He never tips.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:43:13.682Z",
+      "seconds": 3
+    },
+    "talk/story_m8_win": {
+      "files": [
+        "assets/generated/talk/story_m8_win.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "New record. Their boardroom is going to be very quiet tomorrow.",
+      "input": {
+        "text": "New record. Their boardroom is going to be very quiet tomorrow.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:43:14.470Z",
+      "seconds": 2
+    },
+    "talk/story_m8_brief": {
+      "files": [
+        "assets/generated/talk/story_m8_brief.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Corporate racers set a record through the towers. Eight gates, one clock. Beat it.",
+      "input": {
+        "text": "Corporate racers set a record through the towers. Eight gates, one clock. Beat it.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:43:16.346Z",
+      "seconds": 5
+    },
+    "talk/story_m9_brief": {
+      "files": [
+        "assets/generated/talk/story_m9_brief.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "This parcel's flagged. The cops are already looking for it. Deliver it, and don't get boxed in.",
+      "input": {
+        "text": "This parcel's flagged. The cops are already looking for it. Deliver it, and don't get boxed in.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:43:17.237Z",
+      "seconds": 5
+    },
+    "talk/story_m9_win": {
+      "files": [
+        "assets/generated/talk/story_m9_win.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Delivered under their noses. Beautiful.",
+      "input": {
+        "text": "Delivered under their noses. Beautiful.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:43:17.607Z",
+      "seconds": 5
+    },
+    "talk/story_m10_brief": {
+      "files": [
+        "assets/generated/talk/story_m10_brief.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Docks drop. Security drones patrol the yard. Keep moving and they can't lock on.",
+      "input": {
+        "text": "Docks drop. Security drones patrol the yard. Keep moving and they can't lock on.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:43:18.382Z",
+      "seconds": 5
+    },
+    "talk/story_m11_brief": {
+      "files": [
+        "assets/generated/talk/story_m11_brief.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Someone tipped off the cops. They're on you, right now. Lose every last star.",
+      "input": {
+        "text": "Someone tipped off the cops. They're on you, right now. Lose every last star.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:43:19.003Z",
+      "seconds": 3
+    },
+    "talk/story_m10_win": {
+      "files": [
+        "assets/generated/talk/story_m10_win.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Through the fog and out. The docks are ours now.",
+      "input": {
+        "text": "Through the fog and out. The docks are ours now.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:43:19.029Z",
+      "seconds": 5
+    },
+    "talk/story_m11_win": {
+      "files": [
+        "assets/generated/talk/story_m11_win.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Clean. They're chasing ghosts. Somebody sold us out, and I'm going to find out who.",
+      "input": {
+        "text": "Clean. They're chasing ghosts. Somebody sold us out, and I'm going to find out who.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:43:19.841Z",
+      "seconds": 3
+    },
+    "talk/story_m12_leg2": {
+      "files": [
+        "assets/generated/talk/story_m12_leg2.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Core's moving. Downtown next. And yes, those are sirens.",
+      "input": {
+        "text": "Core's moving. Downtown next. And yes, those are sirens.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:43:21.090Z",
+      "seconds": 3
+    },
+    "talk/story_m12_win": {
+      "files": [
+        "assets/generated/talk/story_m12_win.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "You did it. The core is out, and the city is yours, courier. Take the rest of the night off.",
+      "input": {
+        "text": "You did it. The core is out, and the city is yours, courier. Take the rest of the night off.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:43:21.531Z",
+      "seconds": 2
+    },
+    "talk/story_m12_leg3": {
+      "files": [
+        "assets/generated/talk/story_m12_leg3.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Last leg. The docks. Drones in the air. Bring it home.",
+      "input": {
+        "text": "Last leg. The docks. Drones in the air. Bring it home.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:43:22.143Z",
+      "seconds": 3
+    },
+    "talk/story_m12_brief": {
+      "files": [
+        "assets/generated/talk/story_m12_brief.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "This is the big one. The core goes through three hands tonight. Three stops, three districts. After this, we stop hiding.",
+      "input": {
+        "text": "This is the big one. The core goes through three hands tonight. Three stops, three districts. After this, we stop hiding.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.0121,
+      "created": "2026-10-15T01:43:22.192Z",
+      "seconds": 5
+    },
+    "talk/story_gen_fail_time": {
+      "files": [
+        "assets/generated/talk/story_gen_fail_time.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Clock's dead. Come back and try it again.",
+      "input": {
+        "text": "Clock's dead. Come back and try it again.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:43:22.331Z",
+      "seconds": 2
+    },
+    "talk/story_gen_fail_busted": {
+      "files": [
+        "assets/generated/talk/story_gen_fail_busted.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Busted. I am not paying your bail twice.",
+      "input": {
+        "text": "Busted. I am not paying your bail twice.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:43:23.659Z",
+      "seconds": 3
+    },
+    "talk/story_gen_go": {
+      "files": [
+        "assets/generated/talk/story_gen_go.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/tts/eleven-v3",
+      "prompt": "Go, go, go.",
+      "input": {
+        "text": "Go, go, go.",
+        "voice": "Brian",
+        "stability": 0.5
+      },
+      "seed": null,
+      "cost_usd_est": 0.01,
+      "created": "2026-10-15T01:43:24.139Z",
+      "seconds": 3
+    },
+    "mission/m3": {
+      "files": [
+        "assets/generated/mission/m3.png"
+      ],
+      "model": "fal-ai/gpt-image-2",
+      "prompt": "close up of a wooden crate of antique glass lenses with straw packing in the back seat of a car, rain streaked windows, neon bokeh outside. cinematic photorealistic film still, rainy night in a dense futuristic asian megacity, wet reflective streets, neon light, anamorphic lens, shallow depth of field, moody color grade, no text, no logos, no brand names, no watermark",
+      "input": {
+        "prompt": "close up of a wooden crate of antique glass lenses with straw packing in the back seat of a car, rain streaked windows, neon bokeh outside. cinematic photorealistic film still, rainy night in a dense futuristic asian megacity, wet reflective streets, neon light, anamorphic lens, shallow depth of field, moody color grade, no text, no logos, no brand names, no watermark",
+        "image_size": "landscape_16_9",
+        "quality": "high"
+      },
+      "seed": null,
+      "cost_usd_est": 0.1,
+      "created": "2026-10-15T01:44:37.592Z",
+      "seconds": 73
+    },
+    "mission/m1": {
+      "files": [
+        "assets/generated/mission/m1.png"
+      ],
+      "model": "fal-ai/gpt-image-2",
+      "prompt": "a dark muscle coupe parked at a glowing neon street food strip, a courier in a black jacket holding a small parcel walks toward it. cinematic photorealistic film still, rainy night in a dense futuristic asian megacity, wet reflective streets, neon light, anamorphic lens, shallow depth of field, moody color grade, no text, no logos, no brand names, no watermark",
+      "input": {
+        "prompt": "a dark muscle coupe parked at a glowing neon street food strip, a courier in a black jacket holding a small parcel walks toward it. cinematic photorealistic film still, rainy night in a dense futuristic asian megacity, wet reflective streets, neon light, anamorphic lens, shallow depth of field, moody color grade, no text, no logos, no brand names, no watermark",
+        "image_size": "landscape_16_9",
+        "quality": "high"
+      },
+      "seed": null,
+      "cost_usd_est": 0.1,
+      "created": "2026-10-15T01:44:47.751Z",
+      "seconds": 84
+    },
+    "mission/m4": {
+      "files": [
+        "assets/generated/mission/m4.png"
+      ],
+      "model": "fal-ai/gpt-image-2",
+      "prompt": "a battered orange 1970s muscle coupe parked alone in a narrow rain soaked back alley, steam rising from a vent, a single flickering lamp. cinematic photorealistic film still, rainy night in a dense futuristic asian megacity, wet reflective streets, neon light, anamorphic lens, shallow depth of field, moody color grade, no text, no logos, no brand names, no watermark",
+      "input": {
+        "prompt": "a battered orange 1970s muscle coupe parked alone in a narrow rain soaked back alley, steam rising from a vent, a single flickering lamp. cinematic photorealistic film still, rainy night in a dense futuristic asian megacity, wet reflective streets, neon light, anamorphic lens, shallow depth of field, moody color grade, no text, no logos, no brand names, no watermark",
+        "image_size": "landscape_16_9",
+        "quality": "high"
+      },
+      "seed": null,
+      "cost_usd_est": 0.1,
+      "created": "2026-10-15T01:44:47.936Z",
+      "seconds": 84
+    },
+    "mission/m5": {
+      "files": [
+        "assets/generated/mission/m5.png"
+      ],
+      "model": "fal-ai/gpt-image-2",
+      "prompt": "view through a rain covered windshield following a white delivery van at a distance down a neon street, taillights glowing. cinematic photorealistic film still, rainy night in a dense futuristic asian megacity, wet reflective streets, neon light, anamorphic lens, shallow depth of field, moody color grade, no text, no logos, no brand names, no watermark",
+      "input": {
+        "prompt": "view through a rain covered windshield following a white delivery van at a distance down a neon street, taillights glowing. cinematic photorealistic film still, rainy night in a dense futuristic asian megacity, wet reflective streets, neon light, anamorphic lens, shallow depth of field, moody color grade, no text, no logos, no brand names, no watermark",
+        "image_size": "landscape_16_9",
+        "quality": "high"
+      },
+      "seed": null,
+      "cost_usd_est": 0.1,
+      "created": "2026-10-15T01:44:52.567Z",
+      "seconds": 88
+    },
+    "mission/m2": {
+      "files": [
+        "assets/generated/mission/m2.png"
+      ],
+      "model": "fal-ai/gpt-image-2",
+      "prompt": "a crowded covered night market alley with lanterns and food stalls, a woman in a raincoat waits behind a stall, a courier walks in carrying a parcel. cinematic photorealistic film still, rainy night in a dense futuristic asian megacity, wet reflective streets, neon light, anamorphic lens, shallow depth of field, moody color grade, no text, no logos, no brand names, no watermark",
+      "input": {
+        "prompt": "a crowded covered night market alley with lanterns and food stalls, a woman in a raincoat waits behind a stall, a courier walks in carrying a parcel. cinematic photorealistic film still, rainy night in a dense futuristic asian megacity, wet reflective streets, neon light, anamorphic lens, shallow depth of field, moody color grade, no text, no logos, no brand names, no watermark",
+        "image_size": "landscape_16_9",
+        "quality": "high"
+      },
+      "seed": null,
+      "cost_usd_est": 0.1,
+      "created": "2026-10-15T01:44:53.346Z",
+      "seconds": 89
+    },
+    "mission/m6": {
+      "files": [
+        "assets/generated/mission/m6.png"
+      ],
+      "model": "fal-ai/gpt-image-2",
+      "prompt": "a car drifting sideways through a wet intersection throwing spray, a crowd of street racers cheering on the sidewalk, motion blur. cinematic photorealistic film still, rainy night in a dense futuristic asian megacity, wet reflective streets, neon light, anamorphic lens, shallow depth of field, moody color grade, no text, no logos, no brand names, no watermark",
+      "input": {
+        "prompt": "a car drifting sideways through a wet intersection throwing spray, a crowd of street racers cheering on the sidewalk, motion blur. cinematic photorealistic film still, rainy night in a dense futuristic asian megacity, wet reflective streets, neon light, anamorphic lens, shallow depth of field, moody color grade, no text, no logos, no brand names, no watermark",
+        "image_size": "landscape_16_9",
+        "quality": "high"
+      },
+      "seed": null,
+      "cost_usd_est": 0.1,
+      "created": "2026-10-15T01:46:01.394Z",
+      "seconds": 84
+    },
+    "mission/m7": {
+      "files": [
+        "assets/generated/mission/m7.png"
+      ],
+      "model": "fal-ai/gpt-image-2",
+      "prompt": "an executive in a long dark coat waiting under the canopy of a glass corporate skyscraper lobby, black luxury sedan pulling up. cinematic photorealistic film still, rainy night in a dense futuristic asian megacity, wet reflective streets, neon light, anamorphic lens, shallow depth of field, moody color grade, no text, no logos, no brand names, no watermark",
+      "input": {
+        "prompt": "an executive in a long dark coat waiting under the canopy of a glass corporate skyscraper lobby, black luxury sedan pulling up. cinematic photorealistic film still, rainy night in a dense futuristic asian megacity, wet reflective streets, neon light, anamorphic lens, shallow depth of field, moody color grade, no text, no logos, no brand names, no watermark",
+        "image_size": "landscape_16_9",
+        "quality": "high"
+      },
+      "seed": null,
+      "cost_usd_est": 0.1,
+      "created": "2026-10-15T01:46:05.729Z",
+      "seconds": 78
+    },
+    "mission/m8": {
+      "files": [
+        "assets/generated/mission/m8.png"
+      ],
+      "model": "fal-ai/gpt-image-2",
+      "prompt": "low angle of a car speeding between glass skyscrapers on a wide downtown avenue, light trails, glowing checkpoint arches. cinematic photorealistic film still, rainy night in a dense futuristic asian megacity, wet reflective streets, neon light, anamorphic lens, shallow depth of field, moody color grade, no text, no logos, no brand names, no watermark",
+      "input": {
+        "prompt": "low angle of a car speeding between glass skyscrapers on a wide downtown avenue, light trails, glowing checkpoint arches. cinematic photorealistic film still, rainy night in a dense futuristic asian megacity, wet reflective streets, neon light, anamorphic lens, shallow depth of field, moody color grade, no text, no logos, no brand names, no watermark",
+        "image_size": "landscape_16_9",
+        "quality": "high"
+      },
+      "seed": null,
+      "cost_usd_est": 0.1,
+      "created": "2026-10-15T01:46:06.021Z",
+      "seconds": 78
+    },
+    "mission/m9": {
+      "files": [
+        "assets/generated/mission/m9.png"
+      ],
+      "model": "fal-ai/gpt-image-2",
+      "prompt": "police cruisers with red and blue lights blocking a downtown street at night, a car speeding past them in the rain. cinematic photorealistic film still, rainy night in a dense futuristic asian megacity, wet reflective streets, neon light, anamorphic lens, shallow depth of field, moody color grade, no text, no logos, no brand names, no watermark",
+      "input": {
+        "prompt": "police cruisers with red and blue lights blocking a downtown street at night, a car speeding past them in the rain. cinematic photorealistic film still, rainy night in a dense futuristic asian megacity, wet reflective streets, neon light, anamorphic lens, shallow depth of field, moody color grade, no text, no logos, no brand names, no watermark",
+        "image_size": "landscape_16_9",
+        "quality": "high"
+      },
+      "seed": null,
+      "cost_usd_est": 0.1,
+      "created": "2026-10-15T01:46:10.558Z",
+      "seconds": 78
+    },
+    "mission/m10": {
+      "files": [
+        "assets/generated/mission/m10.png"
+      ],
+      "model": "fal-ai/gpt-image-2",
+      "prompt": "industrial harbor container yard in thick fog, stacked shipping containers, gantry cranes, small security drones with spotlights. cinematic photorealistic film still, rainy night in a dense futuristic asian megacity, wet reflective streets, neon light, anamorphic lens, shallow depth of field, moody color grade, no text, no logos, no brand names, no watermark",
+      "input": {
+        "prompt": "industrial harbor container yard in thick fog, stacked shipping containers, gantry cranes, small security drones with spotlights. cinematic photorealistic film still, rainy night in a dense futuristic asian megacity, wet reflective streets, neon light, anamorphic lens, shallow depth of field, moody color grade, no text, no logos, no brand names, no watermark",
+        "image_size": "landscape_16_9",
+        "quality": "high"
+      },
+      "seed": null,
+      "cost_usd_est": 0.1,
+      "created": "2026-10-15T01:46:17.048Z",
+      "seconds": 84
+    },
+    "mission/m11": {
+      "files": [
+        "assets/generated/mission/m11.png"
+      ],
+      "model": "fal-ai/gpt-image-2",
+      "prompt": "aerial view of a car chased by three police cruisers across a rain soaked bridge with flashing lights. cinematic photorealistic film still, rainy night in a dense futuristic asian megacity, wet reflective streets, neon light, anamorphic lens, shallow depth of field, moody color grade, no text, no logos, no brand names, no watermark",
+      "input": {
+        "prompt": "aerial view of a car chased by three police cruisers across a rain soaked bridge with flashing lights. cinematic photorealistic film still, rainy night in a dense futuristic asian megacity, wet reflective streets, neon light, anamorphic lens, shallow depth of field, moody color grade, no text, no logos, no brand names, no watermark",
+        "image_size": "landscape_16_9",
+        "quality": "high"
+      },
+      "seed": null,
+      "cost_usd_est": 0.1,
+      "created": "2026-10-15T01:47:24.955Z",
+      "seconds": 84
+    },
+    "mission/m12": {
+      "files": [
+        "assets/generated/mission/m12.png"
+      ],
+      "model": "fal-ai/gpt-image-2",
+      "prompt": "a courier standing next to a dark muscle coupe at the edge of a harbor at dawn, the neon city skyline behind, rain ending. cinematic photorealistic film still, rainy night in a dense futuristic asian megacity, wet reflective streets, neon light, anamorphic lens, shallow depth of field, moody color grade, no text, no logos, no brand names, no watermark",
+      "input": {
+        "prompt": "a courier standing next to a dark muscle coupe at the edge of a harbor at dawn, the neon city skyline behind, rain ending. cinematic photorealistic film still, rainy night in a dense futuristic asian megacity, wet reflective streets, neon light, anamorphic lens, shallow depth of field, moody color grade, no text, no logos, no brand names, no watermark",
+        "image_size": "landscape_16_9",
+        "quality": "high"
+      },
+      "seed": null,
+      "cost_usd_est": 0.1,
+      "created": "2026-10-15T01:47:29.659Z",
+      "seconds": 84
+    },
+    "music/chase": {
+      "files": [
+        "assets/generated/music/chase.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/music",
+      "prompt": "Intense cyberpunk police pursuit music, 150 BPM, driving breakbeat drums, siren-like synth leads, heavy sub bass, relentless momentum, seamless loop, instrumental only",
+      "input": {
+        "prompt": "Intense cyberpunk police pursuit music, 150 BPM, driving breakbeat drums, siren-like synth leads, heavy sub bass, relentless momentum, seamless loop, instrumental only",
+        "music_length_ms": 90000,
+        "force_instrumental": true,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 1.2000000000000002,
+      "created": "2026-10-15T01:47:41.351Z",
+      "seconds": 12
+    },
+    "music/finale": {
+      "files": [
+        "assets/generated/music/finale.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/music",
+      "prompt": "Epic cinematic synthwave finale, 132 BPM, soaring analog leads over driving drums and big pads, heroic and emotional, night city climax, seamless loop, instrumental only",
+      "input": {
+        "prompt": "Epic cinematic synthwave finale, 132 BPM, soaring analog leads over driving drums and big pads, heroic and emotional, night city climax, seamless loop, instrumental only",
+        "music_length_ms": 100000,
+        "force_instrumental": true,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 1.3333333333333335,
+      "created": "2026-10-15T01:47:55.147Z",
+      "seconds": 14
+    },
+    "sfx/checkpoint": {
+      "files": [
+        "assets/generated/sfx/checkpoint.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "futuristic race checkpoint pass chime, bright synth ding with whoosh",
+      "input": {
+        "text": "futuristic race checkpoint pass chime, bright synth ding with whoosh",
+        "duration_seconds": 1,
+        "loop": false,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-15T01:47:58.001Z",
+      "seconds": 3
+    },
+    "sfx/glass_rattle": {
+      "files": [
+        "assets/generated/sfx/glass_rattle.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "crate of glass bottles rattling and clinking from a bump",
+      "input": {
+        "text": "crate of glass bottles rattling and clinking from a bump",
+        "duration_seconds": 1.2,
+        "loop": false,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-15T01:48:01.019Z",
+      "seconds": 3
+    },
+    "sfx/cheer": {
+      "files": [
+        "assets/generated/sfx/cheer.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "small crowd of street racers cheering and whistling outdoors at night",
+      "input": {
+        "text": "small crowd of street racers cheering and whistling outdoors at night",
+        "duration_seconds": 2.5,
+        "loop": false,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-15T01:48:03.943Z",
+      "seconds": 3
+    },
+    "sfx/objective": {
+      "files": [
+        "assets/generated/sfx/objective.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "new objective notification, futuristic two tone synth ping",
+      "input": {
+        "text": "new objective notification, futuristic two tone synth ping",
+        "duration_seconds": 1.2,
+        "loop": false,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-15T01:48:06.937Z",
+      "seconds": 3
+    },
+    "sfx/camera_flash": {
+      "files": [
+        "assets/generated/sfx/camera_flash.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "surveillance camera shutter click with electronic beep",
+      "input": {
+        "text": "surveillance camera shutter click with electronic beep",
+        "duration_seconds": 0.8,
+        "loop": false,
+        "prompt_influence": 0.6,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-15T01:48:12.010Z",
       "seconds": 5
     }
   }

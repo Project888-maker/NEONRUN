@@ -2,11 +2,13 @@ import * as THREE from 'three';
 
 const SFX = ['engine_idle', 'engine_low', 'engine_high', 'boost', 'tire_squeal', 'drift_wet', 'gear_shift', 'horn', 'hit_light', 'hit_heavy', 'hit_metal', 'hit_glass', 'suspension',
   'rain_light', 'rain_heavy', 'rain_roof', 'tire_hiss', 'sirens', 'city_hum', 'neon_buzz', 'steam_vent', 'ui_click', 'ui_hover', 'ui_confirm', 'ui_error', 'mission_start', 'mission_complete',
-  'timer_tick', 'timer_warning', 'pickup', 'drone_hum', 'crowd', 'train', 'near_miss', 'cash'] as const;
+  'timer_tick', 'timer_warning', 'pickup', 'drone_hum', 'crowd', 'train', 'near_miss', 'cash',
+  'footstep_wet', 'footsteps_run', 'door_open', 'door_close', 'carjack', 'body_hit', 'scream', 'siren_close', 'jump_land', 'crowd_panic', 'radio_squelch',
+  'checkpoint', 'glass_rattle', 'cheer', 'objective', 'camera_flash'] as const;
 export type SfxName = typeof SFX[number];
 const VOICES = ['brief_1', 'brief_2', 'brief_3', 'brief_neon', 'brief_docks', 'brief_downtown', 'brief_back', 'pickup', 'ten_left', 'twenty_left', 'success_1', 'success_2', 'fail_1', 'fail_2', 'near_miss_1', 'near_miss_2', 'drone', 'upgrade', 'unlock'] as const;
 export type VoiceName = typeof VOICES[number];
-export type MusicName = 'menu' | 'chill' | 'drive' | 'urgent';
+export type MusicName = 'menu' | 'chill' | 'drive' | 'urgent' | 'chase' | 'finale';
 
 interface Loop { src: AudioBufferSourceNode; gain: GainNode; panner?: PannerNode; filter?: BiquadFilterNode }
 
@@ -47,7 +49,7 @@ export class AudioSys {
       } catch (e) { console.warn('audio load failed', p, e); }
       onProgress?.(++done / all.length);
     }));
-    for (const m of ['menu', 'chill', 'drive', 'urgent'] as MusicName[]) {
+    for (const m of ['menu', 'chill', 'drive', 'urgent', 'chase', 'finale'] as MusicName[]) {
       const el = new Audio(`./assets/audio/music/${m}.mp3`);
       el.loop = true;
       el.preload = m === 'menu' ? 'auto' : 'metadata';
@@ -265,6 +267,30 @@ export class AudioSys {
     const t = this.ctx.currentTime;
     this.music.gain.setTargetAtTime(this.volumes.music * 0.35, t, 0.1);
     this.music.gain.setTargetAtTime(this.volumes.music, t + b.duration, 0.4);
+  }
+
+  private talkCache = new Map<string, Promise<AudioBuffer | null>>();
+  /** Street conversation line (assets/audio/talk/<name>.mp3), loaded on demand. Resolves to its duration. */
+  async talk(name: string, pos?: THREE.Vector3): Promise<number> {
+    if (!this.talkCache.has(name)) {
+      this.talkCache.set(name, fetch(`./assets/audio/talk/${name}.mp3`).then((r) => r.arrayBuffer()).then((b) => this.ctx.decodeAudioData(b)).catch(() => null));
+    }
+    const b = await this.talkCache.get(name)!;
+    if (!b || this.ctx.state !== 'running') return b ? b.duration : 2;
+    const s = this.ctx.createBufferSource();
+    s.buffer = b;
+    const g = this.ctx.createGain();
+    g.gain.value = 1.1;
+    if (pos) { const p = this.panner(pos); p.refDistance = 3; s.connect(g).connect(p).connect(this.voice); }
+    else s.connect(g).connect(this.voice);
+    s.start();
+    return b.duration;
+  }
+
+  sirenLoop?: Loop;
+  siren(pos: THREE.Vector3 | null) {
+    if (!this.sirenLoop) this.sirenLoop = this.spatialLoop('siren_close', 0);
+    this.setPos(this.sirenLoop, pos ?? new THREE.Vector3(0, -999, 0), pos ? 1.2 : 0);
   }
 
   setRain(v: number) { this.setLoop('rain_h', 0.35 * v); this.setLoop('rain_l', 0.25); }

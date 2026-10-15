@@ -15,10 +15,14 @@ import { Train, SkyTraffic } from './world/ambient';
 import { Vehicle } from './vehicle/vehicle';
 import { CarVisual, PAINTS, UNDERGLOW } from './vehicle/carVisual';
 import { CAR_DEFS, carDef } from './vehicle/carModels';
+import { HeroOnFoot, FootCam } from './game/onfoot';
+import { Crowd, PED_TYPES, type PedType, lerpAngle } from './world/people';
+import { Police } from './game/police';
 import { ChaseCam } from './vehicle/chaseCam';
 import { AudioSys } from './audio/audio';
 import { Hud } from './game/hud';
 import { Missions } from './game/missions';
+import { Campaign, MISSIONS, type MissionDef } from './game/campaign';
 import { loadSave, writeSave, UPGRADE_COST, UNLOCK_AT, type Save } from './game/progress';
 
 const $ = (id: string) => document.getElementById(id)!;
@@ -64,6 +68,7 @@ let vehicle: Vehicle;
 let car: CarVisual;
 let chase: ChaseCam;
 let missions: Missions;
+let campaign: Campaign;
 let eventQueue: RAPIER.EventQueue;
 const graph = buildRoadGraph();
 const realLights: THREE.PointLight[] = [];
@@ -156,6 +161,29 @@ function buildWorld() {
   (traffic as any).count = Q.traffic;
   traffic.onHonk = (p) => audio.play('horn', { pos: p, volume: 0.6, rate: 0.9 + Math.random() * 0.2 });
   scene.add(traffic.group);
+  crowd = new Crowd(Object.fromEntries(PED_TYPES.filter((t) => A.people[t]).map((t) => [t, A.people[t]])) as any, city, Q.level === 'high' ? 22 : Q.level === 'med' ? 14 : 8);
+  crowd.onHit = (p, spd) => {
+    audio.play('body_hit', { pos: p, volume: 1 });
+    if (Math.random() < 0.6) audio.play('scream', { pos: p, volume: 0.9 });
+    crowd.panic(p, 20);
+    chase.impact(Math.min(0.5, spd / 40));
+    if (hitCooldown <= 0) { police.add(1, 'pedestrian'); hitCooldown = 4; }
+  };
+  crowd.onScream = (p) => audio.play('scream', { pos: p, volume: 0.6, rate: 0.9 + Math.random() * 0.25 });
+  scene.add(crowd.group);
+  if (A.people.hero) {
+    hero = new HeroOnFoot(phys, A.people.hero);
+    hero.onStep = () => audio.play('footstep_wet', { volume: 0.35, rate: 0.85 + Math.random() * 0.3 });
+    hero.onLand = () => audio.play('jump_land', { volume: 0.6 });
+    scene.add(hero.person.root);
+  }
+  footCam = new FootCam(camera, phys);
+  police = new Police(phys, graph, A.carsLod.car_police ?? A.cars.car_police, env);
+  police.onHeat = (h) => renderWanted(h);
+  police.onSpawn = (p) => { audio.play('radio_squelch', { volume: 0.5 }); if (Math.random() < 0.7) audio.talk(`police_${Math.floor(Math.random() * 4)}`, p); };
+  police.onBusted = () => busted();
+  police.onRoadblock = () => { audio.play('radio_squelch', { volume: 0.6 }); hud.toast('Roadblock ahead'); };
+  scene.add(police.group);
   train = new Train(A.kit);
   scene.add(train.group);
   skyTraffic = new SkyTraffic(450);
@@ -191,6 +219,40 @@ function buildWorld() {
   });
   scene.add(missions.group);
   for (const d of save.unlocked) city.unlock(d);
+  campaign = new Campaign({
+    phys, city, graph, hud, audio, save, envMap: env, cars: A.cars, people: A.people as any,
+    placePlayer: (x, z, yaw) => placePlayer(x, z, yaw),
+    spawnParked: (id, x, z, yaw) => {
+      const m = makeCar(id, new THREE.Vector3(x, 0.8, z), yaw);
+      parkedCars.push({ ...m, id, keep: true });
+      return m.vehicle;
+    },
+    removeParked: (h) => {
+      const i = parkedCars.findIndex((p) => p.vehicle === h);
+      if (i >= 0) { const p = parkedCars.splice(i, 1)[0]; p.car.root.removeFromParent(); p.vehicle.dispose(); }
+    },
+    inCar: (h) => mode === 'drive' && vehicle === h,
+    addHeat: (n) => police.add(n, 'story'),
+    clearHeat: () => police.clear(),
+    unlock: (d) => {
+      if (save.unlocked.includes(d)) return;
+      save.unlocked.push(d); writeSave(save);
+      city.unlock(d); hud.unlocked = save.unlocked;
+    },
+    subtitle: (who, text, dur) => subtitle(who, text, dur),
+    droneHit: () => {
+      chase.impact(0.6);
+      audio.play('hit_metal', { volume: 0.8 });
+      if (mode === 'drive') vehicle.body.applyImpulse({ x: (Math.random() - 0.5) * 3000, y: 2500, z: (Math.random() - 0.5) * 3000 }, true);
+    },
+    choose: (c) => {
+      $('r-actions').innerHTML = '';
+      const def = campaign.active;
+      if (c === 'free' || !def) { campaign.stop(); missions.suspend(false, playerPos); return; }
+      startStory(c === 'next' ? MISSIONS[def.n] ?? def : def);
+    },
+  });
+  scene.add(campaign.group);
 
   // video billboards
   for (const clip of new Set(city.videoScreens.map((s) => s.clip))) {
@@ -216,25 +278,89 @@ let envTex: THREE.Texture;
 export const HERO_DEF = { id: 'hero', name: 'Night Courier', price: 0, desc: 'Your own muscle coupe. Paint, glow and liveries apply here.', mass: 1450, power: 1, topSpeed: 56, grip: 1, traffic: 0 };
 
 /** Replace the player's car (visual + physics), keeping position/heading/velocity. Used by the garage and car theft. */
-function spawnPlayerCar(id: string, pos: THREE.Vector3, yaw: number, vel?: THREE.Vector3) {
-  if (car) { car.root.removeFromParent(); }
-  if (vehicle) vehicle.dispose();
-  const asset = id === 'hero' ? undefined : A.cars[id];
-  const def = id === 'hero' ? HERO_DEF : carDef(id)!;
-  car = new CarVisual(asset ? null : A.car, A.kit, envTex, asset);
-  const wp = Object.fromEntries(Object.entries(car.wheelLocal).map(([k, v]) => [k, v.clone()]));
-  vehicle = new Vehicle(phys, pos, yaw, Object.keys(wp).length === 4 ? wp : undefined, {
-    mass: def.mass, power: def.power, topSpeed: def.topSpeed, grip: def.grip,
-    wheelRadius: asset ? asset.spec.wheelRadius : undefined, dims: car.dims,
-  });
-  vehicle.upgrades = { ...save.upgrades };
+function spawnPlayerCar(id: string, pos: THREE.Vector3, yaw: number, vel?: THREE.Vector3, keepOld = false) {
+  if (keepOld && car && vehicle) {
+    // leave the previous car parked where it is
+    parkedCars.push({ vehicle, car, id: carId });
+    evictParked();
+  } else {
+    if (car) { car.root.removeFromParent(); }
+    if (vehicle) vehicle.dispose();
+  }
+  ({ car, vehicle } = makeCar(id, pos, yaw));
   vehicle.onShift = (g) => { if (state === 'playing' && g > 1) audio.play('gear_shift', { volume: 0.45 }); };
   if (vel) vehicle.body.setLinvel({ x: vel.x, y: vel.y, z: vel.z }, true);
-  scene.add(car.root);
   carId = id;
   if (cubeRT && car.paintMat) { car.paintMat.envMap = cubeRT.texture; car.paintMat.needsUpdate = true; }
 }
 let carId = 'hero';
+
+/** Build a car (visual + physics) without making it the player's. */
+function makeCar(id: string, pos: THREE.Vector3, yaw: number) {
+  const asset = id === 'hero' ? undefined : A.cars[id];
+  const def = id === 'hero' ? HERO_DEF : carDef(id)!;
+  const c = new CarVisual(asset ? null : A.car, A.kit, envTex, asset);
+  const wp = Object.fromEntries(Object.entries(c.wheelLocal).map(([k, v]) => [k, v.clone()]));
+  const v = new Vehicle(phys, pos, yaw, Object.keys(wp).length === 4 ? wp : undefined, {
+    mass: def.mass, power: def.power, topSpeed: def.topSpeed, grip: def.grip,
+    wheelRadius: asset ? asset.spec.wheelRadius : undefined, dims: c.dims,
+  });
+  v.upgrades = id === 'hero' ? { ...save.upgrades } : { speed: 0, grip: 0, boost: 0 };
+  scene.add(c.root);
+  // park it visually right away (its update runs in the frame loop)
+  const pp = new THREE.Vector3(), pq = new THREE.Quaternion();
+  v.getTransform(pp, pq);
+  c.update(0, v, pp, pq, 0);
+  return { car: c, vehicle: v };
+}
+
+/** At most two cars stay parked around the city (story cars marked keep are never evicted). */
+function evictParked() {
+  while (parkedCars.filter((p) => !p.keep).length > 2) {
+    const i = parkedCars.findIndex((p) => !p.keep);
+    const old = parkedCars.splice(i, 1)[0];
+    old.car.root.removeFromParent(); old.vehicle.dispose();
+  }
+}
+
+/** Put the player back in their own car on a road (story mission start). */
+function placePlayer(x: number, z: number, yaw: number) {
+  if (hero && mode !== 'drive') { hero.hide(); hero.busy = 0; }
+  mode = 'drive';
+  seqDone = null;
+  talking = 0;
+  setContext(null);
+  document.exitPointerLock?.();
+  // clear the player's leftover cars, but keep cars the current mission just parked
+  for (let i = parkedCars.length - 1; i >= 0; i--) {
+    if (parkedCars[i].keep) continue;
+    const p = parkedCars.splice(i, 1)[0];
+    p.car.root.removeFromParent(); p.vehicle.dispose();
+  }
+  const pos = new THREE.Vector3(x, 0.8, z);
+  if (carId !== save.car) spawnPlayerCar(save.car, pos, yaw);
+  else vehicle.reset(pos, yaw);
+  applyCustomization();
+  vehicle.getTransform(carPos, carQuat);
+  playerPos.copy(carPos);
+  chase.snap();
+}
+
+// ---- on foot / car switching state
+type Mode = 'drive' | 'foot' | 'enter' | 'exit';
+let mode: Mode = 'drive';
+let hero: HeroOnFoot | null = null;
+let footCam: FootCam;
+let crowd: Crowd;
+let police: Police;
+const parkedCars: { vehicle: Vehicle; car: CarVisual; id: string; keep?: boolean }[] = [];
+const PARK = { throttle: 0, brake: 0, steer: 0, handbrake: true, boost: false };
+let seqT = 0;
+let seqDone: (() => void) | null = null;
+let talking = 0;
+let hitCooldown = 0;
+const playerPos = new THREE.Vector3();
+const playerVel = new THREE.Vector3();
 
 function placeLandmarks() {
   const fit = (id: string, target: number, by: 'height' | 'width') => {
@@ -330,6 +456,7 @@ const unlockAudio = async () => {
   if (state === 'title') audio.music_('menu');
 };
 addEventListener('pointerdown', unlockAudio);
+canvas.addEventListener('click', () => { if (state === 'playing' && mode === 'foot' && !matchMedia('(pointer: coarse)').matches) canvas.requestPointerLock?.(); });
 addEventListener('keydown', unlockAudio);
 
 document.querySelectorAll<HTMLButtonElement>('button[data-act]').forEach((b) => {
@@ -338,14 +465,43 @@ document.querySelectorAll<HTMLButtonElement>('button[data-act]').forEach((b) => 
     audio.play('ui_click', { volume: 0.6 });
     const act = b.dataset.act!;
     if (act === 'play') startDrive();
+    if (act === 'story') openStory();
+    if (act === 'm-restart' && campaign.active) { const d = campaign.active; resume(); startStory(d); }
+    if (act === 'm-abandon' && campaign.active) { resume(); campaign.stop(); missions.suspend(false, playerPos); }
     if (act === 'garage') openGarage();
     if (act === 'settings') openSettings();
     if (act === 'controls') { show('title', false); show('controls', true); }
-    if (act === 'back') { ['garage', 'settings', 'controls'].forEach((s) => show(s, false)); show(menuReturn === 'pause' ? 'pause' : 'title', true); }
+    if (act === 'back') { ['garage', 'settings', 'controls', 'story'].forEach((s) => show(s, false)); show(menuReturn === 'pause' ? 'pause' : 'title', true); }
     if (act === 'resume') resume();
     if (act === 'quit') quitToTitle();
   });
 });
+
+function openStory() {
+  show('title', false); show('story', true);
+  const fmt = (t: number) => `${Math.floor(t / 60)}:${(t % 60).toFixed(1).padStart(4, '0')}`;
+  $('story-list').innerHTML = MISSIONS.map((m, i) => {
+    const done = save.story.done.includes(m.id);
+    const open = i === 0 || save.story.done.includes(MISSIONS[i - 1].id) || params.has('allmissions');
+    const best = save.story.best[m.id];
+    return `<div class="card ${done ? 'done' : ''} ${open ? '' : 'locked'}"><img src="./assets/ui/missions/${m.id}.webp" alt="" loading="lazy">
+      <div class="m-n">${String(m.n).padStart(2, '0')} · ${DISTRICTS[m.district].name} · ${m.type}</div>
+      <div class="c-head">${m.title}</div><div class="desc">${m.desc}</div>
+      <div class="m-foot">${m.reward.toLocaleString()} CR${best !== undefined ? ` · best ${fmt(best)}` : ''}</div>
+      <button data-m="${m.id}" ${open ? '' : 'disabled'}${!done && open ? ' class="primary"' : ''}>${open ? (done ? 'Replay' : 'Play') : 'Locked'}</button></div>`;
+  }).join('');
+  $('story-list').querySelectorAll<HTMLButtonElement>('button[data-m]').forEach((b) => b.addEventListener('click', () => {
+    audio.play('ui_confirm', { volume: 0.6 });
+    show('story', false);
+    startDrive(MISSIONS.find((m) => m.id === b.dataset.m));
+  }));
+}
+
+function startStory(def: MissionDef) {
+  missions.suspend(true, playerPos);
+  campaign.start(def);
+  $('pause').classList.add('in-story');
+}
 
 function openGarage() {
   show('title', false); show('pause', false); show('garage', true);
@@ -464,11 +620,12 @@ function setQuality(l: QualityLevel) {
   rain.mesh.geometry.setDrawRange(0, Q.rainCount * 2);
   splashes.mesh.count = Q.splashCount;
   (traffic as any).count = Q.traffic;
+  if (crowd) crowd.target = l === 'high' ? 22 : l === 'med' ? 14 : 8;
   sparks.setScale(innerHeight * Q.pixelRatio, camera.fov);
   smoke.setScale(innerHeight * Q.pixelRatio, camera.fov);
 }
 
-function startDrive() {
+function startDrive(story?: MissionDef) {
   show('title', false);
   show('tap', false);
   ($('intro-video') as HTMLVideoElement).pause();
@@ -481,9 +638,13 @@ function startDrive() {
   Object.values(videos).forEach((v) => v.play().catch(() => {}));
   state = 'playing';
   menuReturn = 'pause';
-  if (!missions.target || missions.state === 'results') missions.newJob(carPos);
-  else missions.newJob(carPos);
-  hud.banner(DISTRICTS[districtAt(carPos.x, carPos.z)].name, 'Night shift');
+  if (story) startStory(story);
+  else {
+    if (campaign.active) campaign.stop();
+    $('pause').classList.remove('in-story');
+    if (missions.suspended) missions.suspend(false, carPos); else missions.newJob(carPos);
+    hud.banner(DISTRICTS[districtAt(carPos.x, carPos.z)].name, 'Night shift');
+  }
   perf.reset();
 }
 
@@ -501,6 +662,9 @@ function resume() {
 }
 function quitToTitle() {
   show('pause', false);
+  if (campaign.active) campaign.stop();
+  $('results').classList.add('hidden'); $('results').classList.remove('story'); $('r-actions').innerHTML = '';
+  $('pause').classList.remove('in-story');
   audio.ctx.resume();
   showTitle();
 }
@@ -510,8 +674,10 @@ function setupTouch() {
   const steer = $('t-steer'), knob = $('t-knob');
   let id: number | null = null, x0 = 0;
   steer.addEventListener('pointerdown', (e) => { id = e.pointerId; x0 = e.clientX; knob.style.left = `${e.clientX}px`; knob.style.bottom = `${innerHeight - e.clientY}px`; steer.setPointerCapture(e.pointerId); });
-  steer.addEventListener('pointermove', (e) => { if (e.pointerId !== id) return; input.touch.steer = THREE.MathUtils.clamp((e.clientX - x0) / 70, -1, 1); });
-  const end = (e: PointerEvent) => { if (e.pointerId !== id) return; id = null; input.touch.steer = 0; };
+  let y0 = 0;
+  steer.addEventListener('pointerdown', (e) => { y0 = e.clientY; });
+  steer.addEventListener('pointermove', (e) => { if (e.pointerId !== id) return; input.touch.steer = THREE.MathUtils.clamp((e.clientX - x0) / 70, -1, 1); input.touch.moveY = THREE.MathUtils.clamp((y0 - e.clientY) / 70, -1, 1); });
+  const end = (e: PointerEvent) => { if (e.pointerId !== id) return; id = null; input.touch.steer = 0; input.touch.moveY = 0; };
   steer.addEventListener('pointerup', end);
   steer.addEventListener('pointercancel', end);
   const hold = (el: string, on: () => void, off: () => void) => {
@@ -526,6 +692,8 @@ function setupTouch() {
   hold('t-drift', () => (input.touch.handbrake = true), () => (input.touch.handbrake = false));
   hold('t-boost', () => (input.touch.boost = true), () => (input.touch.boost = false));
   $('t-pause').addEventListener('click', pause);
+  $('t-action').addEventListener('pointerdown', (e) => { e.preventDefault(); input.pressed.add('KeyE'); });
+  $('t-talk').addEventListener('pointerdown', (e) => { e.preventDefault(); input.pressed.add('KeyT'); });
 }
 setupTouch();
 
@@ -555,7 +723,8 @@ function updateLightPools() {
   const fwd = new THREE.Vector3(0, 0, 1).applyQuaternion(carQuat);
   dynLights.push({ pos: carPos.clone().addScaledVector(fwd, 9).setY(1.2), color: new THREE.Color(0.95, 0.97, 1).multiplyScalar(1.3), radius: 14 });
   if (vehicle.braking) dynLights.push({ pos: carPos.clone().addScaledVector(fwd, -3).setY(0.8), color: new THREE.Color(1, 0, 0), radius: 6 });
-  if (missions?.target) dynLights.push({ pos: missions.target.clone().setY(2), color: missions.state === 'toDrop' ? new THREE.Color(1, 0.2, 0.7) : new THREE.Color(0.2, 0.9, 1), radius: 16 });
+  const ob = objective();
+  if (ob.target) dynLights.push({ pos: ob.target.clone().setY(2), color: ob.kind === 'drop' ? new THREE.Color(1, 0.2, 0.7) : new THREE.Color(0.2, 0.9, 1), radius: 16 });
   for (const l of dynLights) {
     const d = Math.max(4, l.pos.distanceTo(focus));
     cand.push({ l, s: (l.radius * l.radius) / (d * d) * 1.5 });
@@ -635,6 +804,7 @@ function impact(force: number, other: RAPIER.Collider | null) {
   const strength = Math.min(1, force / 400000);
   if (strength < 0.04) return;
   chase.impact(strength * 0.9);
+  if (mode === 'drive') campaign?.onImpact(strength);
   const isTraffic = other?.parent() && other.parent()!.isKinematic();
   if (isTraffic && other!.parent()) traffic.hit(other!.parent()!);
   const name = strength > 0.45 ? (Math.random() < 0.3 ? 'hit_glass' : 'hit_heavy') : isTraffic ? 'hit_light' : Math.random() < 0.5 ? 'hit_metal' : 'hit_light';
@@ -646,6 +816,181 @@ function impact(force: number, other: RAPIER.Collider | null) {
   }
 }
 
+// ------------------------------------------------------------------ on foot: get in / out, steal, talk
+function carDoor(pos: THREE.Vector3, yaw: number, halfWidth: number) {
+  return new THREE.Vector3(halfWidth + 0.55, 0, 0.35).applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw).add(pos).setY(0.05);
+}
+
+function renderWanted(h: number) {
+  const el = $('h-wanted');
+  el.innerHTML = h > 0 ? [0, 1, 2, 3, 4].map((i) => `<span class="${i < h ? '' : 'off'}">★</span>`).join('') : '';
+  el.classList.toggle('flash', h > 0);
+  const story = campaign?.state === 'run' ? campaign.active : null;
+  if (h > 0) audio.music_(story?.music === 'finale' ? 'finale' : 'chase');
+  else if (story) audio.music_(story.music ?? 'drive');
+  else if (missions?.state !== 'toDrop') audio.music_('chill');
+}
+
+function setContext(text: string | null) {
+  const el = $('context');
+  if (!text) { el.classList.add('hidden'); return; }
+  el.innerHTML = text;
+  el.classList.remove('hidden');
+}
+
+let subT = 0;
+function subtitle(who: string, text: string, dur: number) {
+  const el = $('subtitle');
+  el.innerHTML = `<span class="who">${who}</span>${text}`;
+  el.classList.remove('hidden');
+  subT = dur;
+}
+
+function busted() {
+  campaign.onBusted();
+  show('busted', true);
+  audio.play('radio_squelch');
+  audio.talk('police_3');
+  const fine = Math.round(save.credits * 0.15);
+  save.credits -= fine;
+  writeSave(save);
+  hud.setCredits(save.credits);
+  setTimeout(() => {
+    show('busted', false);
+    police.clear();
+    hud.toast(`Busted · fine ${fine.toLocaleString()} CR`);
+    if (mode !== 'drive' && hero) { hero.hide(); mode = 'drive'; }
+    resetCar();
+  }, 2600);
+}
+
+/** Leave the current car: it stays parked, the hero steps out of the driver door. */
+function startExit() {
+  if (!hero || vehicle.speedAbs > 7) return;
+  mode = 'exit';
+  const yaw = vehicle.yaw();
+  const door = carDoor(carPos, yaw, car.dims.width / 2);
+  hero.spawn(door, yaw + Math.PI / 2);
+  const d = hero.person.play('exit_car', { loop: false, fade: 0.05, speed: 1.7, restart: true });
+  hero.busy = d / 1.7;
+  audio.play('door_open', { pos: door, volume: 0.8 });
+  setTimeout(() => audio.play('door_close', { pos: door, volume: 0.9 }), (d / 1.7) * 700);
+  footCam.reset(yaw);
+  seqT = d / 1.7;
+  seqDone = () => { mode = 'foot'; };
+  if (!matchMedia('(pointer: coarse)').matches) canvas.requestPointerLock?.();
+}
+
+/** Find the car the hero can get into: own/parked cars first, then traffic (stealing). */
+function enterTarget() {
+  if (!hero) return null;
+  const hp = hero.pos;
+  const own = [{ vehicle, car, id: carId, parkedIndex: -1 }, ...parkedCars.map((p, i) => ({ ...p, parkedIndex: i }))];
+  for (const o of own) {
+    const t = o.vehicle.body.translation();
+    const door = carDoor(new THREE.Vector3(t.x, 0, t.z), o.vehicle.yaw(), o.car.dims.width / 2);
+    if (door.distanceTo(hp.clone().setY(0.05)) < 2.6) return { kind: 'own' as const, o, door };
+  }
+  const tc = traffic.nearestCar(hp, 3.2);
+  if (tc) return { kind: 'traffic' as const, tc, door: carDoor(tc.pos, tc.yaw, (traffic.models[tc.model]?.width ?? 1.9) / 2) };
+  return null;
+}
+
+function startEnter() {
+  const tgt = enterTarget();
+  if (!tgt || !hero) return;
+  mode = 'enter';
+  document.exitPointerLock?.();
+  hero.place(tgt.door);
+  let delay = 0;
+  if (tgt.kind === 'traffic') {
+    // carjack: shove the driver out, take the car
+    tgt.tc.stunned = 99;
+    const yawTo = Math.atan2(tgt.tc.pos.x - tgt.door.x, tgt.tc.pos.z - tgt.door.z);
+    hero.person.yaw = yawTo;
+    const pd = hero.person.play('push', { loop: false, fade: 0.08, speed: 1.6, restart: true });
+    delay = pd / 1.6;
+    audio.play('door_open', { pos: tgt.door });
+    setTimeout(() => {
+      audio.play('carjack', { pos: tgt.door, volume: 1 });
+      const type = PED_TYPES[Math.floor(Math.random() * PED_TYPES.length)] as PedType;
+      const out = tgt.door.clone().add(new THREE.Vector3(Math.sin(yawTo + Math.PI), 0, Math.cos(yawTo + Math.PI)).multiplyScalar(0.9));
+      crowd.ejectDriver(type, out, tgt.tc.pos);
+      const vi = Math.floor(Math.random() * 4);
+      audio.talk(`victim_${vi}`, out).then((dur) => subtitle('Driver', A.lines.victim?.[vi] ?? '', dur + 0.5));
+      crowd.panic(tgt.door, 25);
+      const near = police.units.some((u) => u.pos.distanceTo(tgt.door) < 80);
+      police.add(near ? 2 : 1, 'carjack');
+    }, delay * 400);
+  } else {
+    hero.person.yaw = tgt.o.vehicle.yaw() - Math.PI / 2;
+  }
+  setTimeout(() => {
+    if (!hero) return;
+    const ed = hero.person.play('enter_car', { loop: false, fade: 0.1, speed: 1.8, restart: true });
+    hero.busy = ed / 1.8;
+    if (tgt.kind === 'own') audio.play('door_open', { pos: tgt.door });
+    seqT = ed / 1.8;
+    seqDone = () => {
+      audio.play('door_close', { pos: tgt.door, volume: 0.9 });
+      hero!.hide();
+      if (tgt.kind === 'traffic') {
+        const taken = traffic.takeCar(tgt.tc);
+        if (taken) spawnPlayerCar(taken.id, taken.pos.clone().setY(0.6), taken.yaw, undefined, true);
+      } else if (tgt.o.parkedIndex >= 0) {
+        // swap: the car we leave becomes parked, the parked one becomes ours
+        const p = parkedCars.splice(tgt.o.parkedIndex, 1)[0];
+        parkedCars.push({ vehicle, car, id: carId });
+        vehicle = p.vehicle; car = p.car; carId = p.id;
+        if (cubeRT && car.paintMat) { car.paintMat.envMap = cubeRT.texture; car.paintMat.needsUpdate = true; }
+      }
+      mode = 'drive';
+    };
+  }, delay * 1000);
+  hero.busy = 9;
+}
+
+function talkTo() {
+  if (!hero || talking > 0) return;
+  const ped = crowd.nearest(hero.pos, 2.8);
+  if (!ped) return;
+  const lines = A.lines;
+  const hi = Math.floor(Math.random() * (lines.hero?.length ?? 1));
+  const ri = Math.floor(Math.random() * (lines[ped.type]?.length ?? 1));
+  hero.person.yaw = Math.atan2(ped.pos.x - hero.pos.x, ped.pos.z - hero.pos.z);
+  hero.person.play('talk', { fade: 0.25 });
+  hero.busy = 7;
+  crowd.talk(ped, hero.pos, 8);
+  talking = 8;
+  const names: Record<string, string> = { ped_suit: 'Executive', ped_vendor: 'Vendor', ped_punk: 'Punk', ped_worker: 'Dock worker', ped_student: 'Student', ped_elder: 'Old lady', ped_techwear: 'Netrunner', ped_nurse: 'Nurse', ped_rider: 'Rider' };
+  audio.talk(`hero_${hi}`).then((d1) => {
+    subtitle('You', lines.hero?.[hi] ?? '', d1 + 0.2);
+    setTimeout(() => {
+      ped.p.play(Math.random() < 0.3 ? 'shrug' : 'talk', { fade: 0.2 });
+      audio.talk(`${ped.type}_${ri}`, ped.pos).then((d2) => {
+        subtitle(names[ped.type] ?? 'Stranger', lines[ped.type]?.[ri] ?? '', d2 + 0.4);
+        setTimeout(() => { if (hero) hero.busy = 0; talking = 0; }, d2 * 1000 + 400);
+      });
+    }, d1 * 1000 + 250);
+  });
+}
+
+function handleInteractions() {
+  const e = input.consume('KeyE') || input.consume('KeyF');
+  const t = input.consume('KeyT');
+  if (mode === 'drive') {
+    if (e && hero) startExit();
+    setContext(null);
+  } else if (mode === 'foot' && hero) {
+    const story = campaign.interaction && campaign.interaction.at.distanceTo(hero.pos.setY(campaign.interaction.at.y)) < 2.8 ? campaign.interaction : null;
+    if (e) startEnter();
+    if (t) { if (story) story.run(); else talkTo(); }
+    const tgt = enterTarget();
+    const ped = talking > 0 || story ? null : crowd.nearest(hero.pos, 2.8);
+    setContext(story ? `<b>T</b> · ${story.label}` : tgt ? `<b>E</b> · ${tgt.kind === 'traffic' ? 'Steal car' : 'Get in'}` : ped ? '<b>T</b> · Talk' : null);
+  } else setContext(null);
+}
+
 function resetCar() {
   const n = graph.nodes[graph.nearestNode(carPos.x, carPos.z, false)];
   // face along the road toward the next node
@@ -655,6 +1000,12 @@ function resetCar() {
   const right = new THREE.Vector3(-Math.cos(yaw), 0, Math.sin(yaw));
   const p = new THREE.Vector3(n.x, 0.8, n.z).addScaledVector(new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw)), 12).addScaledVector(right, 1.75);
   vehicle.reset(p, yaw);
+}
+
+/** The current objective: the story mission when one runs, otherwise the free-ride job. */
+function objective() {
+  if (campaign?.active) return { target: campaign.target, route: campaign.route, kind: campaign.markerKind, drones: campaign.drones };
+  return { target: missions?.target ?? null, route: missions?.route ?? [], kind: (missions?.state === 'toDrop' ? 'drop' : 'pickup') as 'drop' | 'pickup', drones: missions?.droneList ?? [] };
 }
 
 // ------------------------------------------------------------------ main loop
@@ -679,16 +1030,24 @@ function frame(now: number) {
   (post.lens as any).set(simTime, Q.lensFx ? 0.55 : 0, 0);
 
   if (state === 'playing') {
+    if (campaign.state === 'results') { for (const k of ['Enter', 'KeyF']) if (input.consume(k) && campaign.resultsKey(k)) break; }
     if (input.consume('Escape') || input.consume('KeyP')) { pause(); input.endFrame(); }
     if (input.consume('KeyC')) { chase.mode = chase.mode === 'chase' ? 'far' : chase.mode === 'far' ? 'hood' : 'chase'; save.settings.cam = chase.mode; writeSave(save); }
-    if (input.consume('KeyR')) resetCar();
+    if (input.consume('KeyR') && mode === 'drive') resetCar();
     if (input.consume('KeyM')) { bigMap = !bigMap; show('bigmap', bigMap); }
-    const inp = input.read(dtReal);
-    traffic.update(dtReal, carPos, carVel, vehicle.body);
+    const driving = mode === 'drive';
+    handleInteractions();
+    const inp = driving ? input.read(dtReal) : PARK;
+    if (seqDone) { seqT -= dtReal; if (seqT <= 0) { const f = seqDone; seqDone = null; f(); } }
+    talking = Math.max(0, talking - dtReal);
+    hitCooldown = Math.max(0, hitCooldown - dtReal);
+    if (subT > 0) { subT -= dtReal; if (subT <= 0) $('subtitle').classList.add('hidden'); }
+    traffic.update(dtReal, mode === 'drive' ? carPos : playerPos, carVel, vehicle.body);
     acc += dtReal;
     let steps = 0;
     while (acc >= FIX && steps < 6) {
       vehicle.step(FIX, inp);
+      for (const pc of parkedCars) pc.vehicle.step(FIX, PARK);
       phys.world.step(eventQueue);
       eventQueue.drainContactForceEvents((e) => {
         const c1 = phys.world.getCollider(e.collider1()), c2 = phys.world.getCollider(e.collider2());
@@ -706,33 +1065,55 @@ function frame(now: number) {
     if (vehicle.isUpsideDown() && vehicle.speedAbs < 2) { upsideT += dtReal; if (upsideT > 2) { resetCar(); upsideT = 0; } } else upsideT = 0;
 
     car.update(dtReal, vehicle, carPos, carQuat, inp.throttle);
-    car.beams.visible = chase.mode !== 'hood';
-    chase.update(dtReal, carPos, carQuat, carVel, vehicle.speed, vehicle.boosting, vehicle.drifting, vehicle.body);
-    missions.update(dtReal, simTime, carPos, carVel, vehicle.speedAbs, vehicle.drifting, traffic.cars, () => {
+    car.beams.visible = chase.mode !== 'hood' || !driving;
+    for (const pc of parkedCars) {
+      const pp = new THREE.Vector3(), pq = new THREE.Quaternion();
+      pc.vehicle.getTransform(pp, pq);
+      pc.car.update(dtReal, pc.vehicle, pp, pq, 0);
+    }
+    // the hero on foot (also during get-in / get-out animations)
+    if (hero && hero.active) hero.update(dtReal, mode === 'foot' ? input.readFoot() : { x: 0, z: 0, run: false, jump: false }, footCam.yaw);
+    if (driving || !hero) {
+      playerPos.copy(carPos); playerVel.copy(carVel);
+      chase.update(dtReal, carPos, carQuat, carVel, vehicle.speed, vehicle.boosting, vehicle.drifting, vehicle.body);
+    } else {
+      const hp = hero.pos;
+      playerVel.copy(hp).sub(playerPos).divideScalar(Math.max(dtReal, 1e-3)).setY(0);
+      playerPos.copy(hp);
+      footCam.update(dtReal, hp, input.keys, hero.collider);
+    }
+    crowd.update(dtReal, playerPos, driving ? { pos: carPos, vel: carVel, halfLen: car.dims.length / 2, halfWid: car.dims.width / 2, yaw: vehicle.yaw(), speed: vehicle.speedAbs } : null);
+    const pol = police.update(dtReal, simTime, playerPos, playerVel, !driving);
+    audio.siren(pol.nearestPos && pol.nearest < 160 ? pol.nearestPos : null);
+    missions.update(dtReal, simTime, playerPos, playerVel, driving ? vehicle.speedAbs : playerVel.length(), driving && vehicle.drifting, traffic.cars, () => {
       chase.impact(0.6);
       audio.play('hit_metal', { volume: 0.8 });
       vehicle.body.applyImpulse({ x: (Math.random() - 0.5) * 3000, y: 2500, z: (Math.random() - 0.5) * 3000 }, true);
     });
-    emitEffects(dtReal);
+    campaign.update({ dt: dtReal, t: simTime, pos: playerPos, vel: playerVel, speed: driving ? vehicle.speedAbs : playerVel.length(), drifting: driving && vehicle.drifting, driving, onFoot: mode === 'foot', heat: police.heat, traffic: traffic.cars });
+    if (driving) emitEffects(dtReal);
     // audio
     const slip = Math.max(...vehicle.wheels.map((w) => (w.contact ? Math.abs(w.slipLat) + w.slipLong * 0.5 : 0)));
-    audio.updateEngine(vehicle.rpm, inp.throttle, vehicle.speedAbs, slip, vehicle.drifting, vehicle.boosting);
+    if (driving) audio.updateEngine(vehicle.rpm, inp.throttle, vehicle.speedAbs, slip, vehicle.drifting, vehicle.boosting);
+    else audio.updateEngine(850, 0, 0, 0, false, false);
     if (vehicle.boosting && !(vehicle as any)._wasBoost) audio.play('boost', { volume: 0.8 });
     (vehicle as any)._wasBoost = vehicle.boosting;
     audio.updateListener(camera);
     audio.setPos(audio.trainLoop, train.position, 1.0);
-    const nearestDrone = missions.droneList[0];
+    const obj = objective();
+    const nearestDrone = obj.drones[0];
     audio.setPos(audio.droneLoop, nearestDrone ? nearestDrone.mesh.position : new THREE.Vector3(0, -999, 0), nearestDrone ? 0.8 : 0);
     spatialT -= dtReal;
     if (spatialT <= 0) { spatialT = 0.5; audio.updateSpatial(city.sounds, camera.position); audio.sirens(0.12 + 0.1 * Math.sin(simTime * 0.05)); }
     // HUD
-    const d = districtAt(carPos.x, carPos.z);
+    const d = districtAt(playerPos.x, playerPos.z);
     if (d !== lastDistrict) { hud.setDistrict(d); if (lastDistrict && save.unlocked.includes(d)) audio.say(({ neon: 'brief_neon', backstreets: 'brief_back', downtown: 'brief_downtown', docks: 'brief_docks' } as const)[d]); lastDistrict = d; }
-    hud.drawSpeedo(Math.abs(vehicle.speed) * 3.6, vehicle.rpm, vehicle.speed < -0.5 ? 0 : vehicle.gear, vehicle.boost, vehicle.boosting);
-    const yaw = vehicle.yaw();
-    hud.drawMinimap(carPos, yaw, missions.target, missions.route, missions.droneList.map((q) => q.mesh.position), missions.state === 'toDrop' ? 'drop' : 'pickup');
-    if (bigMap) hud.drawBigMap(carPos, yaw, missions.target, missions.route);
-    hud.arrow(camera, missions.target, missions.state === 'toDrop' ? '#ff2fb4' : '#21f3ff');
+    document.querySelector('.hud-br')!.classList.toggle('hidden', !driving);
+    if (driving) hud.drawSpeedo(Math.abs(vehicle.speed) * 3.6, vehicle.rpm, vehicle.speed < -0.5 ? 0 : vehicle.gear, vehicle.boost, vehicle.boosting);
+    const yaw = driving || !hero ? vehicle.yaw() : hero.person.yaw;
+    hud.drawMinimap(playerPos, yaw, obj.target, obj.route, [...obj.drones.map((q) => q.mesh.position), ...police.units.map((u) => u.pos)], obj.kind);
+    if (bigMap) hud.drawBigMap(playerPos, yaw, obj.target, obj.route);
+    hud.arrow(camera, obj.target, obj.kind === 'drop' ? '#ff2fb4' : '#21f3ff');
     hud.tick(dtReal);
     adaptiveQuality(dtReal);
     input.endFrame();
@@ -804,6 +1185,24 @@ function debugApi() {
     simTime: () => simTime,
     setCar: (id: string) => { spawnPlayerCar(id, carPos.clone().setY(0.8), vehicle.yaw()); },
     trafficCount: () => traffic.cars.length,
+    mode: () => mode,
+    exitCar: () => startExit(),
+    enterCar: () => startEnter(),
+    talk: () => talkTo(),
+    heat: (n: number) => police.add(n, 'debug'),
+    peds: () => crowd.peds.map((p) => ({ type: p.type, state: p.state, d: +p.pos.distanceTo(playerPos).toFixed(1) })).sort((a, b) => a.d - b.d).slice(0, 6),
+    heroTo: (x: number, z: number) => hero?.place(new THREE.Vector3(x, 0.2, z)),
+    nearestPed: () => { const p = crowd.peds.slice().sort((a, b) => a.pos.distanceTo(playerPos) - b.pos.distanceTo(playerPos))[0]; return p ? p.pos.toArray() : null; },
+    camYaw: (y: number) => { footCam.yaw = y; },
+    toTrafficDoor: () => {
+      const c = traffic.nearestCar(playerPos, 400);
+      if (!c || !hero) return null;
+      c.stunned = 30; // hold it still for the test
+      const door = carDoor(c.pos, c.yaw, (traffic.models[c.model]?.width ?? 1.9) / 2);
+      hero.place(door.clone().add(new THREE.Vector3(Math.sin(c.yaw + Math.PI / 2), 0, Math.cos(c.yaw + Math.PI / 2)).multiplyScalar(0.8)));
+      footCam.yaw = c.yaw + Math.PI / 2 + 0.6;
+      return { model: traffic.models[c.model]?.id, door: door.toArray() };
+    },
     behindTraffic: (n = 0) => {
       // park the player 14 m behind the n-th nearest traffic car, facing the same way
       const list = [...traffic.cars].sort((a, b) => a.pos.distanceTo(carPos) - b.pos.distanceTo(carPos));
@@ -831,6 +1230,32 @@ function debugApi() {
     camMode: (m: 'chase' | 'far' | 'hood') => { chase.mode = m; },
     quality: (l: QualityLevel) => setQuality(l),
     mission: () => ({ state: missions.state, timer: missions.timer, target: missions.target?.toArray() }),
+    story: (id: string) => { const d = MISSIONS.find((m) => m.id === id); if (d) startStory(d); return !!d; },
+    storyState: () => ({ id: campaign.active?.id, state: campaign.state, step: campaign.idx, steps: campaign.steps.length, timer: campaign.timer, target: campaign.target?.toArray().map((n) => Math.round(n)), damage: Math.round(campaign.damage), comfort: Math.round(campaign.comfort), drift: Math.round(campaign.driftBank + campaign.driftChain), heat: police.heat, mode }),
+    storyInteract: () => { campaign.interaction?.run(); return !!campaign.interaction; },
+    storyNext: () => { (campaign as any).next(); },
+    /** on foot: stand at the driver door of the most recently parked car */
+    toParkedDoor: () => {
+      const p = parkedCars[parkedCars.length - 1];
+      if (!p || !hero) return null;
+      const t = p.vehicle.body.translation();
+      const door = carDoor(new THREE.Vector3(t.x, 0, t.z), p.vehicle.yaw(), p.car.dims.width / 2);
+      hero.place(door.clone().setY(0.2));
+      footCam.yaw = p.vehicle.yaw() + Math.PI / 2 + 0.5;
+      return door.toArray().map(Math.round);
+    },
+    /** teleport the player (car or on foot) onto the current story objective */
+    storyWarp: (back = 0) => {
+      const t = campaign.target;
+      if (!t) return null;
+      const dir = playerPos.clone().sub(t).setY(0);
+      if (dir.lengthSq() < 1) dir.set(1, 0, 0);
+      dir.normalize();
+      const p = t.clone().addScaledVector(dir, back);
+      if (mode !== 'drive' && hero) hero.place(new THREE.Vector3(p.x, 0.2, p.z));
+      else { vehicle.reset(new THREE.Vector3(p.x, 0.8, p.z), Math.atan2(-dir.x, -dir.z)); chase.snap(); }
+      return [Math.round(p.x), Math.round(p.z)];
+    },
     unlockAll: () => { for (const d of DISTRICT_ORDER) if (!save.unlocked.includes(d)) { save.unlocked.push(d); city.unlock(d); } hud.unlocked = save.unlocked; },
     hideHud: (v: boolean) => show('hud', !v),
     timeScale: 1,

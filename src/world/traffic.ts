@@ -346,6 +346,28 @@ export class Traffic {
     }
   }
 
+  /** Remove a traffic car (it is being stolen); returns its model id and pose. */
+  takeCar(c: TCar) {
+    const i = this.cars.indexOf(c);
+    if (i < 0) return null;
+    this.cars.splice(i, 1);
+    this.phys.world.removeRigidBody(c.body);
+    return { id: this.models[c.model]?.id ?? 'car_taxi', pos: c.pos.clone(), yaw: c.yaw, speed: c.speed };
+  }
+
+  /** Nearest traffic car to p within r, with its driver-door point. */
+  nearestCar(p: THREE.Vector3, r: number) {
+    let best: TCar | null = null, bd = r;
+    for (const c of this.cars) {
+      const M = this.models[c.model];
+      const hw = (M?.width ?? 1.9) / 2 + 0.55;
+      const door = new THREE.Vector3(hw, 0, 0.35).applyAxisAngle(new THREE.Vector3(0, 1, 0), c.yaw).add(c.pos);
+      const d = door.distanceTo(p);
+      if (d < bd) { bd = d; best = c; }
+    }
+    return best;
+  }
+
   hit(body: RAPIER.RigidBody) {
     const c = this.cars.find((q) => q.body.handle === body.handle);
     if (c) { c.stunned = 2.5; c.speed = 0; }

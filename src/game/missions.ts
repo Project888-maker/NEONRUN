@@ -9,7 +9,7 @@ import { LAYER_NO_REFLECT } from '../render/reflector';
 
 type State = 'toPickup' | 'toDrop' | 'results';
 
-function beamMesh(color: THREE.Color) {
+export function beamMesh(color: THREE.Color) {
   const g = new THREE.CylinderGeometry(2.4, 2.4, 160, 32, 1, true);
   g.translate(0, 80, 0);
   const m = new THREE.ShaderMaterial({
@@ -62,6 +62,8 @@ export class Missions {
   private lastBeep = 0;
   private rng = Math.random;
   pickupLight: THREE.PointLight;
+  /** true while a story mission runs: free-ride jobs are hidden and frozen */
+  suspended = false;
 
   constructor(private city: City, private graph: RoadGraph, private hud: Hud, private audio: AudioSys, private save: Save, private ev: MissionEvents) {
     this.group.add(this.pickupBeam, this.dropBeam);
@@ -151,14 +153,22 @@ export class Missions {
     this.route.push(new THREE.Vector3(target.x, 0, target.z));
   }
 
+  suspend(on: boolean, playerPos: THREE.Vector3) {
+    this.suspended = on;
+    this.group.visible = !on;
+    if (on) { this.clearDrones(); this.route = []; this.hud.setTimer(null); this.hud.setDist(null); document.getElementById('results')!.classList.add('hidden'); }
+    else this.newJob(playerPos);
+  }
+
   get target(): THREE.Vector3 | null {
-    if (this.state === 'results') return null;
+    if (this.state === 'results' || this.suspended) return null;
     const s = this.state === 'toPickup' ? this.pickup : this.drop;
     return s ? new THREE.Vector3(s.x, 0, s.z) : null;
   }
 
   /** Called every frame. */
   update(dt: number, t: number, pos: THREE.Vector3, vel: THREE.Vector3, speed: number, drifting: boolean, trafficCars: { pos: THREE.Vector3; yaw: number; body: { handle: number } }[], onDroneHit: () => void) {
+    if (this.suspended) return;
     (this.pickupBeam.children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>).material.uniforms.uTime.value = t;
     (this.dropBeam.children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>).material.uniforms.uTime.value = t;
     this.pickupLight.intensity = 30 + Math.sin(t * 4) * 8;

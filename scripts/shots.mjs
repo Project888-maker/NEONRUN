@@ -131,6 +131,94 @@ if (want('cars')) {
     await N('setInput', {});
   }
 }
+if (want('foot')) {
+  await N('setInput', {});
+  await sleep(500);
+  await N('exitCar');
+  await sleep(1600);
+  console.log('mode', await N('mode'));
+  await shot('40_exit');
+  await N('setInput', { footZ: 1 });
+  await sleep(1500);
+  await shot('41_walk');
+  await N('setInput', { footZ: 1, run: true });
+  await sleep(1500);
+  await shot('42_run');
+  await N('setInput', {});
+  // walk up to the nearest pedestrian and talk
+  const pp = await N('nearestPed');
+  console.log('peds', JSON.stringify(await N('peds')));
+  if (pp) { await N('heroTo', pp[0] + 1.4, pp[2] + 0.6); await sleep(400); await N('talk'); await sleep(2500); await shot('43_talk'); }
+  // steal a traffic car
+  console.log('door', JSON.stringify(await N('toTrafficDoor')));
+  await sleep(600);
+  await shot('44_at_door');
+  await N('enterCar');
+  await sleep(1200);
+  await shot('45_carjack');
+  await sleep(3000);
+  console.log('mode after steal', await N('mode'));
+  await shot('46_stolen');
+  await N('setInput', { throttle: 1 });
+  await sleep(4000);
+  await shot('47_police');
+  await N('setInput', {});
+}
+if (want('story')) {
+  // play through the campaign with teleports: verifies every mission's steps complete or fail as designed
+  const ids = (process.env.STORY || 'm1,m2,m3,m4,m5,m6,m7,m8,m9,m10,m11,m12').split(',');
+  const S = () => N('storyState');
+  for (const id of ids) {
+    await N('setInput', {});
+    await N('story', id);
+    await sleep(700);
+    console.log(id, 'start', JSON.stringify(await S()));
+    await shot(`60_${id}_a`);
+    if (id === 'm2') {
+      await N('storyWarp'); await sleep(300);
+      await N('exitCar'); await sleep(2600);
+      await N('storyWarp', 1.2); await sleep(300);
+      await shot(`60_${id}_b`);
+      await N('storyInteract'); await sleep(7000);
+    } else if (id === 'm4') {
+      await N('exitCar'); await sleep(2600);
+      console.log(id, 'door', JSON.stringify(await N('toParkedDoor'))); await sleep(300);
+      await shot(`60_${id}_b`);
+      await N('enterCar'); await sleep(3500);
+      console.log(id, 'in coupe', JSON.stringify(await S()));
+      await N('storyWarp'); await sleep(500);
+    } else if (id === 'm5') {
+      await N('setInput', { throttle: 0.45 }); await sleep(2500); await N('setInput', {});
+      await shot(`60_${id}_b`);
+    } else if (id === 'm6') {
+      await N('setInput', { throttle: 1, steer: 0.9, handbrake: true }); await sleep(2500); await N('setInput', {});
+      await shot(`60_${id}_b`);
+    } else if (id === 'm7') {
+      await N('storyWarp'); await sleep(2600);
+      console.log(id, 'boarded', JSON.stringify(await S()));
+      await N('storyWarp'); await sleep(1200);
+      await shot(`60_${id}_b`);
+    } else if (id === 'm8') {
+      await N('setInput', { throttle: 1 }); await sleep(1500); await N('setInput', {});
+      await shot(`60_${id}_b`);
+      for (let g = 0; g < 8; g++) { await N('storyWarp'); await sleep(200); }
+    } else if (id === 'm11') {
+      await sleep(4000);
+      await shot(`60_${id}_b`);
+    } else {
+      for (let k = 0; k < 5; k++) {
+        const st = await S();
+        if (st.state !== 'run' || !st.target) break;
+        await N('storyWarp'); await sleep(500);
+        if (k === 0) await shot(`60_${id}_b`);
+      }
+    }
+    await sleep(800);
+    const end = await S();
+    console.log(id, 'end', JSON.stringify(end));
+    await shot(`60_${id}_z`);
+  }
+}
 if (want('cams')) {
   await N('camMode', 'hood');
   await sleep(1500);

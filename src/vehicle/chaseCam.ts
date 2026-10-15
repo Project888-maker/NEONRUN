@@ -79,5 +79,7 @@ export class ChaseCam {
     this.cam.updateProjectionMatrix();
   }
 
+  /** jump straight to the target next frame (teleports) */
+  snap() { this.init = false; this.vel.set(0, 0, 0); }
   impact(strength: number) { this.shake = Math.min(1.2, this.shake + strength); }
 }

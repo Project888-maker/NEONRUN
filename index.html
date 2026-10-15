@@ -31,12 +31,23 @@
     <img class="logo" src="./assets/ui/logo.png" alt="NEON RUN" />
     <div class="tagline">Night shift. Hot packages. No refunds.</div>
     <nav class="menu">
-      <button data-act="play" class="primary">Drive</button>
+      <button data-act="story" class="primary">Story</button>
+      <button data-act="play">Free ride</button>
       <button data-act="garage">Garage</button>
       <button data-act="settings">Settings</button>
       <button data-act="controls">Controls</button>
     </nav>
     <div class="footer">Original game · all brands fictional · <span id="build-info"></span></div>
+  </div>
+
+  <!-- story campaign -->
+  <div id="story" class="screen panel-screen hidden">
+    <div class="panel wide">
+      <h2>Night Shift</h2>
+      <div class="hint">Twelve jobs across four districts. Finish one to open the next; replay any job for a better time.</div>
+      <div id="story-list" class="cards story-cards"></div>
+      <button data-act="back" class="back">Back</button>
+    </div>
   </div>
 
   <!-- garage -->
@@ -50,7 +61,7 @@
       <div id="upgrades" class="cards"></div>
       <h3>Paint <small>(Night Courier only)</small></h3>
       <div id="paints" class="swatches"></div>
-      <h3>Underglow</h3>
+      <h3>Underglow <small>(Night Courier only)</small></h3>
       <div id="glows" class="swatches"></div>
       <h3>Livery</h3>
       <div id="liveries" class="swatches liv"></div>
@@ -90,6 +101,9 @@
         <tr><td>Shift / N</td><td>Boost</td></tr>
         <tr><td>C</td><td>Change camera</td></tr>
         <tr><td>R</td><td>Reset car</td></tr>
+        <tr><td>E</td><td>Get out / get in / steal a car</td></tr>
+        <tr><td>T</td><td>Talk to someone nearby (on foot)</td></tr>
+        <tr><td>Mouse / Q</td><td>Look around on foot (click to capture the mouse)</td></tr>
         <tr><td>M</td><td>Toggle big map</td></tr>
         <tr><td>Esc / P</td><td>Pause</td></tr>
         <tr><td>Gamepad</td><td>RT throttle · LT brake · A/RB drift · B/X boost</td></tr>
@@ -105,6 +119,8 @@
       <h2>Paused</h2>
       <nav class="menu">
         <button data-act="resume" class="primary">Resume</button>
+        <button data-act="m-restart" class="story-only">Restart mission</button>
+        <button data-act="m-abandon" class="story-only">Abandon mission</button>
         <button data-act="garage">Garage</button>
         <button data-act="settings">Settings</button>
         <button data-act="quit">Quit to title</button>
@@ -117,11 +133,13 @@
     <div class="hud-tl">
       <div class="credits"><img src="./assets/icon/coin.png" alt="" /><span id="h-credits">0</span></div>
       <div class="district" id="h-district">Neon District</div>
+      <div id="h-wanted" class="wanted"></div>
     </div>
     <div class="hud-tc">
       <div id="h-prompt">Get to the pickup</div>
       <div id="h-timer" class="hidden">00.0</div>
       <div id="h-dist"></div>
+      <div id="h-meter" class="hidden"><div class="m-row"><span class="m-label"></span><span class="m-val"></span></div><div class="m-bar"><div class="m-fill"></div></div></div>
     </div>
     <canvas id="minimap" width="220" height="220"></canvas>
     <div class="hud-br">
@@ -132,6 +150,9 @@
     <div id="toast"></div>
     <div id="arrow"></div>
     <div id="fps"></div>
+    <div id="context" class="hidden"></div>
+    <div id="subtitle" class="hidden"></div>
+    <div id="busted" class="hidden">BUSTED</div>
   </div>
 
   <div id="banner" class="hidden"><div class="b-sub">Entering</div><div class="b-title" id="banner-title">NEON DISTRICT</div></div>
@@ -142,6 +163,7 @@
       <div class="r-title" id="r-title">Delivered</div>
       <div class="r-rows" id="r-rows"></div>
       <div class="r-total" id="r-total"></div>
+      <div class="r-actions" id="r-actions"></div>
     </div>
   </div>
 
@@ -155,6 +177,8 @@
     <button id="t-drift">DRIFT</button>
     <button id="t-boost">BOOST</button>
     <button id="t-pause">II</button>
+    <button id="t-action">E</button>
+    <button id="t-talk">TALK</button>
   </div>
 
   <div id="tap" class="hidden">Tap / press any key to start</div>

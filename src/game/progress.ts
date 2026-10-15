@@ -12,6 +12,8 @@ export interface Save {
   livery: string | null;
   car: string; // 'hero' or a CAR_DEFS id
   ownedCars: string[];
+  /** story campaign: completed mission ids and best times (s) */
+  story: { done: string[]; best: Record<string, number> };
   settings: { quality: QualityLevel | 'auto'; master: number; music: number; sfx: number; cam: 'chase' | 'far' | 'hood' };
 }
 
@@ -21,7 +23,7 @@ export const UNLOCK_AT: Record<DistrictId, number> = { neon: 0, backstreets: 3, 
 
 const defaults = (): Save => ({
   credits: 300, deliveries: 0, bestStreak: 0, unlocked: ['neon'],
-  upgrades: { speed: 0, grip: 0, boost: 0 }, paint: 'gunmetal', underglow: '#21f3ff', livery: null, car: 'hero', ownedCars: ['hero'],
+  upgrades: { speed: 0, grip: 0, boost: 0 }, paint: 'gunmetal', underglow: '#21f3ff', livery: null, car: 'hero', ownedCars: ['hero'], story: { done: [], best: {} },
   settings: { quality: 'auto', master: 0.9, music: 0.55, sfx: 0.9, cam: 'chase' },
 });
 
@@ -31,7 +33,7 @@ export function loadSave(): Save {
     if (!raw) return defaults();
     const d = defaults();
     const s = JSON.parse(raw);
-    return { ...d, ...s, upgrades: { ...d.upgrades, ...s.upgrades }, settings: { ...d.settings, ...s.settings } };
+    return { ...d, ...s, upgrades: { ...d.upgrades, ...s.upgrades }, settings: { ...d.settings, ...s.settings }, story: { ...d.story, ...s.story } };
   } catch { return defaults(); }
 }
 export function writeSave(s: Save) {

@@ -367,3 +367,39 @@ const sfx2 = {
 for (const [k, [d, loop, p]] of Object.entries(sfx2)) add('sfx', k, 'fal-ai/elevenlabs/sound-effects/v2', { text: p, duration_seconds: d, loop, prompt_influence: 0.6, output_format: 'mp3_44100_128' });
 
 export const ASSETS = A;
+
+// ---------- Phase 4: campaign ("Night Shift") — dispatcher/contact lines, mission cards, chase + finale music, new sfx
+import { STORY_LINES, STORY_VOICES } from './story.mjs';
+for (const [k, [who, t]] of Object.entries(STORY_LINES)) add('talk', `story_${k}`, 'fal-ai/elevenlabs/tts/eleven-v3', { text: t, voice: STORY_VOICES[who], stability: 0.5 });
+
+const CARD = 'cinematic photorealistic film still, rainy night in a dense futuristic asian megacity, wet reflective streets, neon light, anamorphic lens, shallow depth of field, moody color grade, no text, no logos, no brand names, no watermark';
+const missionCards = {
+  m1: 'a dark muscle coupe parked at a glowing neon street food strip, a courier in a black jacket holding a small parcel walks toward it',
+  m2: 'a crowded covered night market alley with lanterns and food stalls, a woman in a raincoat waits behind a stall, a courier walks in carrying a parcel',
+  m3: 'close up of a wooden crate of antique glass lenses with straw packing in the back seat of a car, rain streaked windows, neon bokeh outside',
+  m4: 'a battered orange 1970s muscle coupe parked alone in a narrow rain soaked back alley, steam rising from a vent, a single flickering lamp',
+  m5: 'view through a rain covered windshield following a white delivery van at a distance down a neon street, taillights glowing',
+  m6: 'a car drifting sideways through a wet intersection throwing spray, a crowd of street racers cheering on the sidewalk, motion blur',
+  m7: 'an executive in a long dark coat waiting under the canopy of a glass corporate skyscraper lobby, black luxury sedan pulling up',
+  m8: 'low angle of a car speeding between glass skyscrapers on a wide downtown avenue, light trails, glowing checkpoint arches',
+  m9: 'police cruisers with red and blue lights blocking a downtown street at night, a car speeding past them in the rain',
+  m10: 'industrial harbor container yard in thick fog, stacked shipping containers, gantry cranes, small security drones with spotlights',
+  m11: 'aerial view of a car chased by three police cruisers across a rain soaked bridge with flashing lights',
+  m12: 'a courier standing next to a dark muscle coupe at the edge of a harbor at dawn, the neon city skyline behind, rain ending',
+};
+for (const [k, p] of Object.entries(missionCards)) add('mission', k, 'fal-ai/gpt-image-2', { prompt: `${p}. ${CARD}`, image_size: 'landscape_16_9', quality: 'high' });
+
+const music2 = {
+  chase: [90000, 'Intense cyberpunk police pursuit music, 150 BPM, driving breakbeat drums, siren-like synth leads, heavy sub bass, relentless momentum, seamless loop, instrumental only'],
+  finale: [100000, 'Epic cinematic synthwave finale, 132 BPM, soaring analog leads over driving drums and big pads, heroic and emotional, night city climax, seamless loop, instrumental only'],
+};
+for (const [k, [ms, p]] of Object.entries(music2)) add('music', k, 'fal-ai/elevenlabs/music', { prompt: p, music_length_ms: ms, force_instrumental: true, output_format: 'mp3_44100_128' });
+
+const sfx3 = {
+  checkpoint: [1, false, 'futuristic race checkpoint pass chime, bright synth ding with whoosh'],
+  glass_rattle: [1.2, false, 'crate of glass bottles rattling and clinking from a bump'],
+  cheer: [2.5, false, 'small crowd of street racers cheering and whistling outdoors at night'],
+  objective: [1.2, false, 'new objective notification, futuristic two tone synth ping'],
+  camera_flash: [0.8, false, 'surveillance camera shutter click with electronic beep'],
+};
+for (const [k, [d, loop, p]] of Object.entries(sfx3)) add('sfx', k, 'fal-ai/elevenlabs/sound-effects/v2', { text: p, duration_seconds: d, loop, prompt_influence: 0.6, output_format: 'mp3_44100_128' });

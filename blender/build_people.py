@@ -111,7 +111,7 @@ def push_nla(arm, act):
     tr = arm.animation_data.nla_tracks.new()
     tr.name = act.name
     tr.strips.new(act.name, int(act.frame_range[0]), act)
-    tr.mute = True
+    tr.mute = False
 
 
 def build(cid, check=False):
@@ -133,9 +133,11 @@ def build(cid, check=False):
         a2 = next(o for o in objs if o.type == 'ARMATURE')
         rng = a2.animation_data.action.frame_range
         ident = {b.name: b.name for b in arm.data.bones if b.name in a2.data.bones}
+        src_act = a2.animation_data.action
         act = retarget(a2, arm, 'walk' if clip == 'walking' else 'run', rng, ident)
         act.use_fake_user = True
         arm.animation_data.action = None
+        bpy.data.actions.remove(src_act)
         for o in objs:
             bpy.data.objects.remove(o, do_unlink=True)
         push_nla(arm, act)
@@ -149,9 +151,11 @@ def build(cid, check=False):
         objs = [o for o in scene.objects if o.name not in before]
         src = next(o for o in objs if o.type == 'ARMATURE')
         rng = src.animation_data.action.frame_range
+        src_act = src.animation_data.action
         act = retarget(src, arm, name, rng)
         act.use_fake_user = True
         arm.animation_data.action = None
+        bpy.data.actions.remove(src_act)
         for o in objs:
             bpy.data.objects.remove(o, do_unlink=True)
         push_nla(arm, act)
@@ -162,7 +166,7 @@ def build(cid, check=False):
     os.makedirs(OUT, exist_ok=True)
     bpy.ops.object.select_all(action='SELECT')
     bpy.ops.export_scene.gltf(filepath=os.path.join(OUT, f'{cid}.glb'), export_format='GLB', export_animations=True,
-                              export_animation_mode='NLA_TRACKS', export_image_format='WEBP', export_yup=True)
+                              export_animation_mode='ACTIONS', export_force_sampling=True, export_frame_range=False, export_image_format='WEBP', export_yup=True)
     print('exported', cid)
     if check:
         render_check(cid, arm)
@@ -182,7 +186,7 @@ def render_check(cid, arm):
     co = bpy.data.objects.new('c', cam); scene.collection.objects.link(co); scene.camera = co
     co.location = (3.0, -3.0, 0.95); co.rotation_euler = (math.radians(90), 0, math.radians(45))
     for tr in arm.animation_data.nla_tracks:
-        tr.mute = True
+        tr.mute = False
     for name in ('walk', 'idle', 'enter_car', 'talk', 'jump', 'flee'):
         act = bpy.data.actions.get(name)
         if not act:

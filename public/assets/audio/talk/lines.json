@@ -1,0 +1,69 @@
+{
+ "hero": [
+  "Evening. Seen any drones around here?",
+  "Rough night, huh?",
+  "You know a shortcut to the docks?",
+  "Hey. Stay dry out there.",
+  "Busy street tonight.",
+  "Got a light? Never mind.",
+  "Don't mind me, just passing through.",
+  "Need anything delivered? I'm fast."
+ ],
+ "ped_suit": [
+  "I don't talk to couriers. Move along.",
+  "Do you know what this coat cost? Back off.",
+  "Make it quick, I'm late for a board call."
+ ],
+ "ped_vendor": [
+  "Hot noodles, best in the district! Two credits!",
+  "Rain is good for business. Everybody wants soup.",
+  "You look hungry, friend. Come back later."
+ ],
+ "ped_punk": [
+  "Nice jacket. Did you steal it?",
+  "Drones? They never come down this street. We make sure of that.",
+  "Get lost, delivery boy."
+ ],
+ "ped_worker": [
+  "Docks are closed after midnight, pal.",
+  "Twelve hour shift. Talk to me tomorrow.",
+  "Watch the cranes, they swing low in the fog."
+ ],
+ "ped_student": [
+  "Sorry, I have an exam in the morning!",
+  "Is it always this loud at night?",
+  "Oh hi! Wait, aren't you that courier?"
+ ],
+ "ped_elder": [
+  "In my day it only rained on weekdays.",
+  "Young man, slow down when you drive past here!",
+  "Such a polite boy. Off you go now."
+ ],
+ "ped_techwear": [
+  "You still drive a car with wheels? Cute.",
+  "Shh. I am listening to the city.",
+  "Respect. You move fast for an analog."
+ ],
+ "ped_nurse": [
+  "Twelve hour shift, I just want to get home.",
+  "If you crash that thing, I will be the one patching you up.",
+  "Stay safe out there, okay?"
+ ],
+ "ped_rider": [
+  "Hey, competition! Good luck tonight.",
+  "Same route every night. The bridge is the fastest.",
+  "Rain makes the tips better, right?"
+ ],
+ "victim": [
+  "Hey! That is my car!",
+  "No no no, not again!",
+  "Somebody call the police!",
+  "Take it, just take it!"
+ ],
+ "police": [
+  "This is the police. Pull over now!",
+  "Stop the vehicle! Hands where we can see them!",
+  "All units, suspect is heading downtown.",
+  "You are under arrest. Stay where you are."
+ ]
+}

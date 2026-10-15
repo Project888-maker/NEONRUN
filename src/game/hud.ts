@@ -210,6 +210,18 @@ export class Hud {
     el.textContent = t.toFixed(1);
     el.classList.toggle('warn', t < 10);
   }
+  /** Mission meter under the timer (damage, comfort, drift points, tail distance). frac 0..1; null hides it. */
+  meter(label: string | null, frac = 0, color = 'var(--cyan)', value = '') {
+    const el = $('h-meter');
+    if (label === null) { el.classList.add('hidden'); return; }
+    el.classList.remove('hidden');
+    el.querySelector('.m-label')!.textContent = label;
+    el.querySelector('.m-val')!.textContent = value;
+    const f = el.querySelector('.m-fill') as HTMLElement;
+    f.style.width = `${Math.max(0, Math.min(1, frac)) * 100}%`;
+    f.style.background = color;
+    f.style.boxShadow = `0 0 10px ${color}`;
+  }
   setDist(m: number | null) { $('h-dist').textContent = m === null ? '' : m > 1000 ? `${(m / 1000).toFixed(2)} km` : `${Math.round(m)} m`; }
   setDistrict(d: DistrictId) {
     $('h-district').textContent = DISTRICTS[d].name;
