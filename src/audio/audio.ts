@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { av } from '../core/version';
 
 const SFX = ['engine_idle', 'engine_low', 'engine_high', 'boost', 'tire_squeal', 'drift_wet', 'gear_shift', 'horn', 'hit_light', 'hit_heavy', 'hit_metal', 'hit_glass', 'suspension',
   'rain_light', 'rain_heavy', 'rain_roof', 'tire_hiss', 'sirens', 'city_hum', 'neon_buzz', 'steam_vent', 'ui_click', 'ui_hover', 'ui_confirm', 'ui_error', 'mission_start', 'mission_complete',
@@ -43,14 +44,14 @@ export class AudioSys {
     let done = 0;
     await Promise.all(all.map(async (p) => {
       try {
-        const r = await fetch(`./assets/${p}`);
+        const r = await fetch(av(`./assets/${p}`));
         const b = await this.ctx.decodeAudioData(await r.arrayBuffer());
         this.buffers.set(p.split('/').pop()!.replace('.mp3', '') + (p.includes('/voice/') ? '@v' : ''), b);
       } catch (e) { console.warn('audio load failed', p, e); }
       onProgress?.(++done / all.length);
     }));
     for (const m of ['menu', 'chill', 'drive', 'urgent', 'chase', 'finale'] as MusicName[]) {
-      const el = new Audio(`./assets/audio/music/${m}.mp3`);
+      const el = new Audio(av(`./assets/audio/music/${m}.mp3`));
       el.loop = true;
       el.preload = m === 'menu' ? 'auto' : 'metadata';
       el.crossOrigin = 'anonymous';
@@ -273,7 +274,7 @@ export class AudioSys {
   /** Street conversation line (assets/audio/talk/<name>.mp3), loaded on demand. Resolves to its duration. */
   async talk(name: string, pos?: THREE.Vector3): Promise<number> {
     if (!this.talkCache.has(name)) {
-      this.talkCache.set(name, fetch(`./assets/audio/talk/${name}.mp3`).then((r) => r.arrayBuffer()).then((b) => this.ctx.decodeAudioData(b)).catch(() => null));
+      this.talkCache.set(name, fetch(av(`./assets/audio/talk/${name}.mp3`)).then((r) => r.arrayBuffer()).then((b) => this.ctx.decodeAudioData(b)).catch(() => null));
     }
     const b = await this.talkCache.get(name)!;
     if (!b || this.ctx.state !== 'running') return b ? b.duration : 2;

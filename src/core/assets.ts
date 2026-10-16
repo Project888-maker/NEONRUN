@@ -3,6 +3,8 @@ import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { CAR_DEFS, bakeCar, type CarAsset, type CarSpec } from '../vehicle/carModels';
 
+import { av } from './version';
+
 const BASE = './assets/';
 
 export const PBR_SETS = ['asphalt', 'concrete', 'brushed_metal', 'rusted_metal', 'glass_grime'] as const;
@@ -52,7 +54,7 @@ export class Loader {
   tex(path: string, srgb = true): Promise<THREE.Texture> {
     this.total++;
     return this.guard(path, (done) => {
-      this.tl.load(BASE + path, (t) => {
+      this.tl.load(av(BASE + path), (t) => {
         if (srgb) t.colorSpace = THREE.SRGBColorSpace;
         t.anisotropy = 8;
         done(t);
@@ -63,10 +65,10 @@ export class Loader {
   gltf(path: string): Promise<GLTF | null> {
     this.total++;
     return this.guard<GLTF | null>(path, (done) => {
-      this.gl.load(BASE + path, (g) => done(g), undefined, async () => {
+      this.gl.load(av(BASE + path), (g) => done(g), undefined, async () => {
         // fallback for hosts that don't serve .glb: the same model as base64 inside <path>.json
         try {
-          const r = await fetch(BASE + path + '.json');
+          const r = await fetch(av(BASE + path + '.json'));
           if (!r.ok) throw new Error(String(r.status));
           const b64: string = (await r.json()).glb;
           const bin = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
@@ -77,7 +79,7 @@ export class Loader {
   }
 
   async json<T>(path: string): Promise<T> {
-    const r = await fetch(BASE + path);
+    const r = await fetch(av(BASE + path));
     return r.json();
   }
 

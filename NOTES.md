@@ -54,6 +54,11 @@ Living document: decisions, known issues, and how to rebuild every asset.
     - each drop is lit by the nearby light pools (signs, lamps, headlights), so rain glows near light and fades in the dark
     - the streak quads are double-sided: a falling drop's tail sits above its head, which flips the winding, so with back-face culling nothing was drawn
 - **Freeze on Story with a livery** (fixed): starting a mission re-applies the car's customisation. Removing the old livery decal (a group of meshes) called `.geometry.dispose()` on the group, which threw. That left the mission half-started, and every frame then threw too: a frozen picture with only the music playing. The livery removal now disposes each child mesh. A mission start can no longer be left half-done, and the frame loop catches errors, keeps rendering and shows a short on-screen note instead of freezing.
+- **Asset caching**: `vercel.json` used to mark all of `/assets/` as cacheable for a year (`immutable`). That suits Vite's hashed code chunks, but models, sounds and textures in `public/assets` keep fixed names, so players' browsers kept old versions (e.g. the first hero model with the swaying idle) after updates. Now every asset URL carries a content fingerprint (`?v=<md5>`):
+  - `vite.config.ts` hashes `public/assets` at build time and versions the references in `index.html`
+  - `src/core/version.ts` does the same for runtime loads
+  - only `.js`/`.css`/`.wasm` stay immutable; other assets revalidate daily
+- **Results card on phones**: compact layout for short screens, with buttons always on screen. The phone check finishes mission 1 and taps "Next mission".
 - **Textures**: KTX2 needs the external `toktx` binary, which is not installable here, so textures are WebP (gltf-transform `--texture-compress webp`) and geometry is meshopt-compressed.
 
 ## Rebuilding assets

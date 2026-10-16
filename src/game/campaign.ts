@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { av } from '../core/version';
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import type { City, Spot } from '../world/city';
 import { RoadGraph, lineCoord, DISTRICTS, type DistrictId } from '../world/layout';
@@ -182,7 +183,7 @@ export class Campaign {
     this.ring.layers.set(LAYER_NO_REFLECT);
     this.group.add(this.beamP, this.beamD, this.ring, this.light);
     this.hideMarkers();
-    fetch('./assets/audio/talk/story.json').then((r) => r.json()).then((j) => { this.story = j.lines; this.names = j.names; }).catch(() => {});
+    fetch(av('./assets/audio/talk/story.json')).then((r) => r.json()).then((j) => { this.story = j.lines; this.names = j.names; }).catch(() => {});
   }
 
   // ---------------------------------------------------------------- helpers used by mission builders

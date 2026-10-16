@@ -236,3 +236,19 @@ body.touch #fps { display: none; }
 @media (orientation: portrait) and (max-width: 700px) { body.touch #rotate { display: flex; } }
 
 #err-note { position: fixed; left: 50%; bottom: max(12px, env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 50; max-width: min(720px, 92vw); padding: 8px 14px; background: rgba(60, 6, 18, 0.88); border: 1px solid #ff3a5c; color: #ffd6de; font: 12px/1.4 'JetBrains Mono', monospace; pointer-events: none; }
+
+/* results card on short screens (phones in landscape): compact, and the buttons always reachable */
+#results .r-card { max-height: calc(100vh - 16px); max-height: calc(100dvh - 16px); overflow-y: auto; }
+@media (max-height: 560px) {
+  #results.story { padding-top: max(6px, env(safe-area-inset-top)); align-items: flex-start; }
+  .r-card { padding: 10px 18px; min-width: min(340px, 86vw); }
+  .r-title { font-size: 18px; letter-spacing: 0.18em; }
+  .r-rows { margin: 6px 0; font-size: 13px; }
+  .r-rows div { padding: 1px 0; gap: 18px; }
+  .r-total { font-size: 18px; }
+  .r-actions { margin-top: 8px; gap: 6px; }
+  .r-actions button { padding: 9px 12px; font-size: 10px; }
+}
+/* while a story result is on screen, keep the dispatcher's subtitle clear of the card */
+body.touch:has(#results.story:not(.hidden)) #subtitle { top: auto; bottom: 24%; }
+@media (max-height: 560px) { body:has(#results.story:not(.hidden)) #subtitle { top: auto; bottom: 22%; } }

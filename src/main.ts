@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { av } from './core/version';
 import { Loader, type Assets } from './core/assets';
 import { Physics, RAPIER } from './core/physics';
 import { Input } from './core/input';
@@ -169,9 +170,9 @@ function buildWorld() {
   reflector.setSize(innerWidth * Q.pixelRatio, innerHeight * Q.pixelRatio);
   const atl = (n: string) => A.tex[n];
   // atlases are loaded lazily here (small json + texture)
-  const signTex = new THREE.TextureLoader().load('./assets/atlas/signs.webp');
-  const adTex = new THREE.TextureLoader().load('./assets/atlas/ads.webp');
-  const shopTex = new THREE.TextureLoader().load('./assets/atlas/shops.webp');
+  const signTex = new THREE.TextureLoader().load(av('./assets/atlas/signs.webp'));
+  const adTex = new THREE.TextureLoader().load(av('./assets/atlas/ads.webp'));
+  const shopTex = new THREE.TextureLoader().load(av('./assets/atlas/shops.webp'));
   void atl;
   city = new City(A, phys, { reflector, envMap: env }, { signs: atlasJson.signs, ads: atlasJson.ads, shops: atlasJson.shops, signTex, adTex, shopTex }).build();
   scene.add(city.root);
@@ -309,7 +310,7 @@ function buildWorld() {
   // video billboards
   for (const clip of new Set(city.videoScreens.map((s) => s.clip))) {
     const v = document.createElement('video');
-    v.src = `./assets/video/${clip}.mp4`;
+    v.src = av(`./assets/video/${clip}.mp4`);
     v.muted = true; v.loop = true; v.playsInline = true; v.crossOrigin = 'anonymous';
     v.preload = 'auto';
     videos[clip] = v;
@@ -538,7 +539,7 @@ function openStory() {
     const done = save.story.done.includes(m.id);
     const open = i === 0 || save.story.done.includes(MISSIONS[i - 1].id) || params.has('allmissions');
     const best = save.story.best[m.id];
-    return `<div class="card ${done ? 'done' : ''} ${open ? '' : 'locked'}"><img src="./assets/ui/missions/${m.id}.webp" alt="" loading="lazy">
+    return `<div class="card ${done ? 'done' : ''} ${open ? '' : 'locked'}"><img src="${av(`./assets/ui/missions/${m.id}.webp`)}" alt="" loading="lazy">
       <div class="m-n">${String(m.n).padStart(2, '0')} · ${DISTRICTS[m.district].name} · ${m.type}</div>
       <div class="c-head">${m.title}</div><div class="desc">${m.desc}</div>
       <div class="m-foot">${m.reward.toLocaleString()} CR${best !== undefined ? ` · best ${fmt(best)}` : ''}</div>
@@ -572,7 +573,7 @@ function renderGarage() {
   $('upgrades').innerHTML = ups.map((u) => {
     const lv = save.upgrades[u.key];
     const cost = UPGRADE_COST[lv];
-    return `<div class="card"><div class="c-head"><img src="./assets/icon/${u.icon}.png" alt="">${u.name}</div>
+    return `<div class="card"><div class="c-head"><img src="${av(`./assets/icon/${u.icon}.png`)}" alt="">${u.name}</div>
       <div class="pips">${[0, 1, 2].map((i) => `<i class="${i < lv ? 'on' : ''}"></i>`).join('')}</div>
       <div class="desc">${u.desc}</div>
       <button data-up="${u.key}" ${lv >= 3 ? 'disabled' : ''}>${lv >= 3 ? 'Maxed' : `Upgrade · ${cost} CR`}</button></div>`;
@@ -594,7 +595,7 @@ function renderGarage() {
   $('paints').innerHTML = PAINTS.map((p) => `<div class="swatch ${save.paint === p.id ? 'on' : ''}" data-paint="${p.id}" title="${p.name}" style="background:rgb(${p.color.map((c) => Math.min(255, c * 55)).join(',')})"></div>`).join('');
   $('glows').innerHTML = UNDERGLOW.map((c) => `<div class="swatch ${save.underglow === c ? 'on' : ''}" data-glow="${c}" style="background:${c};box-shadow:0 0 14px ${c}"></div>`).join('');
   $('liveries').innerHTML = `<div class="swatch ${!save.livery ? 'on' : ''}" data-liv="" style="display:flex;align-items:center;justify-content:center;font-size:11px;color:#8c9bb8">NONE</div>` +
-    Object.keys(A.liveries).map((l) => `<div class="swatch ${save.livery === l ? 'on' : ''}" data-liv="${l}" style="background-image:url(./assets/livery/${l}.png)"></div>`).join('');
+    Object.keys(A.liveries).map((l) => `<div class="swatch ${save.livery === l ? 'on' : ''}" data-liv="${l}" style="background-image:url(${av(`./assets/livery/${l}.png`)})"></div>`).join('');
   const bar = (v: number, max: number) => `<div class="pips">${[0, 1, 2, 3, 4].map((i) => `<i class="${i < Math.round((v / max) * 5) ? 'on' : ''}"></i>`).join('')}</div>`;
   $('cars').innerHTML = [HERO_DEF, ...CAR_DEFS.filter((d) => A.carsLod[d.id])].map((d) => {
     const owned = save.ownedCars.includes(d.id), current = save.car === d.id;
@@ -621,7 +622,7 @@ function renderGarage() {
   $('districts').innerHTML = DISTRICT_ORDER.map((d) => {
     const un = save.unlocked.includes(d);
     const img = { neon: 'card_neon', backstreets: 'card_backstreets', downtown: 'card_downtown', docks: 'card_docks' }[d];
-    return `<div class="card ${un ? '' : 'locked'}"><img src="./assets/ui/${img}.webp" alt=""><div class="d-name">${DISTRICTS[d].name}${un ? '' : ` · ${UNLOCK_AT[d]} deliveries`}</div></div>`;
+    return `<div class="card ${un ? '' : 'locked'}"><img src="${av(`./assets/ui/${img}.webp`)}" alt=""><div class="d-name">${DISTRICTS[d].name}${un ? '' : ` · ${UNLOCK_AT[d]} deliveries`}</div></div>`;
   }).join('');
   const bind = (sel: string, fn: (el: HTMLElement) => void) => document.querySelectorAll<HTMLElement>(sel).forEach((el) => el.addEventListener('click', () => { fn(el); writeSave(save); applyCustomization(); audio.play('ui_click', { volume: 0.5 }); renderGarage(); }));
   bind('[data-paint]', (el) => (save.paint = el.dataset.paint!));
@@ -1508,7 +1509,7 @@ function debugApi() {
 }
 
 // load atlas metadata then boot
-Promise.all(['signs', 'ads', 'shops'].map((n) => fetch(`./assets/atlas/${n}.json`).then((r) => r.json()))).then(([signs, ads, shops]) => {
+Promise.all(['signs', 'ads', 'shops'].map((n) => fetch(av(`./assets/atlas/${n}.json`)).then((r) => r.json()))).then(([signs, ads, shops]) => {
   atlasJson = { signs, ads, shops };
   boot().catch((e) => { console.error(e); $('loadlabel').textContent = `Error: ${e.message}`; });
   requestAnimationFrame(frame);
