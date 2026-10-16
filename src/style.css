@@ -234,3 +234,5 @@ body.touch #fps { display: none; }
 #rotate .r-phone { width: 46px; height: 80px; border: 3px solid var(--cyan); border-radius: 9px; animation: rot 1.8s ease-in-out infinite; box-shadow: 0 0 18px rgba(33, 243, 255, 0.4); }
 @keyframes rot { 0%, 25% { transform: rotate(0deg); } 60%, 100% { transform: rotate(-90deg); } }
 @media (orientation: portrait) and (max-width: 700px) { body.touch #rotate { display: flex; } }
+
+#err-note { position: fixed; left: 50%; bottom: max(12px, env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 50; max-width: min(720px, 92vw); padding: 8px 14px; background: rgba(60, 6, 18, 0.88); border: 1px solid #ff3a5c; color: #ffd6de; font: 12px/1.4 'JetBrains Mono', monospace; pointer-events: none; }

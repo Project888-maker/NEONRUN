@@ -53,6 +53,7 @@ Living document: decisions, known issues, and how to rebuild every asset.
     - drops are now camera-facing streaks falling at 7–9.5 m/s, as long as the drop travels in a ~1/30 s exposure relative to the viewer: short when standing, long and slanted at speed
     - each drop is lit by the nearby light pools (signs, lamps, headlights), so rain glows near light and fades in the dark
     - the streak quads are double-sided: a falling drop's tail sits above its head, which flips the winding, so with back-face culling nothing was drawn
+- **Freeze on Story with a livery** (fixed): starting a mission re-applies the car's customisation. Removing the old livery decal (a group of meshes) called `.geometry.dispose()` on the group, which threw. That left the mission half-started, and every frame then threw too: a frozen picture with only the music playing. The livery removal now disposes each child mesh. A mission start can no longer be left half-done, and the frame loop catches errors, keeps rendering and shows a short on-screen note instead of freezing.
 - **Textures**: KTX2 needs the external `toktx` binary, which is not installable here, so textures are WebP (gltf-transform `--texture-compress webp`) and geometry is meshopt-compressed.
 
 ## Rebuilding assets

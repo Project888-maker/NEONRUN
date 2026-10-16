@@ -263,8 +263,9 @@ export class Campaign {
     for (const d of def.unlock) this.h.unlock(d);
     this.h.clearHeat();
     const { start, steps } = def.build(this);
-    this.h.placePlayer(start.x, start.z, start.yaw);
     this.steps = steps;
+    // a failure while moving the player must not leave a half-started mission behind
+    try { this.h.placePlayer(start.x, start.z, start.yaw); } catch (e) { console.error('placePlayer failed', e); }
     this.idx = -1;
     this.timer = null;
     this.h.hud.banner(def.title, `Mission ${def.n} · ${DISTRICTS[def.district].name}`);
@@ -325,6 +326,7 @@ export class Campaign {
     if (this.state !== 'run' || !this.active) return;
     this.elapsed += f.dt;
     const s = this.steps[this.idx];
+    if (!s) return; // not started (start() failed part-way)
     // markers
     const tgt = this.target;
     const kind = s.marker ?? 'pickup';

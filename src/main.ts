@@ -1176,6 +1176,30 @@ function objective() {
 }
 
 // ------------------------------------------------------------------ main loop
+/**
+ * Safety net: an unexpected error in one frame's update must never freeze the game (it used to leave the
+ * last picture on screen with only the music playing). The frame still renders, the error goes to the
+ * console, and a small note appears once so a player can screenshot it for us.
+ */
+const seenErrors = new Set<string>();
+function reportFrameError(e: unknown) {
+  const msg = e instanceof Error ? e.message : String(e);
+  console.error('frame error', e);
+  if (seenErrors.has(msg)) return;
+  seenErrors.add(msg);
+  let el = document.getElementById('err-note');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'err-note';
+    document.body.appendChild(el);
+  }
+  const where = e instanceof Error && e.stack ? e.stack.split('\n')[1]?.trim().replace(/\(?https?:\/\/[^/]+\//, '(') ?? '' : '';
+  el.textContent = `Something went wrong: ${msg} ${where} — the game kept running. A screenshot of this note helps us fix it.`;
+  el.classList.remove('hidden');
+  clearTimeout((el as any)._t);
+  (el as any)._t = setTimeout(() => el!.classList.add('hidden'), 15000);
+}
+
 const FIX = 1 / 60;
 let acc = 0;
 let last = performance.now();
@@ -1197,6 +1221,7 @@ function frame(now: number) {
   (post.lens as any).set(simTime, Q.lensFx ? 0.55 : 0, 0);
 
   if (state === 'playing') {
+    try {
     if (campaign.state === 'results') { for (const k of ['Enter', 'KeyF']) if (input.consume(k) && campaign.resultsKey(k)) break; }
     if (input.consume('Escape') || input.consume('KeyP')) { pause(); input.endFrame(); }
     if (input.consume('KeyC')) { chase.mode = chase.mode === 'chase' ? 'far' : chase.mode === 'far' ? 'hood' : 'chase'; save.settings.cam = chase.mode; writeSave(save); }
@@ -1286,6 +1311,7 @@ function frame(now: number) {
     hud.tick(dtReal);
     adaptiveQuality(dtReal);
     input.endFrame();
+    } catch (e) { reportFrameError(e); input.endFrame(); }
   } else if (state === 'title') {
     // slow orbit for the background (hidden behind the intro video)
     camera.position.set(SPAWN.x + Math.sin(simTime * 0.1) * 20, 6, SPAWN.z + Math.cos(simTime * 0.1) * 20);
@@ -1294,7 +1320,7 @@ function frame(now: number) {
   if (state === 'title') return; // the title screen is a video; skip 3D rendering
 
   // world updates shared by playing/paused
-  if (state === 'playing') {
+  if (state === 'playing') try {
     train.update(dtReal);
     skyTraffic.update(simTime, camera.position);
     sky.update(camera, simTime);
@@ -1308,7 +1334,7 @@ function frame(now: number) {
     const s = Math.min(1, vehicle.speedAbs / 60);
     (post.lens as any).set(simTime, Q.lensFx ? 0.55 * (1 - s * 0.6) : 0, (vehicle.boosting ? 0.6 : 0) * Math.min(1, vehicle.speedAbs / 30) + (s > 0.6 ? (s - 0.6) * 1.2 : 0));
     post.chroma.offset.set(0.0006 + (vehicle.boosting ? 0.0025 : 0), 0.0004 + (vehicle.boosting ? 0.0015 : 0));
-  }
+  } catch (e) { reportFrameError(e); }
   renderer.info.reset();
   // car reflection probe: one cube face per frame (High) or every other frame (Med), off on Low.
   // Rendering all six faces at once every few frames caused visible hitches.

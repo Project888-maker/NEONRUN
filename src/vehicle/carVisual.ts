@@ -48,7 +48,7 @@ export class CarVisual {
   flameLight: THREE.PointLight;
   beams: THREE.Mesh;
   underglowColor = new THREE.Color('#21f3ff');
-  private decal?: THREE.Mesh;
+  private decal?: THREE.Object3D;
   lightU?: CarLightUniforms;
   dims = { length: 4.8, width: 2.06, height: 1.3 };
   readonly isHero: boolean;
@@ -226,7 +226,12 @@ export class CarVisual {
 
   /** Project a livery decal onto both flanks and the hood. */
   setLivery(tex: THREE.Texture | null) {
-    if (this.decal) { this.decal.removeFromParent(); this.decal.geometry.dispose(); this.decal = undefined; }
+    // the decal is a group of projected meshes (sides + hood): dispose every child's geometry
+    if (this.decal) {
+      this.decal.removeFromParent();
+      this.decal.traverse((o) => { const m = o as THREE.Mesh; if (m.isMesh) m.geometry.dispose(); });
+      this.decal = undefined;
+    }
     if (!tex || !this.bodyMesh) return;
     const mesh = this.bodyMesh;
     mesh.updateMatrixWorld(true);
@@ -245,7 +250,7 @@ export class CarVisual {
     place(new THREE.Vector3(0, 1.1, 1.3), new THREE.Euler(-Math.PI / 2, 0, Math.PI / 2), new THREE.Vector3(1.6, 1.0, 1.2));
     const g = new THREE.Group();
     for (const geo of geos) g.add(new THREE.Mesh(geo, mat));
-    this.decal = g as unknown as THREE.Mesh;
+    this.decal = g;
     this.root.add(g);
   }
 
