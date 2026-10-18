@@ -42,6 +42,8 @@ export interface ConvHost {
   callPolice(t: Talker): void;
   voiceOn(): boolean;
   uncensored(): boolean;
+  /** nothing solid between the camera spot and the face (lamp posts, walls) */
+  clearView(from: THREE.Vector3, to: THREE.Vector3): boolean;
   audio: SpeechAudio;
   onOpen(): void;
   onClose(): void;
@@ -92,6 +94,8 @@ export class Conversation {
   private cam = new THREE.Vector3();
   private camLook = new THREE.Vector3();
   private camInit = false;
+  private camSide = 1;
+  private viewT = 0;
   private recog: any = null;
   brain: Brain;
   voices: Voices;
@@ -123,6 +127,8 @@ export class Conversation {
     const m = this.host.recall(p);
     this.closing = false;
     this.camInit = false;
+    this.camSide = 1;
+    this.viewT = 0;
     this.turn++;
     this.heroDone = Promise.resolve();
     this.heroTalking = false;
@@ -357,7 +363,14 @@ export class Conversation {
     const dist = dir.length() || 1;
     dir.divideScalar(dist);
     const side = _d.set(dir.z, 0, -dir.x); // to the courier's right
-    const want = _e.copy(heroEye).addScaledVector(dir, -1.5).addScaledVector(side, 0.95).add(_up.set(0, 0.15, 0));
+    // over the right shoulder, unless something (a lamp post, a wall) blocks the view of the face
+    this.viewT -= dt;
+    if (this.viewT <= 0) {
+      this.viewT = 0.8;
+      const spot = (s: number) => heroEye.clone().addScaledVector(dir, -1.5).addScaledVector(side, 0.95 * s).add(new THREE.Vector3(0, 0.15, 0));
+      if (!this.host.clearView(spot(this.camSide), npcEye) && this.host.clearView(spot(-this.camSide), npcEye)) this.camSide = -this.camSide;
+    }
+    const want = _e.copy(heroEye).addScaledVector(dir, -1.5).addScaledVector(side, 0.95 * this.camSide).add(_up.set(0, 0.15, 0));
     const look = _f.copy(heroEye).lerp(npcEye, 0.8).add(_up.set(0, -0.6, 0));
     if (!this.camInit) { this.cam.copy(camera.position); this.camLook.copy(look); this.camInit = true; }
     const k = Math.min(1, dt * 3.5);

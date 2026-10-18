@@ -260,6 +260,12 @@ function buildWorld() {
     voiceOn: () => (save.settings.voice ?? 'on') === 'on',
     audio,
     uncensored: () => (save.settings.language ?? 'uncensored') === 'uncensored',
+    clearView: (from, to) => {
+      const dir = to.clone().sub(from);
+      const len = dir.length();
+      const hit = phys.world.castRay(new RAPIER.Ray(from, dir.divideScalar(len)), len - 0.4, true, undefined, undefined, hero?.collider, undefined, (c) => !!c.parent()?.isFixed());
+      return !hit;
+    },
     onOpen: () => { document.exitPointerLock?.(); },
     onClose: () => { if (hero) footCam.yaw = hero.person.yaw; },
   }, () => A.lines);

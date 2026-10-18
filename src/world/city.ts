@@ -544,16 +544,17 @@ export class City {
           const col = d === 'docks' || d === 'backstreets' ? new THREE.Color(1.0, 0.55, 0.22) : d === 'downtown' ? new THREE.Color(0.7, 0.85, 1.0) : rng.chance(0.5) ? new THREE.Color(1, 0.62, 0.35) : new THREE.Color(0.6, 0.8, 1);
           this.lights.push({ pos: new THREE.Vector3(hx, 7.4, hz), color: col, radius: 13, kind: 'lamp' });
           this.b.add('cone', chunkOf(x, z), this.geo.cone, this.mats.cone, mtx(hx, 7.45, hz, 0, 3.4, 7.3, 3.4), coneAttr(col), LAYER_NO_REFLECT);
-          // other furniture between lamps
-          const fx = axis === 0 ? c + side * (ROAD_W / 2 + 1.2) : along + spacing / 2;
-          const fz = axis === 0 ? along + spacing / 2 : c + side * (ROAD_W / 2 + 1.2);
+          // other furniture between lamps, on the curb line with the lamps: people walk their loop
+          // 1.4 m in from the curb (see walkRects), so anything at ~1.2 m stood right in their path
+          const fx = axis === 0 ? c + side * (ROAD_W / 2 + 0.55) : along + spacing / 2;
+          const fz = axis === 0 ? along + spacing / 2 : c + side * (ROAD_W / 2 + 0.55);
           const local2 = ((((axis === 0 ? fz : fx) + HALF) % PITCH) + PITCH) % PITCH;
           if (local2 < ROAD_W / 2 + SIDEWALK + 2 || local2 > PITCH - ROAD_W / 2 - SIDEWALK - 2) continue;
           const r = rng.next();
           if (r < 0.15) { this.prop('hydrant', fx, CURB_H, fz, rot); this.phys.cylinder(fx, 0.5, fz, 0.5, 0.25); }
           else if (r < 0.3) { this.prop('bin', fx, CURB_H, fz, 0); this.phys.cylinder(fx, 0.5, fz, 0.5, 0.33); }
           else if (r < 0.38 && (d === 'docks' || d === 'backstreets')) { this.prop('barrier', fx, CURB_H, fz, axis === 0 ? 0 : Math.PI / 2); this.phys.box(fx, 0.45, fz, axis === 0 ? 1.0 : 0.3, 0.45, axis === 0 ? 0.3 : 1.0); }
-          else if (r < 0.5 && d !== 'docks') { this.prop('bench', fx + (axis === 0 ? side * 1.2 : 0), CURB_H, fz + (axis === 1 ? side * 1.2 : 0), rot + Math.PI); }
+          else if (r < 0.5 && d !== 'docks') { this.prop('bench', fx + (axis === 0 ? side * 1.85 : 0), CURB_H, fz + (axis === 1 ? side * 1.85 : 0), rot + Math.PI); } // against the shopfronts, behind the walking line
           else if (r < 0.6 && (d === 'backstreets' || d === 'neon')) {
             // steam vent in the road lane
             const vx = axis === 0 ? c + side * rng.range(1.5, 5) : fx, vz = axis === 0 ? fz : c + side * rng.range(1.5, 5);
