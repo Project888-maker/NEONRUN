@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { kitParts } from '../core/assets';
 import type { Physics } from '../core/physics';
-import { RAPIER, groups, GROUP_TRAFFIC, GROUP_CAR, GROUP_WORLD } from '../core/physics';
+import { RAPIER, groups, GROUP_TRAFFIC, GROUP_CAR, GROUP_WORLD, GROUP_HERO } from '../core/physics';
 import { RoadGraph, GEdge, HALF, PITCH, lineCoord } from './layout';
 import { trafficState } from '../render/specialMaterials';
 import { createConeMaterial } from '../render/specialMaterials';
@@ -132,7 +132,7 @@ export class Traffic {
         hw = M.width * 0.45; hh = M.height * 0.42; hl = M.length * 0.48;
       }
       const body = this.phys.world.createRigidBody(RAPIER.RigidBodyDesc.kinematicPositionBased().setTranslation(pos.x, 0, pos.z));
-      this.phys.world.createCollider(RAPIER.ColliderDesc.cuboid(hw, hh, hl).setTranslation(0, hh + 0.15, 0).setFriction(0.3).setCollisionGroups(groups(GROUP_TRAFFIC, GROUP_CAR | GROUP_WORLD)), body);
+      this.phys.world.createCollider(RAPIER.ColliderDesc.cuboid(hw, hh, hl).setTranslation(0, hh + 0.15, 0).setFriction(0.3).setCollisionGroups(groups(GROUP_TRAFFIC, GROUP_CAR | GROUP_WORLD | GROUP_HERO)), body);
       const B = this.graph.nodes[this.graph.other(e, from)];
       return {
         model, edge: e, from, s, lane, speed: 8, maxSpeed: e.alley ? 7 : this.rng.range(11, 17), turning: false, t: 0, curveLen: 0,

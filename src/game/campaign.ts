@@ -11,7 +11,7 @@ import { Drone } from '../world/ambient';
 import { Person, lerpAngle } from '../world/people';
 import { carMesh } from './police';
 import type { CarAsset } from '../vehicle/carModels';
-import { RAPIER, groups, GROUP_TRAFFIC, GROUP_CAR, GROUP_WORLD, type Physics } from '../core/physics';
+import { RAPIER, groups, GROUP_TRAFFIC, GROUP_CAR, GROUP_WORLD, GROUP_HERO, type Physics } from '../core/physics';
 import { LAYER_NO_REFLECT } from '../render/reflector';
 
 // ------------------------------------------------------------------ host interface (implemented in main.ts)
@@ -106,7 +106,7 @@ class ScriptCar {
     const sp = asset.spec;
     this.body = phys.world.createRigidBody(RAPIER.RigidBodyDesc.kinematicPositionBased().setTranslation(this.pos.x, 0, this.pos.z));
     phys.world.createCollider(RAPIER.ColliderDesc.cuboid(sp.width * 0.44, sp.height * 0.4, sp.length * 0.48).setTranslation(0, sp.height * 0.42, 0)
-      .setCollisionGroups(groups(GROUP_TRAFFIC, GROUP_CAR | GROUP_WORLD)), this.body);
+      .setCollisionGroups(groups(GROUP_TRAFFIC, GROUP_CAR | GROUP_WORLD | GROUP_HERO)), this.body);
     this.place();
   }
   private place() {

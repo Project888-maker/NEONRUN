@@ -6,6 +6,7 @@ import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import type { Physics } from '../core/physics';
 import { av } from '../core/version';
 import { Person } from './people';
+import { CURB_H } from './layout';
 import type { PlaceSpot } from '../npc/regulars';
 
 export type RoomType = 'food' | 'market' | 'shop' | 'clinic' | 'lobby' | 'depot';
@@ -31,6 +32,13 @@ const STYLE: Record<RoomType, { floor: number; counter: number; top: number; lig
 };
 
 const W = 12, D = 9, H = 4; // room size (m)
+/** storefront photo proportions (after cropping, scripts/storefronts.mjs) and sign colour per place */
+const FRONT: Record<string, { aspect: number; color: string }> = {
+  noodle_row: { aspect: 2.63, color: '#ff8a3c' }, arcade: { aspect: 3.303, color: '#d26bff' }, clinic: { aspect: 2.808, color: '#38f0a0' },
+  night_market: { aspect: 2.904, color: '#ffd36b' }, laundromat: { aspect: 2.671, color: '#8fd8ff' }, tattoo: { aspect: 2.59, color: '#ff3b4e' },
+  tower: { aspect: 2.408, color: '#e8f2ff' }, hotel: { aspect: 2.477, color: '#ffc46b' }, courthouse: { aspect: 2.551, color: '#f2e2c0' },
+  pier9: { aspect: 3.006, color: '#ffa030' }, union_hall: { aspect: 2.477, color: '#ff6a4a' }, fish_market: { aspect: 2.719, color: '#6fd0ff' },
+};
 
 export interface RoomPerson {
   id: number; type: string; p: Person; pos: THREE.Vector3; state: string; t: number; key?: string; prevState?: string;
@@ -114,37 +122,49 @@ export class Interiors {
     return r;
   }
 
-  /** A lit doorway with the place's name above it, on the shopfront. */
+  /** The place's own storefront photo over whatever atlas shopfront was there, with a lit name sign above. */
   private doorFrame(id: string, ps: PlaceSpot) {
     const g = new THREE.Group();
     const n = new THREE.Vector3(ps.spot.nx, 0, ps.spot.nz);
-    g.position.set(ps.spot.x - n.x * 4.42, 0, ps.spot.z - n.z * 4.42);
+    g.position.set(ps.spot.x - n.x * 4.4, CURB_H, ps.spot.z - n.z * 4.4);
     g.rotation.y = Math.atan2(n.x, n.z);
-    const glow = new THREE.MeshBasicMaterial({ color: new THREE.Color(1.6, 1.05, 0.35) });
-    for (const [x, y, w, hh] of [[-0.82, 1.25, 0.05, 2.5], [0.82, 1.25, 0.05, 2.5], [0, 2.5, 1.69, 0.05]] as const) {
-      const b = new THREE.Mesh(new THREE.BoxGeometry(w, hh, 0.06), glow);
-      b.position.set(x, y, 0);
-      g.add(b);
-    }
-    // dark tinted glass with a faint warm glow from inside
-    const glass = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 2.42), new THREE.MeshStandardMaterial({ color: 0x06080d, roughness: 0.08, metalness: 0.7, emissive: new THREE.Color(0.09, 0.055, 0.02), envMapIntensity: 0.6 }));
-    glass.position.set(0, 1.22, 0.01);
-    g.add(glass);
-    // name sign
+    const front = FRONT[id] ?? { aspect: 2.6, color: '#ffc070' };
+    const fw = 8.6, fh = fw / front.aspect;
+    const t = new THREE.TextureLoader().load(av(`./assets/storefront/${id}.webp`));
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.anisotropy = 4;
+    const photoMat = new THREE.MeshStandardMaterial({ map: t, emissiveMap: t, emissive: 0xffffff, emissiveIntensity: 0.8, color: 0x666666, roughness: 0.6 });
+    const shop = new THREE.Mesh(new THREE.PlaneGeometry(fw, fh), photoMat);
+    shop.position.set(0, fh / 2, 0);
+    g.add(shop);
+    // sign box: a dark fascia from the top of the photo up past the old shopfront, overhanging the door
+    const top = 5.2, bh = top - fh;
+    const fascia = new THREE.Mesh(new THREE.BoxGeometry(fw + 0.2, bh, 0.4), new THREE.MeshStandardMaterial({ color: 0x14161b, roughness: 0.45, metalness: 0.6 }));
+    fascia.position.set(0, fh + bh / 2, 0.18);
+    g.add(fascia);
+    const col = new THREE.Color(front.color);
+    // light strip under the sign, washing down over the entrance
+    const strip = new THREE.Mesh(new THREE.BoxGeometry(fw, 0.04, 0.05), new THREE.MeshBasicMaterial({ color: col.clone().multiplyScalar(1.8) }));
+    strip.position.set(0, fh - 0.01, 0.36);
+    g.add(strip);
+    const trim = strip.clone();
+    trim.position.set(0, top - 0.06, 0.36);
+    g.add(trim);
+    // the name, in the place's own colour
     const c = document.createElement('canvas');
-    c.width = 512; c.height = 96;
+    c.width = 1024; c.height = 160;
     const x = c.getContext('2d')!;
-    x.fillStyle = 'rgba(0,0,0,0)'; x.fillRect(0, 0, 512, 96);
-    x.font = '700 46px Orbitron, Rajdhani, sans-serif';
+    x.font = '700 92px Orbitron, Rajdhani, sans-serif';
     x.textAlign = 'center'; x.textBaseline = 'middle';
-    x.shadowColor = '#ffb347'; x.shadowBlur = 18;
-    x.fillStyle = '#ffe2b0';
+    x.shadowColor = front.color; x.shadowBlur = 26;
+    x.fillStyle = '#' + col.clone().lerp(new THREE.Color(1, 1, 1), 0.55).getHexString();
     const name = ps.place.name.replace(/^the /, '').replace(/ on the strip$/, '').toUpperCase();
-    x.fillText(name.length > 22 ? name.slice(0, 22) : name, 256, 50);
+    x.fillText(name.length > 18 ? name.slice(0, 18) : name, 512, 84, 980);
     const tex = new THREE.CanvasTexture(c);
     tex.colorSpace = THREE.SRGBColorSpace;
-    const sign = new THREE.Mesh(new THREE.PlaneGeometry(2.0, 0.375), new THREE.MeshBasicMaterial({ map: tex, transparent: true, color: new THREE.Color(1.4, 1.4, 1.4), depthWrite: false }));
-    sign.position.set(0, 2.82, 0.05);
+    const sh = Math.min(1.15, bh * 0.62);
+    const sign = new THREE.Mesh(new THREE.PlaneGeometry(sh * 6.4, sh), new THREE.MeshBasicMaterial({ map: tex, transparent: true, color: new THREE.Color(1.5, 1.5, 1.5), depthWrite: false }));
+    sign.position.set(0, fh + Math.min(bh / 2, 0.75), 0.385);
     g.add(sign);
     g.userData.placeId = id;
     return g;
@@ -276,10 +296,14 @@ export class Interiors {
       const tarp = new THREE.Mesh(new THREE.PlaneGeometry(6.6, 1.6), new THREE.MeshStandardMaterial({ color: 0x2f6d8c, roughness: 0.8, side: THREE.DoubleSide }));
       tarp.position.set(0, 2.9, cz + 0.3); tarp.rotation.x = -Math.PI / 2.6; g.add(tarp);
     } else if (type === 'shop') {
-      const metal = mat(0x2a2c33, 0.4, 0.6), goods = [mat(0xd9466a), mat(0x3ac2d6), mat(0xe8c14a), mat(0x6a4ad9)];
+      // stock on the shelves in cardboard and faded packaging tones (bright flat colours read as toy blocks)
+      const metal = mat(0x2a2c33, 0.4, 0.6), goods = [mat(0x8a6b4a, 0.9), mat(0x5d6670, 0.8), mat(0x6e5050, 0.85), mat(0x4f5d4a, 0.85), mat(0x9a8a70, 0.9)];
       for (const x of [-4.8, 4.8]) {
         box(0.5, 2.2, 2.4, metal, x, 1.1, 0.8);
-        for (let k = 0; k < 9; k++) box(0.3, 0.25, 0.3, goods[k % 4], x + (x < 0 ? 0.12 : -0.12), 0.45 + Math.floor(k / 3) * 0.6, 0.0 + (k % 3) * 0.7);
+        for (let k = 0; k < 12; k++) {
+          const w = 0.18 + ((k * 37) % 7) * 0.025, h = 0.16 + ((k * 53) % 5) * 0.035;
+          box(0.26, h, w, goods[(k * 3) % 5], x + (x < 0 ? 0.12 : -0.12), 0.3 + Math.floor(k / 4) * 0.6 + h / 2, -0.25 + (k % 4) * 0.55);
+        }
       }
     } else if (type === 'clinic') {
       const seat = mat(0x2f8f8a, 0.5), leg = mat(0x9aa0a8, 0.3, 0.8);
@@ -301,6 +325,17 @@ export class Interiors {
   }
 
   /** Animate the people of the room you are in. */
+  /** People inside hold their spot: how far to move the courier out of anyone they walked into. */
+  shoveFrom(pos: THREE.Vector3, r = 0.66): THREE.Vector3 {
+    const out = new THREE.Vector3();
+    for (const q of this.active?.people ?? []) {
+      const dx = pos.x - q.pos.x, dz = pos.z - q.pos.z, d = Math.hypot(dx, dz);
+      if (d >= r) continue;
+      out.x += (d > 1e-4 ? dx / d : 1) * (r - d); out.z += (d > 1e-4 ? dz / d : 0) * (r - d);
+    }
+    return out;
+  }
+
   update(dt: number) {
     const r = this.active;
     if (!r) return;

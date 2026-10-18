@@ -457,6 +457,35 @@ if (want('interior')) {
   console.log('after exit', JSON.stringify({ indoors: await N('indoors'), mode: await N('mode') }));
   await shot('90_back_outside');
 }
+if (want('fronts')) {
+  // every named place shows its own storefront with a lit name sign
+  await N('setInput', {});
+  if ((await N('mode')) === 'drive') { await N('exitCar'); for (let k = 0; k < 20 && (await N('mode')) !== 'foot'; k++) await sleep(500); await sleep(1500); }
+  for (const id of (process.env.FRONTS || 'clinic,noodle_row,arcade,hotel,fish_market').split(',')) {
+    await N('viewFront', id); await sleep(600); await N('viewFront', id); await sleep(1500);
+    await shot(`75_front_${id}`);
+  }
+}
+if (want('door')) {
+  // getting out of and back into the car: the driver's door swings open, he steps through it, it shuts
+  await N('setInput', {});
+  await N('exitCar');
+  for (const [i, t] of [300, 400, 400, 600].entries()) { await sleep(t); await shot(`76_exit_${i}`); }
+  await sleep(1500);
+  await N('enterCar');
+  for (const [i, t] of [500, 500, 500, 600, 700].entries()) { await sleep(t); await shot(`77_enter_${i}`); }
+}
+if (want('face')) {
+  // talking faces: the jaw hinges open and the lips part (closed, half, open), front and three-quarter
+  await N('setInput', {});
+  if ((await N('mode')) === 'drive') { await N('exitCar'); for (let k = 0; k < 20 && (await N('mode')) !== 'foot'; k++) await sleep(500); }
+  await N('heroToDoor', 'noodle_row'); await sleep(2500);
+  for (const [open, side] of [[0, 0], [0.5, 0], [1, 0], [1, 0.6]]) {
+    console.log('face of', await N('faceShot', open, side)); await sleep(900);
+    await shot(`78_face_${open}_${side}`);
+  }
+  await N('clearFaceShot');
+}
 if (want('places')) {
   // Pause > Places: the list of shops and directions to one on the minimap
   await N('setInput', {});

@@ -304,6 +304,9 @@ export class AudioSys {
     g.gain.value = 1.15;
     if (pos) { const p = this.panner(pos); p.refDistance = 3; s.connect(g).connect(p).connect(this.voice); }
     else s.connect(g).connect(this.voice);
+    // the talking face follows the loudness of the line (see speechLevel)
+    this.analyser ??= Object.assign(this.ctx.createAnalyser(), { fftSize: 512 });
+    g.connect(this.analyser);
     this.speechSrc = s;
     const ended = new Promise<void>((res) => { s.onended = () => { if (this.speechSrc === s) this.speechSrc = null; res(); }; });
     s.start();
@@ -317,6 +320,17 @@ export class AudioSys {
     const p = this.panner(pos); p.refDistance = 3;
     s.connect(p).connect(this.voice);
     s.start();
+  }
+  private analyser?: AnalyserNode;
+  private levelBuf = new Float32Array(512);
+  /** How loud the conversation line is right now (0..1, for lip sync), or null when nobody is speaking. */
+  speechLevel(): number | null {
+    if (!this.speechSrc || !this.analyser) return null;
+    this.analyser.getFloatTimeDomainData(this.levelBuf);
+    let sum = 0;
+    for (let i = 0; i < this.levelBuf.length; i++) sum += this.levelBuf[i] * this.levelBuf[i];
+    const rms = Math.sqrt(sum / this.levelBuf.length);
+    return Math.min(1, Math.max(0, (rms - 0.012) * 7));
   }
   stopSpeech() {
     const s = this.speechSrc;

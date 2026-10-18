@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import type { Physics } from '../core/physics';
-import { RAPIER, groups, GROUP_TRAFFIC, GROUP_CAR, GROUP_WORLD } from '../core/physics';
+import { RAPIER, groups, GROUP_TRAFFIC, GROUP_CAR, GROUP_WORLD, GROUP_HERO } from '../core/physics';
 import { plinthRects, type RoadGraph } from '../world/layout';
 
 const BLOCKS = plinthRects();
@@ -169,7 +169,7 @@ export class Police {
     this.group.add(root);
     const body = this.phys.world.createRigidBody(RAPIER.RigidBodyDesc.kinematicPositionBased().setTranslation(pos.x, 0, pos.z));
     this.phys.world.createCollider(RAPIER.ColliderDesc.cuboid(sp.width * 0.44, sp.height * 0.4, sp.length * 0.48).setTranslation(0, sp.height * 0.42, 0).setFriction(0.4)
-      .setCollisionGroups(groups(GROUP_TRAFFIC, GROUP_CAR | GROUP_WORLD)), body);
+      .setCollisionGroups(groups(GROUP_TRAFFIC, GROUP_CAR | GROUP_WORLD | GROUP_HERO)), body);
     return { root, wheels, bar, body, pos: pos.clone(), yaw, speed: 10, route: [], routeT: 0, spin: 0, spoke: Math.random() * 10 };
   }
 

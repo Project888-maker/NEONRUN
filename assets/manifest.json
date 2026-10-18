@@ -1,6 +1,6 @@
 {
   "budget_usd": 25,
-  "spent_usd_est": 42.0156,
+  "spent_usd_est": 42.5556,
   "assets": {
     "_tests/probe": {
       "files": [],
@@ -6474,6 +6474,246 @@
       "cost_usd_est": 0.045,
       "created": "2026-10-18T17:30:09.077Z",
       "seconds": 14
+    },
+    "storefront/arcade": {
+      "files": [
+        "assets/generated/storefront/arcade.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "a neon arcade entrance: wide open doorway glowing purple and teal, rows of arcade cabinets and claw machines visible through glass on both sides, flickering tube lights around the frame. perfectly frontal orthographic photograph of one single street level building entrance at night in a rainy cyberpunk asian megacity, zero perspective distortion, the facade fills the frame edge to edge, the open lit doorway exactly in the centre of the image, a plain dark empty sign band running across the top above the doorway with nothing written on it, wet pavement reflections along the bottom edge, no people, no readable text, no brand logos, photorealistic, highly detailed",
+      "input": {
+        "prompt": "a neon arcade entrance: wide open doorway glowing purple and teal, rows of arcade cabinets and claw machines visible through glass on both sides, flickering tube lights around the frame. perfectly frontal orthographic photograph of one single street level building entrance at night in a rainy cyberpunk asian megacity, zero perspective distortion, the facade fills the frame edge to edge, the open lit doorway exactly in the centre of the image, a plain dark empty sign band running across the top above the doorway with nothing written on it, wet pavement reflections along the bottom edge, no people, no readable text, no brand logos, photorealistic, highly detailed",
+        "image_size": {
+          "width": 1536,
+          "height": 912
+        },
+        "output_format": "jpeg",
+        "seed": 101
+      },
+      "seed": 101,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-18T19:01:26.869Z",
+      "seconds": 10
+    },
+    "storefront/noodle_row": {
+      "files": [
+        "assets/generated/storefront/noodle_row.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "a tiny noodle bar: open sliding wooden door with short split fabric curtains, a steamy window counter on each side with big broth pots, red paper lanterns hanging, warm orange light spilling out. perfectly frontal orthographic photograph of one single street level building entrance at night in a rainy cyberpunk asian megacity, zero perspective distortion, the facade fills the frame edge to edge, the open lit doorway exactly in the centre of the image, a plain dark empty sign band running across the top above the doorway with nothing written on it, wet pavement reflections along the bottom edge, no people, no readable text, no brand logos, photorealistic, highly detailed",
+      "input": {
+        "prompt": "a tiny noodle bar: open sliding wooden door with short split fabric curtains, a steamy window counter on each side with big broth pots, red paper lanterns hanging, warm orange light spilling out. perfectly frontal orthographic photograph of one single street level building entrance at night in a rainy cyberpunk asian megacity, zero perspective distortion, the facade fills the frame edge to edge, the open lit doorway exactly in the centre of the image, a plain dark empty sign band running across the top above the doorway with nothing written on it, wet pavement reflections along the bottom edge, no people, no readable text, no brand logos, photorealistic, highly detailed",
+        "image_size": {
+          "width": 1536,
+          "height": 912
+        },
+        "output_format": "jpeg",
+        "seed": 101
+      },
+      "seed": 101,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-18T19:01:28.472Z",
+      "seconds": 12
+    },
+    "storefront/laundromat": {
+      "files": [
+        "assets/generated/storefront/laundromat.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "a laundromat: big glass windows on both sides showing rows of front loading washing machines, a glass door in the middle, bright white fluorescent light, a bench outside. perfectly frontal orthographic photograph of one single street level building entrance at night in a rainy cyberpunk asian megacity, zero perspective distortion, the facade fills the frame edge to edge, the open lit doorway exactly in the centre of the image, a plain dark empty sign band running across the top above the doorway with nothing written on it, wet pavement reflections along the bottom edge, no people, no readable text, no brand logos, photorealistic, highly detailed",
+      "input": {
+        "prompt": "a laundromat: big glass windows on both sides showing rows of front loading washing machines, a glass door in the middle, bright white fluorescent light, a bench outside. perfectly frontal orthographic photograph of one single street level building entrance at night in a rainy cyberpunk asian megacity, zero perspective distortion, the facade fills the frame edge to edge, the open lit doorway exactly in the centre of the image, a plain dark empty sign band running across the top above the doorway with nothing written on it, wet pavement reflections along the bottom edge, no people, no readable text, no brand logos, photorealistic, highly detailed",
+        "image_size": {
+          "width": 1536,
+          "height": 912
+        },
+        "output_format": "jpeg",
+        "seed": 101
+      },
+      "seed": 101,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-18T19:01:28.921Z",
+      "seconds": 12
+    },
+    "storefront/night_market": {
+      "files": [
+        "assets/generated/storefront/night_market.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "a covered night market entrance: wide opening under plastic tarps, string lights, crates of fruit and vegetables stacked on both sides, hanging lamps, plastic strip curtains. perfectly frontal orthographic photograph of one single street level building entrance at night in a rainy cyberpunk asian megacity, zero perspective distortion, the facade fills the frame edge to edge, the open lit doorway exactly in the centre of the image, a plain dark empty sign band running across the top above the doorway with nothing written on it, wet pavement reflections along the bottom edge, no people, no readable text, no brand logos, photorealistic, highly detailed",
+      "input": {
+        "prompt": "a covered night market entrance: wide opening under plastic tarps, string lights, crates of fruit and vegetables stacked on both sides, hanging lamps, plastic strip curtains. perfectly frontal orthographic photograph of one single street level building entrance at night in a rainy cyberpunk asian megacity, zero perspective distortion, the facade fills the frame edge to edge, the open lit doorway exactly in the centre of the image, a plain dark empty sign band running across the top above the doorway with nothing written on it, wet pavement reflections along the bottom edge, no people, no readable text, no brand logos, photorealistic, highly detailed",
+        "image_size": {
+          "width": 1536,
+          "height": 912
+        },
+        "output_format": "jpeg",
+        "seed": 101
+      },
+      "seed": 101,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-18T19:01:30.416Z",
+      "seconds": 14
+    },
+    "storefront/clinic": {
+      "files": [
+        "assets/generated/storefront/clinic.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "an all night clinic: frosted glass automatic sliding doors, a glowing green cross lightbox beside the entrance, white tiled facade, cold fluorescent light from inside, a wheelchair ramp with a railing. perfectly frontal orthographic photograph of one single street level building entrance at night in a rainy cyberpunk asian megacity, zero perspective distortion, the facade fills the frame edge to edge, the open lit doorway exactly in the centre of the image, a plain dark empty sign band running across the top above the doorway with nothing written on it, wet pavement reflections along the bottom edge, no people, no readable text, no brand logos, photorealistic, highly detailed",
+      "input": {
+        "prompt": "an all night clinic: frosted glass automatic sliding doors, a glowing green cross lightbox beside the entrance, white tiled facade, cold fluorescent light from inside, a wheelchair ramp with a railing. perfectly frontal orthographic photograph of one single street level building entrance at night in a rainy cyberpunk asian megacity, zero perspective distortion, the facade fills the frame edge to edge, the open lit doorway exactly in the centre of the image, a plain dark empty sign band running across the top above the doorway with nothing written on it, wet pavement reflections along the bottom edge, no people, no readable text, no brand logos, photorealistic, highly detailed",
+        "image_size": {
+          "width": 1536,
+          "height": 912
+        },
+        "output_format": "jpeg",
+        "seed": 101
+      },
+      "seed": 101,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-18T19:01:30.481Z",
+      "seconds": 14
+    },
+    "storefront/tattoo": {
+      "files": [
+        "assets/generated/storefront/tattoo.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "a tattoo parlor: black painted shopfront, a narrow glass door, a window on each side with tattoo flash art pinned up and a neon hand outline sign, moody red light from inside. perfectly frontal orthographic photograph of one single street level building entrance at night in a rainy cyberpunk asian megacity, zero perspective distortion, the facade fills the frame edge to edge, the open lit doorway exactly in the centre of the image, a plain dark empty sign band running across the top above the doorway with nothing written on it, wet pavement reflections along the bottom edge, no people, no readable text, no brand logos, photorealistic, highly detailed",
+      "input": {
+        "prompt": "a tattoo parlor: black painted shopfront, a narrow glass door, a window on each side with tattoo flash art pinned up and a neon hand outline sign, moody red light from inside. perfectly frontal orthographic photograph of one single street level building entrance at night in a rainy cyberpunk asian megacity, zero perspective distortion, the facade fills the frame edge to edge, the open lit doorway exactly in the centre of the image, a plain dark empty sign band running across the top above the doorway with nothing written on it, wet pavement reflections along the bottom edge, no people, no readable text, no brand logos, photorealistic, highly detailed",
+        "image_size": {
+          "width": 1536,
+          "height": 912
+        },
+        "output_format": "jpeg",
+        "seed": 101
+      },
+      "seed": 101,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-18T19:01:37.873Z",
+      "seconds": 11
+    },
+    "storefront/tower": {
+      "files": [
+        "assets/generated/storefront/tower.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "a luxury corporate tower lobby entrance: tall black glass curtain wall, a brightly lit revolving door in the centre, polished stone steps, cool white uplights, a small canopy. perfectly frontal orthographic photograph of one single street level building entrance at night in a rainy cyberpunk asian megacity, zero perspective distortion, the facade fills the frame edge to edge, the open lit doorway exactly in the centre of the image, a plain dark empty sign band running across the top above the doorway with nothing written on it, wet pavement reflections along the bottom edge, no people, no readable text, no brand logos, photorealistic, highly detailed",
+      "input": {
+        "prompt": "a luxury corporate tower lobby entrance: tall black glass curtain wall, a brightly lit revolving door in the centre, polished stone steps, cool white uplights, a small canopy. perfectly frontal orthographic photograph of one single street level building entrance at night in a rainy cyberpunk asian megacity, zero perspective distortion, the facade fills the frame edge to edge, the open lit doorway exactly in the centre of the image, a plain dark empty sign band running across the top above the doorway with nothing written on it, wet pavement reflections along the bottom edge, no people, no readable text, no brand logos, photorealistic, highly detailed",
+        "image_size": {
+          "width": 1536,
+          "height": 912
+        },
+        "output_format": "jpeg",
+        "seed": 101
+      },
+      "seed": 101,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-18T19:01:39.473Z",
+      "seconds": 11
+    },
+    "storefront/pier9": {
+      "files": [
+        "assets/generated/storefront/pier9.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "a container yard site office: corrugated steel wall with hazard stripes, a half open roller shutter door in the centre lit from inside, sodium work lights, stacked pallets, a small office window. perfectly frontal orthographic photograph of one single street level building entrance at night in a rainy cyberpunk asian megacity, zero perspective distortion, the facade fills the frame edge to edge, the open lit doorway exactly in the centre of the image, a plain dark empty sign band running across the top above the doorway with nothing written on it, wet pavement reflections along the bottom edge, no people, no readable text, no brand logos, photorealistic, highly detailed",
+      "input": {
+        "prompt": "a container yard site office: corrugated steel wall with hazard stripes, a half open roller shutter door in the centre lit from inside, sodium work lights, stacked pallets, a small office window. perfectly frontal orthographic photograph of one single street level building entrance at night in a rainy cyberpunk asian megacity, zero perspective distortion, the facade fills the frame edge to edge, the open lit doorway exactly in the centre of the image, a plain dark empty sign band running across the top above the doorway with nothing written on it, wet pavement reflections along the bottom edge, no people, no readable text, no brand logos, photorealistic, highly detailed",
+        "image_size": {
+          "width": 1536,
+          "height": 912
+        },
+        "output_format": "jpeg",
+        "seed": 101
+      },
+      "seed": 101,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-18T19:01:39.503Z",
+      "seconds": 9
+    },
+    "storefront/hotel": {
+      "files": [
+        "assets/generated/storefront/hotel.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "a grand old hotel entrance: carved stone columns, brass framed double glass doors in the centre, warm chandelier glow inside, a red carpet on the steps, two potted shrubs and brass lamps. perfectly frontal orthographic photograph of one single street level building entrance at night in a rainy cyberpunk asian megacity, zero perspective distortion, the facade fills the frame edge to edge, the open lit doorway exactly in the centre of the image, a plain dark empty sign band running across the top above the doorway with nothing written on it, wet pavement reflections along the bottom edge, no people, no readable text, no brand logos, photorealistic, highly detailed",
+      "input": {
+        "prompt": "a grand old hotel entrance: carved stone columns, brass framed double glass doors in the centre, warm chandelier glow inside, a red carpet on the steps, two potted shrubs and brass lamps. perfectly frontal orthographic photograph of one single street level building entrance at night in a rainy cyberpunk asian megacity, zero perspective distortion, the facade fills the frame edge to edge, the open lit doorway exactly in the centre of the image, a plain dark empty sign band running across the top above the doorway with nothing written on it, wet pavement reflections along the bottom edge, no people, no readable text, no brand logos, photorealistic, highly detailed",
+        "image_size": {
+          "width": 1536,
+          "height": 912
+        },
+        "output_format": "jpeg",
+        "seed": 101
+      },
+      "seed": 101,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-18T19:01:40.233Z",
+      "seconds": 11
+    },
+    "storefront/courthouse": {
+      "files": [
+        "assets/generated/storefront/courthouse.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "an old courthouse entrance: heavy stone facade, wide stone steps up to tall open wooden double doors in the centre, two old iron lanterns, weathered columns, notice boards. perfectly frontal orthographic photograph of one single street level building entrance at night in a rainy cyberpunk asian megacity, zero perspective distortion, the facade fills the frame edge to edge, the open lit doorway exactly in the centre of the image, a plain dark empty sign band running across the top above the doorway with nothing written on it, wet pavement reflections along the bottom edge, no people, no readable text, no brand logos, photorealistic, highly detailed",
+      "input": {
+        "prompt": "an old courthouse entrance: heavy stone facade, wide stone steps up to tall open wooden double doors in the centre, two old iron lanterns, weathered columns, notice boards. perfectly frontal orthographic photograph of one single street level building entrance at night in a rainy cyberpunk asian megacity, zero perspective distortion, the facade fills the frame edge to edge, the open lit doorway exactly in the centre of the image, a plain dark empty sign band running across the top above the doorway with nothing written on it, wet pavement reflections along the bottom edge, no people, no readable text, no brand logos, photorealistic, highly detailed",
+        "image_size": {
+          "width": 1536,
+          "height": 912
+        },
+        "output_format": "jpeg",
+        "seed": 101
+      },
+      "seed": 101,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-18T19:01:41.625Z",
+      "seconds": 11
+    },
+    "storefront/union_hall": {
+      "files": [
+        "assets/generated/storefront/union_hall.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "a dock workers union hall: old red brick facade, worn wooden double doors open in the centre, faded banners and posters on the brick, an iron lamp above, puddles. perfectly frontal orthographic photograph of one single street level building entrance at night in a rainy cyberpunk asian megacity, zero perspective distortion, the facade fills the frame edge to edge, the open lit doorway exactly in the centre of the image, a plain dark empty sign band running across the top above the doorway with nothing written on it, wet pavement reflections along the bottom edge, no people, no readable text, no brand logos, photorealistic, highly detailed",
+      "input": {
+        "prompt": "a dock workers union hall: old red brick facade, worn wooden double doors open in the centre, faded banners and posters on the brick, an iron lamp above, puddles. perfectly frontal orthographic photograph of one single street level building entrance at night in a rainy cyberpunk asian megacity, zero perspective distortion, the facade fills the frame edge to edge, the open lit doorway exactly in the centre of the image, a plain dark empty sign band running across the top above the doorway with nothing written on it, wet pavement reflections along the bottom edge, no people, no readable text, no brand logos, photorealistic, highly detailed",
+        "image_size": {
+          "width": 1536,
+          "height": 912
+        },
+        "output_format": "jpeg",
+        "seed": 101
+      },
+      "seed": 101,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-18T19:01:49.039Z",
+      "seconds": 11
+    },
+    "storefront/fish_market": {
+      "files": [
+        "assets/generated/storefront/fish_market.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "an indoor fish market entrance: a wide open roller door in the centre, blue white fluorescent light inside, ice displays of fish and crabs on both sides, hoses, wet tiled floor, hanging scales. perfectly frontal orthographic photograph of one single street level building entrance at night in a rainy cyberpunk asian megacity, zero perspective distortion, the facade fills the frame edge to edge, the open lit doorway exactly in the centre of the image, a plain dark empty sign band running across the top above the doorway with nothing written on it, wet pavement reflections along the bottom edge, no people, no readable text, no brand logos, photorealistic, highly detailed",
+      "input": {
+        "prompt": "an indoor fish market entrance: a wide open roller door in the centre, blue white fluorescent light inside, ice displays of fish and crabs on both sides, hoses, wet tiled floor, hanging scales. perfectly frontal orthographic photograph of one single street level building entrance at night in a rainy cyberpunk asian megacity, zero perspective distortion, the facade fills the frame edge to edge, the open lit doorway exactly in the centre of the image, a plain dark empty sign band running across the top above the doorway with nothing written on it, wet pavement reflections along the bottom edge, no people, no readable text, no brand logos, photorealistic, highly detailed",
+        "image_size": {
+          "width": 1536,
+          "height": 912
+        },
+        "output_format": "jpeg",
+        "seed": 101
+      },
+      "seed": 101,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-18T19:01:51.132Z",
+      "seconds": 12
     }
   }
 }

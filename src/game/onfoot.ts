@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import type { Physics } from '../core/physics';
-import { RAPIER, groups, GROUP_CAR, GROUP_WORLD, GROUP_TRAFFIC } from '../core/physics';
+import { RAPIER, groups, GROUP_CAR, GROUP_WORLD, GROUP_TRAFFIC, GROUP_HERO, GROUP_GATE } from '../core/physics';
 import { Person, lerpAngle } from '../world/people';
 
 export interface FootInput { x: number; z: number; run: boolean; jump: boolean }
@@ -31,7 +31,7 @@ export class HeroOnFoot {
     const w = phys.world;
     this.body = w.createRigidBody(RAPIER.RigidBodyDesc.kinematicPositionBased().setTranslation(0, -50, 0));
     this.collider = w.createCollider(RAPIER.ColliderDesc.capsule(0.55, 0.3).setTranslation(0, 0.85, 0)
-      .setCollisionGroups(groups(GROUP_CAR, GROUP_WORLD | GROUP_TRAFFIC)), this.body);
+      .setCollisionGroups(groups(GROUP_HERO, GROUP_WORLD | GROUP_TRAFFIC | GROUP_CAR | GROUP_GATE)), this.body);
     this.kcc = w.createCharacterController(0.03);
     this.kcc.enableAutostep(0.35, 0.15, true);
     this.kcc.enableSnapToGround(0.35);
@@ -90,7 +90,7 @@ export class HeroOnFoot {
     if (this.grounded && inp.jump && !busy) { this.vy = 5.2; this.grounded = false; this.person.play('jump', { loop: false, fade: 0.1, speed: 1.4 }); this.onJump(); }
     this.vy -= 18 * dt;
     const desired = dir.multiplyScalar(this.speed * dt).add(new THREE.Vector3(0, this.vy * dt, 0));
-    this.kcc.computeColliderMovement(this.collider, desired, RAPIER.QueryFilterFlags.EXCLUDE_SENSORS, groups(GROUP_CAR, GROUP_WORLD | GROUP_TRAFFIC));
+    this.kcc.computeColliderMovement(this.collider, desired, RAPIER.QueryFilterFlags.EXCLUDE_SENSORS, groups(GROUP_HERO, GROUP_WORLD | GROUP_TRAFFIC | GROUP_CAR | GROUP_GATE));
     const m = this.kcc.computedMovement();
     const wasGrounded = this.grounded;
     this.grounded = this.kcc.computedGrounded();
@@ -138,7 +138,7 @@ export class FootCam {
     // over-the-shoulder offset
     const side = new THREE.Vector3(-Math.cos(this.yaw), 0, Math.sin(this.yaw)).multiplyScalar(0.45);
     let d = dist;
-    const hit = this.phys.world.castRay(new RAPIER.Ray(pivot, back), dist, true, undefined, groups(GROUP_CAR, GROUP_WORLD), exclude);
+    const hit = this.phys.world.castRay(new RAPIER.Ray(pivot, back), dist, true, undefined, groups(GROUP_HERO, GROUP_WORLD | GROUP_CAR | GROUP_TRAFFIC), exclude);
     if (hit) d = Math.max(0.6, hit.timeOfImpact - 0.25);
     const want = pivot.clone().addScaledVector(back, d).add(side);
     if (!this.init) { this.pos.copy(want); this.init = true; }

@@ -6,6 +6,7 @@ import { kitParts } from '../core/assets';
 import { LAYER_NO_REFLECT } from '../render/reflector';
 import { createConeMaterial } from '../render/specialMaterials';
 import { type CarAsset, type CarLightUniforms, patchCarLights, carPaint } from './carModels';
+import { cutDoor, cabinMaterial } from './door';
 
 export const PAINTS: { id: string; name: string; color: [number, number, number]; metal: number }[] = [
   { id: 'gunmetal', name: 'Gunmetal', color: [1, 1, 1], metal: 0.6 },
@@ -97,6 +98,11 @@ export class CarVisual {
   tailMat?: THREE.MeshStandardMaterial;
   paintMat?: THREE.MeshPhysicalMaterial;
   bodyMesh?: THREE.Mesh;
+  /** driver's door, hinged at its front edge (see door.ts); null on a model it could not be cut from */
+  door: THREE.Group | null = null;
+  /** 0 shut .. 1 open; the door swings toward it */
+  doorOpen = 0;
+  private doorK = 0;
   flames: THREE.Mesh[] = [];
   flameLight: THREE.PointLight;
   beams: THREE.Mesh;
@@ -194,6 +200,8 @@ export class CarVisual {
       this.root.add(pivot);
       this.wheels.push(pivot);
     }
+
+    this.addDoor();
 
     // headlights: two spot lights with volumetric beam cones
     const D = this.dims, hl = D.length / 2, hx = D.width * 0.3, hy = Math.min(0.75, D.height * 0.45);
@@ -295,6 +303,30 @@ export class CarVisual {
   }
   private liveryTex: THREE.Texture | null = null;
 
+  /** Swap the solid shell for the shell with the driver's door cut out, a hinged door and a cabin. */
+  private addDoor() {
+    const m = this.bodyMesh, fl = this.wheelLocal.FL, rl = this.wheelLocal.RL;
+    if (!m || !fl || !rl) return;
+    this.root.updateMatrixWorld(true);
+    const rel = new THREE.Matrix4().copy(this.root.matrixWorld).invert().multiply(m.matrixWorld);
+    const src = m.geometry;
+    const cut = cutDoor(rel.equals(new THREE.Matrix4()) ? src : src.clone().applyMatrix4(rel), fl.z, rl.z, Math.max(0.3, fl.y), src.uuid);
+    if (!cut) return;
+    m.visible = false; // kept (hidden) as the livery projection source
+    const mat = m.material as THREE.Material;
+    this.body.add(new THREE.Mesh(cut.rest, mat));
+    const pivot = new THREE.Group();
+    pivot.position.copy(cut.hinge);
+    const door = new THREE.Mesh(cut.door, mat);
+    door.position.copy(cut.hinge).negate();
+    pivot.add(door);
+    this.body.add(pivot);
+    this.door = pivot;
+    const cabin = new THREE.Mesh(new THREE.BoxGeometry(cut.cabin.size.x, cut.cabin.size.y, cut.cabin.size.z), cabinMaterial());
+    cabin.position.copy(cut.cabin.center);
+    this.body.add(cabin);
+  }
+
   /**
    * Decal geometry in car-local space, computed once per body model in a worker and shared by
    * every instance of that model. Calling it early (warm-up, car streaming) hides the latency.
@@ -316,6 +348,12 @@ export class CarVisual {
   private t = 0;
   update(dt: number, v: Vehicle, pos: THREE.Vector3, quat: THREE.Quaternion, throttle: number) {
     this.t += dt;
+    if (this.door && this.doorK !== this.doorOpen) {
+      // swings open quickly, shuts a little faster (a push), with a touch of ease at the ends
+      this.doorK += THREE.MathUtils.clamp(this.doorOpen - this.doorK, -dt * 3.6, dt * 2.6);
+      const k = this.doorK * this.doorK * (3 - 2 * this.doorK);
+      this.door.rotation.y = -k * 1.15;
+    }
     this.root.position.copy(pos);
     this.root.quaternion.copy(quat);
     const keys = ['FL', 'FR', 'RL', 'RR'];

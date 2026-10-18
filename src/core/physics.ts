@@ -7,6 +7,8 @@ export const GROUP_WORLD = 0x0001;
 export const GROUP_CAR = 0x0002;
 export const GROUP_TRAFFIC = 0x0004;
 export const GROUP_GATE = 0x0008;
+/** the courier on foot: blocked by the world and every car, parked or moving */
+export const GROUP_HERO = 0x0010;
 /** membership << 16 | filter */
 export const groups = (member: number, filter: number) => (member << 16) | filter;
 

@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import type { Assets } from '../core/assets';
 import { kitParts } from '../core/assets';
 import type { Physics } from '../core/physics';
-import { RAPIER, GROUP_GATE, groups, GROUP_CAR } from '../core/physics';
+import { RAPIER, GROUP_GATE, groups, GROUP_CAR, GROUP_HERO } from '../core/physics';
 import { GRID, PITCH, HALF, ROAD_W, SIDEWALK, CURB_H, ALLEY_W, RAIL_Z, DISTRICTS, DistrictId, lineCoord, blockCenter, districtOfBlock, districtGates, DISTRICT_ORDER, plinthRects } from './layout';
 import { createBuildingMaterial, FACADES, unitBox } from '../render/buildingMaterial';
 import { createGroundMaterial } from '../render/groundMaterial';
@@ -228,7 +228,9 @@ export class City {
         for (let k = 0; k < 8; k++) {
           const a = (k / 8) * Math.PI * 2;
           this.prop('bench', cx + Math.cos(a) * 16, CURB_H, cz + Math.sin(a) * 16, -a + Math.PI / 2);
+          this.phys.box(cx + Math.cos(a) * 16, 0.5, cz + Math.sin(a) * 16, 0.9, 0.5, 0.3, -a + Math.PI / 2);
           this.prop('bollard', cx + Math.cos(a + 0.2) * 22, CURB_H, cz + Math.sin(a + 0.2) * 22);
+          this.phys.cylinder(cx + Math.cos(a + 0.2) * 22, 0.5, cz + Math.sin(a + 0.2) * 22, 0.5, 0.14);
         }
         this.addAdTower(cx + 30, cz - 30, 0);
         continue;
@@ -554,7 +556,11 @@ export class City {
           if (r < 0.15) { this.prop('hydrant', fx, CURB_H, fz, rot); this.phys.cylinder(fx, 0.5, fz, 0.5, 0.25); }
           else if (r < 0.3) { this.prop('bin', fx, CURB_H, fz, 0); this.phys.cylinder(fx, 0.5, fz, 0.5, 0.33); }
           else if (r < 0.38 && (d === 'docks' || d === 'backstreets')) { this.prop('barrier', fx, CURB_H, fz, axis === 0 ? 0 : Math.PI / 2); this.phys.box(fx, 0.45, fz, axis === 0 ? 1.0 : 0.3, 0.45, axis === 0 ? 0.3 : 1.0); }
-          else if (r < 0.5 && d !== 'docks') { this.prop('bench', fx + (axis === 0 ? side * 1.85 : 0), CURB_H, fz + (axis === 1 ? side * 1.85 : 0), rot + Math.PI); } // against the shopfronts, behind the walking line
+          else if (r < 0.5 && d !== 'docks') { // against the shopfronts, behind the walking line
+            const bx = fx + (axis === 0 ? side * 1.85 : 0), bz = fz + (axis === 1 ? side * 1.85 : 0);
+            this.prop('bench', bx, CURB_H, bz, rot + Math.PI);
+            this.phys.box(bx, 0.5, bz, axis === 0 ? 0.3 : 0.9, 0.5, axis === 0 ? 0.9 : 0.3);
+          }
           else if (r < 0.6 && (d === 'backstreets' || d === 'neon')) {
             // steam vent in the road lane
             const vx = axis === 0 ? c + side * rng.range(1.5, 5) : fx, vz = axis === 0 ? fz : c + side * rng.range(1.5, 5);
@@ -590,6 +596,7 @@ export class City {
         const pz = cz - Dz * (ROAD_W / 2 + 1.6) + rz * (ROAD_W / 2 + 1.3);
         const rot = Math.atan2(-rx, -rz);
         this.prop('traffic_light', px, CURB_H, pz, rot);
+        this.phys.cylinder(px, 2.5, pz, 2.5, 0.16);
         ['tl_red', 'tl_amber', 'tl_green'].forEach((n, ci) => {
           this.kit[n].forEach((p) => this.b.add('tlamp', chunkOf(px, pz), p.geometry, this.mats.tlamp, mtx(px, CURB_H, pz, rot), { aPhase: [offset, axis, ci] }));
         });
@@ -682,7 +689,7 @@ export class City {
         this.root.add(grp);
         entry.meshes.push(grp);
         const c = this.phys.world.createCollider(
-          RAPIER.ColliderDesc.cuboid(g.rot ? 0.3 : 7.5, 2, g.rot ? 7.5 : 0.3).setTranslation(g.x, 2, g.z).setCollisionGroups(groups(GROUP_GATE, GROUP_CAR)),
+          RAPIER.ColliderDesc.cuboid(g.rot ? 0.3 : 7.5, 2, g.rot ? 7.5 : 0.3).setTranslation(g.x, 2, g.z).setCollisionGroups(groups(GROUP_GATE, GROUP_CAR | GROUP_HERO)),
         );
         entry.colliders.push(c);
         this.lights.push({ pos: new THREE.Vector3(g.x, 1.5, g.z), color: new THREE.Color(1, 0.05, 0.05), radius: 10, kind: 'other' });

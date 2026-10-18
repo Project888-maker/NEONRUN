@@ -21,18 +21,110 @@ const DISTRICT_MIX: Record<DistrictId, Partial<Record<PedType, number>>> = {
 };
 
 /** Neon light pools (the same ones that light the wet street) also light people, so they sit in the scene. */
-function patchPersonMaterial(mat: THREE.MeshStandardMaterial) {
+/**
+ * The generated people have no face rig (no jaw bone, no blend shapes), so the jaw is made in the shader.
+ * In the bind pose, head-skinned vertices are measured along the head's own axes (up from the Head bone
+ * to head_end, forward toward headfront). Everything between the lip line and the bottom of the chin,
+ * at the front of the face, hinges down around a point in front of the ears; the gap that opens between
+ * the lips is darkened into an almond-shaped mouth. Lip heights were read off each model with the
+ * calibration page (tests/face): they differ too much between generated faces to guess.
+ */
+const MOUTH_U: Record<string, number> = {
+  hero: 0.088, ped_punk: 0.047, ped_nurse: 0.09, ped_elder: 0.088, ped_vendor: 0.09,
+  ped_rider: 0.072, ped_student: 0.042, ped_suit: 0.078, ped_techwear: 0.072, ped_worker: 0.098,
+};
+interface FaceFrame { H: THREE.Vector3; U: THREE.Vector3; F: THREE.Vector3; L: THREE.Vector3; mouth: number; front: number; head: number; bones: THREE.Vector4 }
+const faceFrames = new WeakMap<THREE.BufferGeometry, FaceFrame | null>();
+function faceFrame(m: THREE.SkinnedMesh, type: string): FaceFrame | null {
+  const geo = m.geometry;
+  if (faceFrames.has(geo)) return faceFrames.get(geo)!;
+  let out: FaceFrame | null = null;
+  const bones = m.skeleton?.bones ?? [];
+  const idx = (re: RegExp) => bones.findIndex((b) => re.test(b.name));
+  const hi = idx(/^head$/i), ei = idx(/^head_?end$/i), fi = idx(/^head_?front$/i);
+  const pos = geo.attributes.position, si = geo.attributes.skinIndex, sw = geo.attributes.skinWeight;
+  const mouth = MOUTH_U[type];
+  if (mouth !== undefined && hi >= 0 && ei >= 0 && fi >= 0 && pos && si && sw) {
+    const bind = (i: number) => new THREE.Vector3().setFromMatrixPosition(m.skeleton.boneInverses[i].clone().invert());
+    const H = bind(hi), U = bind(ei).sub(H).normalize();
+    const F = bind(fi).sub(H); F.addScaledVector(U, -F.dot(U)).normalize();
+    const L = new THREE.Vector3().crossVectors(U, F);
+    // the lips' forward depth: the most forward head point at lip height on the midline
+    const p = new THREE.Vector3();
+    let front = -Infinity;
+    for (let i = 0; i < pos.count; i++) {
+      let w = 0;
+      for (let k = 0; k < 4; k++) { const b = si.getComponent(i, k); if (b === hi || b === ei || b === fi) w += sw.getComponent(i, k); }
+      if (w < 0.5) continue;
+      p.fromBufferAttribute(pos, i).sub(H);
+      if (Math.abs(p.dot(U) - mouth) < 0.012 && Math.abs(p.dot(L)) < 0.02) front = Math.max(front, p.dot(F));
+    }
+    // some faces are skinned to the head's helper bones (head_end / headfront) rather than Head itself
+    if (Number.isFinite(front)) out = { H, U, F, L, mouth, front, head: hi, bones: new THREE.Vector4(hi, ei, fi, -1) };
+  }
+  faceFrames.set(geo, out);
+  return out;
+}
+
+function patchPersonMaterial(mat: THREE.MeshStandardMaterial, face: FaceFrame | null = null, mouth?: { value: number }) {
   if (mat.userData.personPatched) return;
   mat.userData.personPatched = true;
   // generated PBR maps can read as chrome under city reflections: keep skin and cloth dielectric
   mat.metalness = Math.min(mat.metalness, 0.15);
   mat.roughness = Math.max(mat.roughness, 0.55);
   mat.envMapIntensity = 0.9;
+  const fu = {
+    uFaceH: { value: face?.H ?? new THREE.Vector3() }, uFaceU: { value: face?.U ?? new THREE.Vector3(0, 1, 0) },
+    uFaceF: { value: face?.F ?? new THREE.Vector3(0, 0, 1) }, uFaceL: { value: face?.L ?? new THREE.Vector3(1, 0, 0) },
+    uFace: { value: new THREE.Vector4(face?.mouth ?? 0, face?.front ?? 0, 0, face ? face.head : -1) },
+    uMouth: mouth ?? { value: 0 },
+    uFaceBones: { value: face?.bones ?? new THREE.Vector4(-1, -1, -1, -1) },
+    uFaceLine: { value: -99 }, // debug overlay (tests/face): a line at this height above the Head bone
+  };
+  mat.userData.faceUniforms = fu;
   mat.onBeforeCompile = (sh) => {
     sh.uniforms.uPoolPos = poolUniforms.uPoolPos;
     sh.uniforms.uPoolCol = poolUniforms.uPoolCol;
+    Object.assign(sh.uniforms, fu);
+    sh.vertexShader = sh.vertexShader
+      .replace('#include <common>', `#include <common>
+uniform vec3 uFaceH; uniform vec3 uFaceU; uniform vec3 uFaceF; uniform vec3 uFaceL; uniform vec4 uFace; uniform vec4 uFaceBones; uniform float uMouth;
+varying float vLip; varying float vLipX; varying float vFaceU; varying float vLipMask;`)
+      .replace('#include <begin_vertex>', `#include <begin_vertex>
+        vLip = 0.0; vLipX = 9.0; vLipMask = 0.0; vFaceU = dot(position - uFaceH, uFaceU);
+        #ifdef USE_SKINNING
+        if (uFace.w >= 0.0) {
+          vec3 q = position - uFaceH;
+          float fu = dot(q, uFaceU), ff = dot(q, uFaceF), fl = dot(q, uFaceL);
+          float um = uFace.x, lipF = uFace.y;
+          float hw = dot(skinWeight, vec4(equal(skinIndex, vec4(uFaceBones.x))) + vec4(equal(skinIndex, vec4(uFaceBones.y))) + vec4(equal(skinIndex, vec4(uFaceBones.z))));
+          float below = smoothstep(um + 0.002, um - 0.007, fu);      // under the lip line
+          float chin = smoothstep(um - 0.085, um - 0.06, fu);         // down to the bottom of the chin, not the collar
+          float lat = 1.0 - smoothstep(0.045, 0.065, abs(fl));        // the jaw, not the cheeks behind it
+          float front = smoothstep(lipF - 0.075, lipF - 0.035, ff);
+          float jw = clamp(hw * 1.4 - 0.4, 0.0, 1.0) * below * chin * lat * front;
+          // lip band (for the dark gap): only the step across the lip line, at the front of the face
+          vLip = below; vLipX = fl; vLipMask = clamp(hw * 1.4 - 0.4, 0.0, 1.0) * front;
+          // jaw: rotate about a hinge in front of the ear
+          float a = uMouth * 0.14 * jw;
+          vec2 d = vec2(fu - (um + 0.015), ff - (lipF - 0.1));
+          vec2 r = vec2(d.x * cos(a) - d.y * sin(a), d.x * sin(a) + d.y * cos(a));
+          transformed += uFaceU * (r.x - d.x) + uFaceF * (r.y - d.y);
+        }
+        #endif`);
     sh.fragmentShader = sh.fragmentShader
-      .replace('#include <common>', `#include <common>\nuniform vec4 uPoolPos[${MAX_POOLS}];\nuniform vec3 uPoolCol[${MAX_POOLS}];`)
+      .replace('#include <common>', `#include <common>\nuniform vec4 uPoolPos[${MAX_POOLS}];\nuniform vec3 uPoolCol[${MAX_POOLS}];\nuniform float uMouth; uniform float uFaceLine;\nvarying float vLip; varying float vLipX; varying float vFaceU; varying float vLipMask;`)
+      .replace('#include <map_fragment>', `#include <map_fragment>
+        {
+          // the gap between the lips: the band stretched between the still upper lip and the dropped jaw,
+          // narrowing toward the corners (almond shaped)
+          float open = clamp(uMouth * 1.2, 0.0, 1.0);
+          float across = (2.0 * vLip - 1.0) / max(open, 0.08);   // thin slit when barely open
+          float x = vLipX / (0.019 + 0.006 * open);               // corners widen a little as it opens
+          float lens = 1.0 - x * x - across * across;
+          float dark = 0.85 * smoothstep(0.0, 0.08, open) * smoothstep(-0.1, 0.3, lens) * vLipMask;
+          diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.13, 0.05, 0.05), dark);${(globalThis as { __faceDebug?: boolean }).__faceDebug ? '\n          diffuseColor.rgb = mix(diffuseColor.rgb, vec3(1.0, 0.0, 0.0), vLip * vLipMask * 0.6);\n          if (abs(vFaceU - uFaceLine) < 0.0012) diffuseColor.rgb = vec3(0.0, 1.0, 0.2);' : ''}
+        }`)
       .replace('#include <lights_fragment_end>', `#include <lights_fragment_end>
         {
           vec3 pAcc = vec3(0.0);
@@ -198,6 +290,10 @@ export class Person {
   private lookYaw = 0;
   private lookPitch = 0;
   private speakT = Math.random() * 10;
+  /** loudness of their voice right now (0..1) drives the jaw; null = speaking without a voice track */
+  mouthLevel: number | null = 0;
+  private mouth = { value: 0 };
+  private mouthT = Math.random() * 10;
 
   constructor(gltf: GLTF, public type: string) {
     this.root = cloneSkinned(gltf.scene);
@@ -205,7 +301,11 @@ export class Person {
       const m = o as THREE.SkinnedMesh;
       if (m.isMesh) {
         m.frustumCulled = false; // skinned bounds don't follow the animation
-        patchPersonMaterial(m.material as THREE.MeshStandardMaterial);
+        // own material copy (same shader program) so each face opens its own mouth
+        const mat = (m.material as THREE.MeshStandardMaterial).clone();
+        mat.userData = {};
+        m.material = mat;
+        patchPersonMaterial(mat, (m as THREE.SkinnedMesh).isSkinnedMesh ? faceFrame(m, type) : null, this.mouth);
       }
       if (/(left|right)foot$/i.test(o.name)) this.feet.push(o);
       if (/^neck$/i.test(o.name)) this.neck = o;
@@ -278,6 +378,15 @@ export class Person {
 
   /** Head / neck look-at layered on top of the animation (the mixer resets the bones every frame). */
   private applyLook(dt: number) {
+    // jaw: the voice's loudness, or a syllable rhythm when there is no voice track
+    let open = 0;
+    if (this.mouthLevel === null) {
+      this.mouthT += dt;
+      const syl = Math.max(0, Math.sin(this.mouthT * 13.5) * 0.6 + Math.sin(this.mouthT * 5.1 + 1.3) * 0.4);
+      open = this.speak > 0.3 ? syl * 0.8 : 0;
+    } else open = this.mouthLevel;
+    // opens fast, closes a little slower: reads as speech rather than flapping
+    this.mouth.value += (open - this.mouth.value) * Math.min(1, dt * (open > this.mouth.value ? 28 : 16));
     const want = this.look && this.head ? 1 : 0;
     this.lookW += (want - this.lookW) * Math.min(1, dt * 4);
     if (this.lookW < 0.01 || !this.head) return;
@@ -328,7 +437,10 @@ interface Ped {
   home?: THREE.Vector3; homeYaw?: number; key?: string;
   /** what they were doing before someone stopped them to talk */
   prevState?: PedState;
+  /** sideways step off the loop line (m, + = walker's right): keeping to their side and going around people */
+  off?: number;
 }
+const BODY_R = 0.32; // how close two people's centres may get before they push apart (m)
 
 /** Sidewalk crowds: pedestrians loop around blocks near the player, stop, chat on phones, flee from cars. */
 export class Crowd {
@@ -484,10 +596,18 @@ export class Crowd {
       }
       switch (p.state) {
         case 'walk': {
-          p.s += p.dir * p.speed * dt;
+          const { pace, side } = this.steer(p, player);
+          const off0 = p.off ?? 0;
+          p.off = off0 + THREE.MathUtils.clamp(side - off0, -1.4 * dt, 1.4 * dt);
+          p.s += p.dir * p.speed * pace * dt;
           const { dx, dz } = this.perim(p.rect, p.s, p.pos);
-          const want = Math.atan2(dx * p.dir, dz * p.dir);
-          p.p.yaw = lerpAngle(p.p.yaw, want, Math.min(1, dt * 6));
+          // the walker's right: keep to it, and step around whoever is in the way
+          p.pos.x += -dz * p.dir * p.off; p.pos.z += dx * p.dir * p.off;
+          const sideV = (p.off - off0) / Math.max(dt, 1e-3);
+          const want = Math.atan2(dx * p.dir * p.speed * pace - dz * p.dir * sideV, dz * p.dir * p.speed * pace + dx * p.dir * sideV);
+          if (pace > 0.15 || Math.abs(sideV) > 0.2) p.p.yaw = lerpAngle(p.p.yaw, want, Math.min(1, dt * 6));
+          const gait = pace < 0.15 ? 'idle' : 'walk';
+          if (p.p.currentName !== gait) p.p.play(gait, { fade: 0.3, speed: gait === 'walk' ? p.p.gaitRate('walk', p.speed) : 1 });
           if (p.t <= 0) {
             const r = this.rng.next();
             // stop for a moment: stand, or check the phone (waving at nobody looked odd)
@@ -529,9 +649,92 @@ export class Crowd {
       const d = p.pos.distanceTo(player);
       if (d < 60 || (this.frame + p.id) % 3 === 0) p.p.update(d < 60 ? dt : dt * 3, d < 45);
     }
+    this.separate();
     this.frame++;
   }
   private frame = 0;
+
+  /**
+   * Look a couple of metres ahead along the loop: slow down behind someone going the same way, step to
+   * the side around anyone coming the other way, standing still, or the courier. Returns the sideways
+   * offset to aim for and a speed factor.
+   */
+  private steer(p: Ped, player: THREE.Vector3) {
+    const tmp = this.perimDir(p.rect, p.s);
+    const fx = tmp.dx * p.dir, fz = tmp.dz * p.dir; // forward
+    const rx = -fz, rz = fx; // right
+    let side = 0.45, pace = 1; // keep right so people going opposite ways pass ~1 m apart
+    const look = (ox: number, oz: number, sameWay: boolean, still: boolean) => {
+      const relx = ox - p.pos.x, relz = oz - p.pos.z;
+      if (Math.abs(relx) > 3 || Math.abs(relz) > 3) return;
+      const ahead = relx * fx + relz * fz, lat = relx * rx + relz * rz;
+      if (ahead <= 0 || ahead > 2.6 || Math.abs(lat) > 0.85) return;
+      if (sameWay && !still) { pace = Math.min(pace, THREE.MathUtils.clamp((ahead - 0.8) / 0.9, 0, 1)); return; }
+      // pass on the side with more room: away from them, towards our own right if dead ahead
+      const dirSide = lat > 0.05 ? -1 : 1;
+      side = THREE.MathUtils.clamp((p.off ?? 0) + dirSide * (0.9 - Math.abs(lat)) * (1 - ahead / 3.2) * 1.6, -1.1, 1.1);
+      if (ahead < 0.75) pace = Math.min(pace, 0.25);
+    };
+    for (const o of this.peds) {
+      if (o === p || o.state === 'down') continue;
+      const walking = o.state === 'walk' && o.rect === p.rect;
+      look(o.pos.x, o.pos.z, walking && o.dir === p.dir, !walking);
+    }
+    look(player.x, player.z, false, true);
+    return { pace, side };
+  }
+  private perimDir(ri: number, s: number) { return this.perim(ri, s, this.scratch); }
+  private scratch = new THREE.Vector3();
+
+  /** Nobody stands inside anybody else: overlapping pairs are pushed apart (walkers via their side step). */
+  private separate() {
+    const ps = this.peds;
+    for (let i = 0; i < ps.length; i++) {
+      const a = ps[i];
+      if (a.state === 'down') continue;
+      for (let j = i + 1; j < ps.length; j++) {
+        const b = ps[j];
+        if (b.state === 'down') continue;
+        const dx = b.pos.x - a.pos.x, dz = b.pos.z - a.pos.z;
+        if (Math.abs(dx) > BODY_R * 2 || Math.abs(dz) > BODY_R * 2) continue;
+        const d = Math.hypot(dx, dz);
+        if (d >= BODY_R * 2) continue;
+        const nx = d > 1e-4 ? dx / d : 1, nz = d > 1e-4 ? dz / d : 0, push = (BODY_R * 2 - d) / 2;
+        this.nudge(a, -nx * push, -nz * push);
+        this.nudge(b, nx * push, nz * push);
+      }
+    }
+  }
+  private nudge(p: Ped, x: number, z: number) {
+    p.pos.x += x; p.pos.z += z;
+    if (p.state === 'walk') {
+      // fold the push into the side step so the next frame keeps it
+      const t = this.perimDir(p.rect, p.s);
+      p.off = THREE.MathUtils.clamp((p.off ?? 0) + (-t.dz * p.dir) * x + (t.dx * p.dir) * z, -1.2, 1.2);
+    }
+    p.p.place(p.pos.x, p.p.root.position.y, p.pos.z, p.p.yaw);
+  }
+
+  /**
+   * The courier can't walk through people either: anyone overlapping gets nudged aside and the courier
+   * is held back by the rest. Returns how far to move the courier (zero when clear).
+   */
+  shoveFrom(pos: THREE.Vector3, r = 0.34): THREE.Vector3 {
+    const out = new THREE.Vector3();
+    for (const p of this.peds) {
+      if (p.state === 'down') continue;
+      const dx = p.pos.x - pos.x, dz = p.pos.z - pos.z;
+      if (Math.abs(dx) > 1 || Math.abs(dz) > 1) continue;
+      const d = Math.hypot(dx, dz), min = r + BODY_R;
+      if (d >= min) continue;
+      const nx = d > 1e-4 ? dx / d : 1, nz = d > 1e-4 ? dz / d : 0, gap = min - d;
+      // a regular or someone in a conversation holds their spot; others give way half the distance
+      const give = p.home || p.state === 'talk' ? 0 : 0.5;
+      this.nudge(p, nx * gap * give, nz * gap * give);
+      out.x -= nx * gap * (1 - give); out.z -= nz * gap * (1 - give);
+    }
+    return out;
+  }
 
   /** Regulars: walk back to their spot if knocked away, then stand facing the street. */
   private atHome(p: Ped, dt: number) {

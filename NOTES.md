@@ -92,6 +92,8 @@ node scripts/story_json.mjs                 # campaign subtitles
 - `npx tsx tests/drones.test.ts` — drones can be outrun by car, warn before striking, back off after a hit
 - `npx tsx tests/npc.test.ts` — NPC personas, the /api/talk function and the client stream
 - `npx tsx tests/crowd_walls.test.ts` — people fleeing or knocked over stop at building facades
+- `npx tsx tests/crowd_pass.test.ts` — walkers keep to their side, step around people standing or coming the other way (and the courier), slow down behind slower walkers; nobody overlaps
+- `/tests/face/?types=hero,ped_punk&open=0,1` (with `npx vite`): renders faces up close with the jaw shut and open. Add `&debug&lines=0.06,0.09` to draw calibration lines for the lip heights (`MOUTH_U` in people.ts)
 - `npx tsx tests/society.test.ts` — places, regulars, saved memory, reputation, street jobs (offer, accept, pay, remember), remarks never repeat
 - `node scripts/shots.mjs <url> <dir> jobs` — in-game: a regular offers a job, accept it, run it, get paid, be remembered (stand-in /api/talk)
 - `node scripts/shots.mjs <url> <dir> stride` — prints both hero feet per frame while walking and running; a planted foot must hold its position for several frames
@@ -163,6 +165,7 @@ The plan is in `docs/npc-brain.md`. Phase A (talking to anyone) is built; phases
 - **Doors:** each of the 12 named places has a lit door with its name on the shopfront. On foot, `E · Enter`. Inside, walk back to the door for `E · Leave`.
 - **How a room is built:**
   - It is a 12 × 9 × 4 m room, built the first time you walk near its door. Rooms are placed away from the city (x/z ≈ 5000+), so the city, traffic, crowd, rain, fog and planar reflections are hidden while you're inside.
+  - On the street each place has its own storefront photo (`assets/storefront/*.webp`, 12 images from flux-2-pro, $0.54), covering the random atlas shopfront that used to be there. `scripts/storefronts.mjs` crops each photo between its empty sign band and the pavement, so the doorway sits on the real sidewalk. Above it is a dark sign box with the place's name in its own colour and a light strip over the entrance.
   - Walls are photographs: a unique back wall per place, plus side walls and rain-streaked windows for each of 6 room types (`assets/interior/*.webp`, 24 images from flux-2-pro, $1.08). They are cropped to the wall proportions and mostly self-lit.
   - Real 3D counter and props per type sit in front of them: stools and lanterns, crates and tarp, shelves, clinic seats, lobby benches and plants, depot parcels and pallet.
   - The room's own lamps light people (light pools) and the hero (real point lights). Physics walls keep you and the camera inside.
@@ -226,3 +229,10 @@ Requests that failed or were replaced:
 - Pedestrians walk the sidewalk loops around blocks and don't cross roads. Cars knock them down, but there is no ragdoll.
 - The tailed van and police cars are kinematic and pass through traffic cars instead of crashing into them; the van stops behind traffic directly ahead.
 - Story missions were verified by a teleporting playthrough in headless Chromium, not played end to end at real speed, so timers may need tuning.
+
+**Talking faces, car doors, collisions** (people.ts, door.ts)
+- The generated people have no face rig. The shader hinges the lower face below a per-model lip line (measured on the face test page) around a point in front of the ears, and darkens the gap between the lips into an almond-shaped mouth. The jaw follows the loudness of the voice line (an AnalyserNode on the speech audio); with no voice track it runs a syllable rhythm while the line lasts.
+- Every car's driver door is cut out of its single-mesh shell on load (outward-facing triangles between the front wheel arch and the B-pillar), hinged at its front edge, with a dark back-faced cabin behind it. It swings open as the courier gets in or out and shuts behind him. Car sequences run on game-time timers (`later`).
+- The courier is in his own collision group (`GROUP_HERO`) and is blocked by every car (his own and parked ones included), benches, traffic lights and bollards. The foot camera stops at cars too.
+- Sidewalk crowds keep to the right, step around people standing or coming the other way (and the courier), slow down behind slower walkers, and overlapping people are pushed apart.
+

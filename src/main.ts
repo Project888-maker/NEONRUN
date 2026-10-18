@@ -447,6 +447,7 @@ function evictParked() {
 /** Put the player back in their own car on a road (story mission start). */
 function placePlayer(x: number, z: number, yaw: number) {
   if (hero && mode !== 'drive') { hero.hide(); hero.busy = 0; hero.frozen = false; }
+  timers.length = 0;
   carSeq = null;
   mode = 'drive';
   seqDone = null;
@@ -472,6 +473,8 @@ function placePlayer(x: number, z: number, yaw: number) {
 // ---- on foot / car switching state
 type Mode = 'drive' | 'foot' | 'enter' | 'exit';
 let mode: Mode = 'drive';
+/** debug: camera pinned to a point (face close-ups) */
+let debugCam: { pos: THREE.Vector3; at: THREE.Vector3 } | null = null;
 let hero: HeroOnFoot | null = null;
 let footCam: FootCam;
 let crowd: Crowd;
@@ -520,6 +523,9 @@ function noteEvent(text: string, pos: THREE.Vector3) { recentEvents.push({ t: si
 const parkedCars: { vehicle: Vehicle; car: CarVisual; id: string; keep?: boolean }[] = [];
 const PARK = { throttle: 0, brake: 0, steer: 0, handbrake: true, boost: false };
 let seqT = 0;
+/** game-time timers for scripted sequences (wall-clock timeouts drift from the animation under load) */
+const timers: { t: number; f: () => void }[] = [];
+const later = (sec: number, f: () => void) => { timers.push({ t: sec, f }); };
 let seqDone: (() => void) | null = null;
 let talking = 0;
 let hitCooldown = 0;
@@ -1101,6 +1107,7 @@ function busted() {
     show('busted', false);
     police.clear();
     hud.toast(`Busted · fine ${fine.toLocaleString()} CR`);
+    timers.length = 0;
     if (mode !== 'drive' && hero) { hero.hide(); hero.frozen = false; carSeq = null; seqDone = null; mode = 'drive'; }
     resetCar();
   }, 2600);
@@ -1152,8 +1159,10 @@ function startExit() {
   carSeq = { t: 0, clip: 'exit_car', clipT0, rate, from: seat, to: door, moveA: 0, moveB: dur * 0.5, bodyFrom: yaw, bodyTo: yaw + Math.PI / 2, turnA: 0, turnB: dur * 0.55 };
   updateCarSeq(0);
   hero.busy = dur;
+  const leaving = car;
+  leaving.doorOpen = 1;
   audio.play('door_open', { pos: door, volume: 0.8 });
-  setTimeout(() => audio.play('door_close', { pos: door, volume: 0.9 }), dur * 750);
+  later(dur * 0.82, () => { leaving.doorOpen = 0; audio.play('door_close', { pos: door, volume: 0.9 }); });
   footCam.reset(yaw);
   seqT = dur;
   seqDone = () => {
@@ -1198,7 +1207,7 @@ function startEnter() {
     const pd = hero.person.play('push', { loop: false, fade: 0.08, speed: 1.6, restart: true });
     delay = pd / 1.6;
     audio.play('door_open', { pos: tgt.door });
-    setTimeout(() => {
+    later(delay * 0.4, () => {
       audio.play('carjack', { pos: tgt.door, volume: 1 });
       const type = PED_TYPES[Math.floor(Math.random() * PED_TYPES.length)] as PedType;
       const out = tgt.door.clone().add(new THREE.Vector3(Math.sin(yawTo + Math.PI), 0, Math.cos(yawTo + Math.PI)).multiplyScalar(0.9));
@@ -1208,20 +1217,27 @@ function startEnter() {
       crowd.panic(tgt.door, 25);
       noteEvent('the courier dragged a driver out of their car and stole it', tgt.door);
       society.repEvent('carjack', tgt.door);
-      setTimeout(() => barks.event('carjack', tgt.door, 30), 900);
+      later(0.9, () => barks.event('carjack', tgt.door, 30));
       const near = police.units.some((u) => u.pos.distanceTo(tgt.door) < 80);
       police.add(near ? 2 : 1, 'carjack');
-    }, delay * 400);
+    });
   } else {
     hero.person.yaw = tgt.o.vehicle.yaw() - Math.PI / 2;
   }
-  setTimeout(() => {
+  later(delay, () => {
     if (!hero) return;
     // reach for the handle at the door, then slide into the seat while turning to face forward
     const cPos = tgt.kind === 'traffic' ? tgt.tc.pos.clone() : (() => { const t = tgt.o.vehicle.body.translation(); return new THREE.Vector3(t.x, 0, t.z); })();
     const cYaw = tgt.kind === 'traffic' ? tgt.tc.yaw : tgt.o.vehicle.yaw();
     const halfW = tgt.kind === 'traffic' ? (traffic.models[tgt.tc.model]?.width ?? 1.9) / 2 : tgt.o.car.dims.width / 2;
     const seat = seatOf(cPos, cYaw, halfW);
+    if (tgt.kind === 'traffic') {
+      // take the car over now (traffic cars have no door to open); the old one stays parked
+      const taken = traffic.takeCar(tgt.tc);
+      if (taken) spawnPlayerCar(taken.id, taken.pos.clone().setY(0.6), taken.yaw, undefined, true);
+    }
+    const into = tgt.kind === 'traffic' ? car : tgt.o.car;
+    into.doorOpen = 1;
     const D = hero.person.clipDuration('enter_car');
     const rate = 1.6, clipEnd = D * 0.72; // stop once seated; the rest of the clip is settling in
     hero.frozen = true;
@@ -1231,16 +1247,14 @@ function startEnter() {
     updateCarSeq(0);
     hero.busy = dur;
     if (tgt.kind === 'own') audio.play('door_open', { pos: tgt.door });
-    seqT = dur;
+    // pull the door shut once seated; he is hidden only after it has closed on him
+    later(Math.max(0, dur - 0.1), () => { into.doorOpen = 0; audio.play('door_close', { pos: tgt.door, volume: 0.9 }); });
+    seqT = dur + 0.35;
     seqDone = () => {
       carSeq = null;
       hero!.frozen = false;
-      audio.play('door_close', { pos: tgt.door, volume: 0.9 });
       hero!.hide();
-      if (tgt.kind === 'traffic') {
-        const taken = traffic.takeCar(tgt.tc);
-        if (taken) spawnPlayerCar(taken.id, taken.pos.clone().setY(0.6), taken.yaw, undefined, true);
-      } else if (tgt.o.parkedIndex >= 0) {
+      if (tgt.kind === 'own' && tgt.o.parkedIndex >= 0) {
         // swap: the car we leave becomes parked, the parked one becomes ours
         const p = parkedCars.splice(tgt.o.parkedIndex, 1)[0];
         parkedCars.push({ vehicle, car, id: carId });
@@ -1249,7 +1263,7 @@ function startEnter() {
       }
       mode = 'drive';
     };
-  }, delay * 1000);
+  });
   hero.busy = 9;
 }
 
@@ -1476,6 +1490,7 @@ function frame(now: number) {
     const driving = mode === 'drive';
     handleInteractions();
     const inp = driving ? input.read(dtReal) : PARK;
+    for (let i = timers.length - 1; i >= 0; i--) if ((timers[i].t -= dtReal) <= 0) timers.splice(i, 1)[0].f();
     if (seqDone) { seqT -= dtReal; if (seqT <= 0) { const f = seqDone; seqDone = null; f(); } }
     talking = Math.max(0, talking - dtReal);
     hitCooldown = Math.max(0, hitCooldown - dtReal);
@@ -1525,10 +1540,16 @@ function frame(now: number) {
       playerPos.copy(hp);
       footCam.update(dtReal, hp, input.keys, hero.collider);
     }
+    if (debugCam) { camera.position.copy(debugCam.pos); camera.lookAt(debugCam.at); }
     prof.mark('hero+cam');
     probeHook?.(dtReal);
     if (interiors.active) interiors.update(dtReal);
     else crowd.update(dtReal, playerPos, driving ? { pos: carPos, vel: carVel, halfLen: car.dims.length / 2, halfWid: car.dims.width / 2, yaw: vehicle.yaw(), speed: vehicle.speedAbs } : null);
+    if (!driving && hero?.active) {
+      // people don't walk through the courier, and the courier doesn't walk through them
+      const push = interiors.active ? interiors.shoveFrom(hero.pos) : crowd.shoveFrom(hero.pos);
+      if (push.lengthSq() > 1e-6) hero.place(hero.pos.clone().add(push));
+    }
     if (conv.active) conv.update(dtReal, camera);
     society.update(dtReal);
     if (waypoint) {
@@ -1680,6 +1701,27 @@ function debugApi() {
     convSay: (text: string) => conv.say(text),
     objectiveInfo: () => { const o = objective(); return { target: o.target?.toArray().map((n) => Math.round(n)) ?? null, route: o.route.length, waypoint: waypoint?.name ?? null }; },
     heroToDoor: (id: string) => { const ps = society.places.get(id)!; hero?.place(ps.stand.clone().add(new THREE.Vector3(ps.spot.nx, 0, ps.spot.nz).multiplyScalar(0.8)).setY(0.2)); return ps.stand.toArray(); },
+    /** close-up of the nearest person's face with their jaw held at `open` (null = free) */
+    faceShot: (open: number | null, side = 0) => {
+      if (!hero) return null;
+      const ped = crowd.nearest(hero.pos, 40);
+      if (!ped) { debugCam = null; return null; }
+      crowd.talk(ped, hero.pos, 999);
+      ped.p.mouthLevel = open;
+      ped.p.look = null;
+      ped.p.root.updateMatrixWorld(true);
+      const head = new THREE.Vector3();
+      ped.p.root.traverse((o) => { if (/^head$/i.test(o.name)) o.getWorldPosition(head); });
+      const yaw = ped.p.yaw + side;
+      const at = head.clone().add(new THREE.Vector3(0, 0.06, 0));
+      debugCam = { at, pos: at.clone().add(new THREE.Vector3(Math.sin(yaw), 0.02, Math.cos(yaw)).multiplyScalar(0.75)) };
+      return ped.type;
+    },
+    clearFaceShot: () => { debugCam = null; },
+    /** debug: hide parts of the player's car (door/cabin investigation) */
+    carParts: (door: boolean, cabin: boolean, hero_: boolean) => { if (car.door) car.door.visible = door; car.body.traverse((o) => { if ((o as THREE.Mesh).isMesh && ((o as THREE.Mesh).material as THREE.Material).side === THREE.BackSide) o.visible = cabin; }); if (hero) hero.person.root.visible = hero_; },
+    camInfo: () => ({ cam: camera.position.toArray().map((n) => +n.toFixed(2)), dir: camera.getWorldDirection(new THREE.Vector3()).toArray().map((n) => +n.toFixed(2)), hero: hero?.pos.toArray().map((n) => +n.toFixed(2)), car: carPos.toArray().map((n) => +n.toFixed(2)), mode, yaw: +footCam.yaw.toFixed(2) }),
+    viewFront: (id: string) => { const ps = society.places.get(id)!; if (hero) { hero.place(new THREE.Vector3(ps.spot.x + ps.spot.nx * 1.5, 0.2, ps.spot.z + ps.spot.nz * 1.5)); hero.person.yaw = Math.atan2(-ps.spot.nx, -ps.spot.nz); footCam.reset(hero.person.yaw); footCam.pitch = 0.08; } return id; },
     enterPlace: (id: string) => enterPlace(id),
     exitPlace: () => exitPlace(),
     indoors: () => interiors.active ? { place: interiors.active.placeId, people: interiors.active.people.map((q) => ({ type: q.type, role: q.role, key: q.key ?? null })), hero: hero?.pos.toArray().map((n) => +n.toFixed(1)), counter: interiors.active.counter.toArray().map((n) => +n.toFixed(1)), heat: police.heat } : null,

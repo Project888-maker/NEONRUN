@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { RAPIER, GROUP_CAR, groups, GROUP_WORLD, GROUP_TRAFFIC, GROUP_GATE } from '../core/physics';
+import { RAPIER, GROUP_CAR, groups, GROUP_WORLD, GROUP_TRAFFIC, GROUP_GATE, GROUP_HERO } from '../core/physics';
 import type { Physics } from '../core/physics';
 
 /**
@@ -93,13 +93,13 @@ export class Vehicle {
       .setDensity(0)
       .setFriction(0.15)
       .setRestitution(0.15)
-      .setCollisionGroups(groups(GROUP_CAR, GROUP_WORLD | GROUP_TRAFFIC | GROUP_GATE))
+      .setCollisionGroups(groups(GROUP_CAR, GROUP_WORLD | GROUP_TRAFFIC | GROUP_GATE | GROUP_HERO))
       .setActiveEvents(RAPIER.ActiveEvents.CONTACT_FORCE_EVENTS)
       .setContactForceEventThreshold(6000);
     this.collider = w.createCollider(cd, this.body);
     // second, lower-front collider for the nose / cabin shape
     w.createCollider(RAPIER.ColliderDesc.cuboid(dims.width * 0.36, dims.height * 0.18, dims.length * 0.23).setTranslation(0, dims.height * 0.92, -0.2).setDensity(0).setFriction(0.15)
-      .setCollisionGroups(groups(GROUP_CAR, GROUP_WORLD | GROUP_TRAFFIC | GROUP_GATE)), this.body);
+      .setCollisionGroups(groups(GROUP_CAR, GROUP_WORLD | GROUP_TRAFFIC | GROUP_GATE | GROUP_HERO)), this.body);
     const m = this.mass;
     const k = m / 1450;
     this.body.setAdditionalMassProperties(m, { x: 0, y: Math.min(0.62, dims.height * 0.37), z: 0.05 }, { x: 3600 * k, y: 3900 * k, z: 900 * k }, { x: 0, y: 0, z: 0, w: 1 }, true);

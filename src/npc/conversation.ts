@@ -19,6 +19,8 @@ export interface SpeechAudio {
   playSpeech(b: AudioBuffer, pos?: THREE.Vector3): Promise<void>;
   stopSpeech(): void;
   duckMusic(on: boolean): void;
+  /** loudness of the line being spoken (0..1), null when none is playing */
+  speechLevel(): number | null;
 }
 
 /** What a person remembers about the courier. */
@@ -177,9 +179,9 @@ export class Conversation {
     try { speechSynthesis?.cancel?.(); } catch { /* none */ }
     try { this.recog?.abort(); } catch { /* none */ }
     t.t = 0.4; // the crowd puts them back on their way
-    t.p.look = null; t.p.speak = 0;
+    t.p.look = null; t.p.speak = 0; t.p.mouthLevel = 0;
     const hp = this.host.heroPerson();
-    hp.look = null; hp.speak = 0;
+    hp.look = null; hp.speak = 0; hp.mouthLevel = 0;
     hp.play('idle', { fade: 0.3 });
     this.host.setHeroBusy(false);
     $('conv').classList.add('hidden');
@@ -353,6 +355,11 @@ export class Conversation {
     hp.look = npcEye.clone();
     this.speakT = Math.max(0, this.speakT - dt);
     this.heroSpeakT = Math.max(0, this.heroSpeakT - dt);
+    // lips follow the voice: the speaker's mouth moves with the loudness of the line; without a voice
+    // track (device voice, voice off) the face animates on its own while the line lasts
+    const level = this.host.audio.speechLevel();
+    t.p.mouthLevel = this.speakT > 0 && !this.heroTalking ? level : 0;
+    hp.mouthLevel = this.heroSpeakT > 0 && this.heroTalking ? level : 0;
     t.p.speak += ((this.speakT > 0 ? 1 : 0) - t.p.speak) * Math.min(1, dt * 6);
     hp.speak += ((this.heroSpeakT > 0 ? 0.8 : 0) - hp.speak) * Math.min(1, dt * 6);
     if (this.speakT <= 0 && !this.waiting && t.p.currentName !== 'idle' && t.p.currentName !== 'phone') t.p.play('idle', { fade: 0.5 });

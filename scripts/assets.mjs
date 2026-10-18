@@ -437,3 +437,23 @@ for (const [k, [side, win]] of Object.entries(roomTypes)) {
   add('interior', `${k}_side`, 'fal-ai/flux-2-pro', { prompt: `${side}. ${WALL}`, image_size: { width: 1536, height: 1024 }, output_format: 'jpeg', seed: 92 });
   add('interior', `${k}_window`, 'fal-ai/flux-2-pro', { prompt: `${win}. perfectly frontal straight-on photograph, zero perspective, fills the frame edge to edge, photorealistic`, image_size: { width: 1536, height: 1024 }, output_format: 'jpeg', seed: 93 });
 }
+
+// ---------- Phase C: each named place gets its own storefront on the street instead of a random atlas shop
+// (the door used to be a glowing frame on whatever shopfront happened to be there). The entrance is part
+// of the photo, dead centre, with a plain dark sign band above it for the in-game name sign.
+const FRONT = 'perfectly frontal orthographic photograph of one single street level building entrance at night in a rainy cyberpunk asian megacity, zero perspective distortion, the facade fills the frame edge to edge, the open lit doorway exactly in the centre of the image, a plain dark empty sign band running across the top above the doorway with nothing written on it, wet pavement reflections along the bottom edge, no people, no readable text, no brand logos, photorealistic, highly detailed';
+const fronts = {
+  noodle_row: 'a tiny noodle bar: open sliding wooden door with short split fabric curtains, a steamy window counter on each side with big broth pots, red paper lanterns hanging, warm orange light spilling out',
+  arcade: 'a neon arcade entrance: wide open doorway glowing purple and teal, rows of arcade cabinets and claw machines visible through glass on both sides, flickering tube lights around the frame',
+  clinic: 'an all night clinic: frosted glass automatic sliding doors, a glowing green cross lightbox beside the entrance, white tiled facade, cold fluorescent light from inside, a wheelchair ramp with a railing',
+  night_market: 'a covered night market entrance: wide opening under plastic tarps, string lights, crates of fruit and vegetables stacked on both sides, hanging lamps, plastic strip curtains',
+  laundromat: 'a laundromat: big glass windows on both sides showing rows of front loading washing machines, a glass door in the middle, bright white fluorescent light, a bench outside',
+  tattoo: 'a tattoo parlor: black painted shopfront, a narrow glass door, a window on each side with tattoo flash art pinned up and a neon hand outline sign, moody red light from inside',
+  tower: 'a luxury corporate tower lobby entrance: tall black glass curtain wall, a brightly lit revolving door in the centre, polished stone steps, cool white uplights, a small canopy',
+  hotel: 'a grand old hotel entrance: carved stone columns, brass framed double glass doors in the centre, warm chandelier glow inside, a red carpet on the steps, two potted shrubs and brass lamps',
+  courthouse: 'an old courthouse entrance: heavy stone facade, wide stone steps up to tall open wooden double doors in the centre, two old iron lanterns, weathered columns, notice boards',
+  pier9: 'a container yard site office: corrugated steel wall with hazard stripes, a half open roller shutter door in the centre lit from inside, sodium work lights, stacked pallets, a small office window',
+  union_hall: 'a dock workers union hall: old red brick facade, worn wooden double doors open in the centre, faded banners and posters on the brick, an iron lamp above, puddles',
+  fish_market: 'an indoor fish market entrance: a wide open roller door in the centre, blue white fluorescent light inside, ice displays of fish and crabs on both sides, hoses, wet tiled floor, hanging scales',
+};
+for (const [k, p] of Object.entries(fronts)) add('storefront', k, 'fal-ai/flux-2-pro', { prompt: `${p}. ${FRONT}`, image_size: { width: 1536, height: 912 }, output_format: 'jpeg', seed: 101 });
