@@ -1,6 +1,6 @@
 // Seeded persona cards: every pedestrian gets a stable, distinct personality from its id,
 // with no model call. The card is what the NPC brain is told about who it is.
-import type { Persona } from './protocol';
+import { VOICE_POOLS, type Persona } from './protocol';
 
 class Seed {
   constructor(private s: number) { this.s = (s * 2654435761) >>> 0 || 1; }
@@ -68,12 +68,21 @@ export function makePersona(id: number, type: string, district: string): Persona
   };
 }
 
-/** Browser speech settings derived from the persona, so voices differ between people. */
+/**
+ * How this person sounds: an ElevenLabs stock voice picked by gender, age and id (so two people of
+ * the same type usually differ), a speaking speed from temperament, and pitch/rate for the
+ * device-voice fallback.
+ */
 export function voiceFor(p: Persona, type: string) {
   const a = ARCHETYPES[type] ?? ARCHETYPES.ped_rider;
+  const band = p.age < 30 ? 'young' : p.age < 60 ? 'mid' : 'old';
+  const pool = VOICE_POOLS[a.gender][band];
+  const seed = [...p.id].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
   const age = (p.age - 18) / 70; // 0 young .. 1 old
   return {
+    name: pool[seed % pool.length] as string,
     gender: a.gender,
+    speed: Math.max(0.85, Math.min(1.15, 1.0 + p.traits.chatty * 0.07 + p.traits.nerve * 0.05 - age * 0.08)),
     pitch: Math.max(0.6, Math.min(1.5, (a.gender === 'f' ? 1.15 : 0.9) - age * 0.25 + p.traits.nerve * 0.08)),
     rate: Math.max(0.8, Math.min(1.25, 1.0 + p.traits.chatty * 0.12 + p.traits.nerve * 0.06 - age * 0.12)),
   };

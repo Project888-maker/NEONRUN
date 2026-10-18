@@ -117,7 +117,15 @@ The plan is in `docs/npc-brain.md`. Phase A (talking to anyone) is built; phases
 - Actions: `end` (walks off), `flee`, `call_police` (one wanted star after 2.5 s).
 - What the person is told (`convFacts()`): district, rain, wanted level, the courier's car nearby, and recent events within 70 m and 2 minutes (carjack, hitting a pedestrian).
 - Each person remembers the last 16 lines and up to 6 notes for the session.
-- Voices: the device's speech voices, with pitch and rate per persona. Settings → "People's voices" switches to subtitles only.
+- **Voices** — `api/voice.ts`, `GET /api/voice?v=&t=&s=`:
+  - Natural speech from ElevenLabs Turbo v2.5 through fal (needs `FAL_KEY` in the Vercel env); about 1.6 s per line.
+  - The CDN caches each line for 30 days. Only allow-listed stock voices; text up to 320 characters; 80 lines per IP per 5 minutes; cross-site requests are refused.
+  - The courier says your line in his recorded-line voice (Liam), while the person's reply is already being generated.
+  - Each person gets a stock voice by gender, age band and id (14 voices in use), with a speed set by their temperament. Their voice starts generating as soon as their sentence has streamed in.
+  - Music ducks while people talk. You can reply or interrupt while they are still speaking.
+  - Without `FAL_KEY` people fall back to the device's best-sounding voice and the courier is silent. Settings → "People's voices" switches to subtitles only.
+  - Cost is about $0.005 per spoken line (repeats are free), so roughly $0.01 per exchange.
+- Mic: **Speak** is tap-to-talk. It listens until you pause, then the courier says it; it shows a hint if the microphone is blocked.
 
 **Limits**
 - The character models have no jaw or face bones, so mouths don't move; that is phase D.

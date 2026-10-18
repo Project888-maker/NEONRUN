@@ -288,6 +288,34 @@ export class AudioSys {
     return b.duration;
   }
 
+  private speechSrc: AudioBufferSourceNode | null = null;
+  /** Generated conversation speech (mp3 bytes from /api/voice). */
+  decodeSpeech(bytes: ArrayBuffer) { return this.ctx.decodeAudioData(bytes); }
+  /** Play one voice line, cutting off any line still playing. Resolves when it ends (or is cut off). */
+  playSpeech(b: AudioBuffer, pos?: THREE.Vector3): Promise<void> {
+    this.stopSpeech();
+    if (this.ctx.state !== 'running') return Promise.resolve();
+    const s = this.ctx.createBufferSource();
+    s.buffer = b;
+    const g = this.ctx.createGain();
+    g.gain.value = 1.15;
+    if (pos) { const p = this.panner(pos); p.refDistance = 3; s.connect(g).connect(p).connect(this.voice); }
+    else s.connect(g).connect(this.voice);
+    this.speechSrc = s;
+    const ended = new Promise<void>((res) => { s.onended = () => { if (this.speechSrc === s) this.speechSrc = null; res(); }; });
+    s.start();
+    return ended;
+  }
+  stopSpeech() {
+    const s = this.speechSrc;
+    this.speechSrc = null;
+    try { s?.stop(); } catch { /* not started */ }
+  }
+  /** Lower the music while people are talking. */
+  duckMusic(on: boolean) {
+    this.music.gain.setTargetAtTime(this.volumes.music * (on ? 0.3 : 1), this.ctx.currentTime, 0.3);
+  }
+
   sirenLoop?: Loop;
   siren(pos: THREE.Vector3 | null) {
     if (!this.sirenLoop) this.sirenLoop = this.spatialLoop('siren_close', 0);

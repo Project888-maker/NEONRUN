@@ -246,6 +246,7 @@ function buildWorld() {
     flee: (t) => crowd.flee(t as any, hero!.pos),
     callPolice: (t) => { noteEvent('a bystander called the police on the courier', t.pos); setTimeout(() => police.add(1, 'reported'), 2500); },
     voiceOn: () => (save.settings.voice ?? 'on') === 'on',
+    audio,
     onOpen: () => { document.exitPointerLock?.(); },
     onClose: () => { if (hero) footCam.yaw = hero.person.yaw; },
   }, () => A.lines);

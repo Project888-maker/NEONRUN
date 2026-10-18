@@ -153,3 +153,12 @@ export function normalizeReply(r: any): Reply | null {
     remember: typeof r.remember === 'string' ? r.remember.slice(0, 160) : '',
   };
 }
+
+/** ElevenLabs stock voices (through fal) that people can speak with; the server only accepts these. */
+export const VOICE_POOLS = {
+  f: { young: ['Jessica', 'Lily', 'Laura'], mid: ['Sarah', 'Aria', 'Alice', 'Charlotte'], old: ['Matilda', 'Charlotte'] },
+  m: { young: ['Will', 'Chris', 'Charlie'], mid: ['Roger', 'Callum', 'Eric', 'Brian', 'Daniel'], old: ['Bill', 'George'] },
+} as const;
+/** the courier, matching his recorded lines */
+export const HERO_VOICE = 'Liam';
+export const ALL_VOICES: string[] = [HERO_VOICE, 'River', ...new Set(Object.values(VOICE_POOLS).flatMap((g) => Object.values(g).flat()))];

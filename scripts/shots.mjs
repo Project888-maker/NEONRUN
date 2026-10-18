@@ -298,6 +298,8 @@ if (want('converse')) {
   // look-at, the panel, suggested replies, the 'end' action and the offline fallback.
   let brainUp = true;
   const seen = [];
+  const voiceLog = [];
+  page.on('response', (r) => { if (r.url().includes('/api/voice')) { const q = new URL(r.url()).searchParams; voiceLog.push(`${r.status()} ${q.get('v')}: ${q.get('t').slice(0, 40)}`); } });
   await page.route('**/api/talk', async (route) => {
     const body = JSON.parse(route.request().postData() || '{}');
     seen.push(body);
@@ -335,6 +337,7 @@ if (want('converse')) {
     brainUp = false;
     const pp2 = await N('nearestPed');
     if (pp2) { await N('heroTo', pp2[0] + 1.3, pp2[2] + 0.5); await sleep(400); await N('talk'); await sleep(2000); c = await N('conv'); console.log('offline', JSON.stringify({ active: c.active, name: c.name, tag: c.tag, line: c.line, replies: c.replies })); await shot('93_conv_offline'); await N('convLeave'); }
+    console.log('voice requests', JSON.stringify(voiceLog, null, 1));
     console.log('sample personas', JSON.stringify((await N('personaSample', 4)).map((p) => `${p.name}, ${p.age}, ${p.job}; ${p.mood}; ${p.speech}`)));
   }
 }

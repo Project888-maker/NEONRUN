@@ -3,7 +3,10 @@
 import { makePersona } from '../src/npc/persona';
 import { buildUserMessage, sanitizeRequest, normalizeReply, WORLD_RULES, type TalkRequest } from '../src/npc/protocol';
 import { handleTalk, type StreamClient } from '../api/talk';
-import { Brain, partialLine } from '../src/npc/brain';
+import { Brain, partialLine, finishedLine } from '../src/npc/brain';
+import { handleVoice } from '../api/voice';
+import { voiceFor } from '../src/npc/persona';
+import { ALL_VOICES } from '../src/npc/protocol';
 
 const fail = (m: string) => { console.error('FAIL', m); process.exit(1); };
 const ok = (c: unknown, m: string) => { if (!c) fail(m); };
@@ -42,6 +45,7 @@ const ok = (c: unknown, m: string) => { if (!c) fail(m); };
   ok(partialLine('{"line":"She said \\"no') === 'She said "no', 'partial escape');
   ok(partialLine('{"line":"ab\\') === 'ab', 'partial trailing backslash');
   ok(partialLine('{"emo') === '', 'partial none');
+  ok(finishedLine('{"line":"Hi there') === null && finishedLine('{"line":"Hi \\"you\\"","emo') === 'Hi "you"', 'finished line');
 }
 
 // server function with a fake model client
@@ -98,5 +102,35 @@ const readAll = async (r: Response) => (await r.text()).trim().split('\n').map((
   const off = await brain.ask(req, 'ped_vendor', () => {});
   ok(off.offline && ['Noodles!', 'Soup!', 'Bye now.'].includes(off.reply.line) && brain.offlineReason === 'no_key', 'offline fallback wrong');
   console.log('client: no key -> offline recorded lines');
+}
+// voices: every persona maps to an allowed stock voice, and different people get different voices
+{
+  const names = new Set<string>();
+  for (const type of ['ped_punk', 'ped_suit', 'ped_elder', 'ped_worker', 'ped_nurse']) for (let i = 1; i <= 30; i++) {
+    const v = voiceFor(makePersona(i, type, 'neon'), type);
+    ok(ALL_VOICES.includes(v.name) && v.speed >= 0.85 && v.speed <= 1.15, `voice ${v.name} ${v.speed}`);
+    names.add(v.name);
+  }
+  ok(names.size >= 10, `only ${names.size} distinct voices`);
+  console.log(`voices: ${names.size} distinct stock voices across 150 people`);
+}
+
+// voice endpoint with a fake fal
+{
+  const calls: string[] = [];
+  const fakeFetch = (async (u: string, init?: RequestInit) => {
+    calls.push(String(u));
+    if (String(u).startsWith('https://fal.run/')) return new Response(JSON.stringify({ audio: { url: 'https://cdn.test/a.mp3' } }), { status: 200 });
+    return new Response(new Uint8Array([1, 2, 3]), { status: 200 });
+  }) as typeof fetch;
+  const get = (q: string, h: Record<string, string> = {}) => new Request(`http://game.test/api/voice?${q}`, { headers: { 'x-forwarded-for': '7.7.7.7', ...h } });
+  const r = await handleVoice(get('v=Jessica&t=Hello%20there&s=1.05'), 'k', fakeFetch);
+  ok(r.status === 200 && r.headers.get('content-type') === 'audio/mpeg' && (r.headers.get('cache-control') ?? '').includes('s-maxage') && (await r.arrayBuffer()).byteLength === 3, 'voice ok path');
+  ok(calls[0].includes('elevenlabs/tts/turbo'), 'voice model');
+  ok((await handleVoice(get('v=Jessica&t=hi'), undefined, fakeFetch)).status === 503, 'voice no key');
+  ok((await handleVoice(get('v=Morgan&t=hi'), 'k', fakeFetch)).status === 400, 'voice not in allowlist');
+  ok((await handleVoice(get(`v=Jessica&t=${'x'.repeat(400)}`), 'k', fakeFetch)).status === 400, 'voice text too long');
+  ok((await handleVoice(get('v=Jessica&t=hi', { 'sec-fetch-site': 'cross-site' }), 'k', fakeFetch)).status === 403, 'voice cross-site');
+  console.log('voice endpoint: audio with CDN caching; no key 503, unknown voice / long text 400, cross-site 403');
 }
 console.log('PASS');

@@ -4,6 +4,13 @@ import { normalizeReply, type Reply, type TalkEvent, type TalkRequest } from './
 
 export interface BrainResult { reply: Reply; offline: boolean; error?: string }
 
+/** The "line" string once its closing quote has streamed in, else null. */
+export function finishedLine(json: string): string | null {
+  const m = /"line"\s*:\s*"((?:[^"\\]|\\.)*)"/.exec(json);
+  if (!m) return null;
+  try { return JSON.parse(`"${m[1]}"`); } catch { return null; }
+}
+
 /** Pull the (possibly unfinished) "line" string out of streaming JSON text. */
 export function partialLine(json: string): string {
   const m = /"line"\s*:\s*"((?:[^"\\]|\\.)*)/.exec(json);
@@ -19,7 +26,7 @@ export class Brain {
 
   constructor(private endpoint = '/api/talk', private fallbackLines: () => Record<string, string[]> = () => ({})) {}
 
-  async ask(req: TalkRequest, type: string, onLine: (partial: string) => void, signal?: AbortSignal): Promise<BrainResult> {
+  async ask(req: TalkRequest, type: string, onLine: (partial: string, done: boolean) => void, signal?: AbortSignal): Promise<BrainResult> {
     if (this.offlineReason) return this.offline(req, type, this.offlineReason);
     let res: Response;
     try {
@@ -31,7 +38,7 @@ export class Brain {
     if (!res.body) return this.offline(req, type, `http ${res.status}`);
     const reader = res.body.getReader();
     const dec = new TextDecoder();
-    let buf = '', text = '', shown = '';
+    let buf = '', text = '', shown = '', finished = false;
     let done: Reply | null = null, err: string | undefined;
     for (;;) {
       const { value, done: end } = await reader.read();
@@ -45,8 +52,11 @@ export class Brain {
         try { ev = JSON.parse(lineStr); } catch { continue; }
         if (ev.t === 'delta') {
           text += ev.text;
-          const p = partialLine(text);
-          if (p && p !== shown) { shown = p; onLine(p); }
+          if (!finished) {
+            const f = finishedLine(text);
+            if (f !== null) { finished = true; shown = f; onLine(f, true); }
+            else { const p = partialLine(text); if (p && p !== shown) { shown = p; onLine(p, false); } }
+          }
         } else if (ev.t === 'done') done = normalizeReply(ev.reply);
         else if (ev.t === 'error') err = ev.code;
       }
