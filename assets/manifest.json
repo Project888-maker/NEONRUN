@@ -1,6 +1,6 @@
 {
   "budget_usd": 25,
-  "spent_usd_est": 40.9356,
+  "spent_usd_est": 42.0156,
   "assets": {
     "_tests/probe": {
       "files": [],
@@ -5994,6 +5994,486 @@
       "cost_usd_est": 0.2,
       "created": "2026-10-15T20:34:38.722Z",
       "seconds": 13
+    },
+    "interior/arcade_back": {
+      "files": [
+        "assets/generated/interior/arcade_back.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "the back wall of a neon arcade: a row of glowing retro arcade cabinets and claw machines, purple and teal light, posters, prize shelves. perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night",
+      "input": {
+        "prompt": "the back wall of a neon arcade: a row of glowing retro arcade cabinets and claw machines, purple and teal light, posters, prize shelves. perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night",
+        "image_size": {
+          "width": 2048,
+          "height": 1024
+        },
+        "output_format": "jpeg",
+        "seed": 91
+      },
+      "seed": 91,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-18T17:29:15.563Z",
+      "seconds": 14
+    },
+    "interior/noodle_row_back": {
+      "files": [
+        "assets/generated/interior/noodle_row_back.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "the back wall of a tiny noodle bar: steel kitchen with big steaming broth pots, ladles hanging on hooks, handwritten paper menu strips, red paper lanterns, steam. perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night",
+      "input": {
+        "prompt": "the back wall of a tiny noodle bar: steel kitchen with big steaming broth pots, ladles hanging on hooks, handwritten paper menu strips, red paper lanterns, steam. perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night",
+        "image_size": {
+          "width": 2048,
+          "height": 1024
+        },
+        "output_format": "jpeg",
+        "seed": 91
+      },
+      "seed": 91,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-18T17:29:16.052Z",
+      "seconds": 15
+    },
+    "interior/night_market_back": {
+      "files": [
+        "assets/generated/interior/night_market_back.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "the back wall of a covered night market stall: hanging produce, crates of fruit and dried goods stacked to the ceiling, string lights, tarps, hand painted price boards. perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night",
+      "input": {
+        "prompt": "the back wall of a covered night market stall: hanging produce, crates of fruit and dried goods stacked to the ceiling, string lights, tarps, hand painted price boards. perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night",
+        "image_size": {
+          "width": 2048,
+          "height": 1024
+        },
+        "output_format": "jpeg",
+        "seed": 91
+      },
+      "seed": 91,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-18T17:29:17.484Z",
+      "seconds": 16
+    },
+    "interior/laundromat_back": {
+      "files": [
+        "assets/generated/interior/laundromat_back.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "the back wall of a laundromat: two stacked rows of front loading washing machines and dryers with round glass doors, a few spinning, fluorescent light, folding notices. perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night",
+      "input": {
+        "prompt": "the back wall of a laundromat: two stacked rows of front loading washing machines and dryers with round glass doors, a few spinning, fluorescent light, folding notices. perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night",
+        "image_size": {
+          "width": 2048,
+          "height": 1024
+        },
+        "output_format": "jpeg",
+        "seed": 91
+      },
+      "seed": 91,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-18T17:29:17.681Z",
+      "seconds": 16
+    },
+    "interior/clinic_back": {
+      "files": [
+        "assets/generated/interior/clinic_back.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "the back wall of a small all-night clinic reception: frosted glass partition, medicine cabinets, a glowing cross sign, clipboards, plastic chairs against the wall, cold fluorescent light. perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night",
+      "input": {
+        "prompt": "the back wall of a small all-night clinic reception: frosted glass partition, medicine cabinets, a glowing cross sign, clipboards, plastic chairs against the wall, cold fluorescent light. perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night",
+        "image_size": {
+          "width": 2048,
+          "height": 1024
+        },
+        "output_format": "jpeg",
+        "seed": 91
+      },
+      "seed": 91,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-18T17:29:21.650Z",
+      "seconds": 20
+    },
+    "interior/tattoo_back": {
+      "files": [
+        "assets/generated/interior/tattoo_back.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "the back wall of a tattoo parlor: framed tattoo flash art covering the wall, a cabinet of inks, a neon hand sign, a reclining tattoo chair, moody red light. perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night",
+      "input": {
+        "prompt": "the back wall of a tattoo parlor: framed tattoo flash art covering the wall, a cabinet of inks, a neon hand sign, a reclining tattoo chair, moody red light. perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night",
+        "image_size": {
+          "width": 2048,
+          "height": 1024
+        },
+        "output_format": "jpeg",
+        "seed": 91
+      },
+      "seed": 91,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-18T17:29:28.846Z",
+      "seconds": 13
+    },
+    "interior/tower_back": {
+      "files": [
+        "assets/generated/interior/tower_back.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "the back wall of a luxury corporate tower lobby: polished black marble wall with a backlit abstract steel sculpture, a slim reception desk wall panel, cool white light. perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night",
+      "input": {
+        "prompt": "the back wall of a luxury corporate tower lobby: polished black marble wall with a backlit abstract steel sculpture, a slim reception desk wall panel, cool white light. perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night",
+        "image_size": {
+          "width": 2048,
+          "height": 1024
+        },
+        "output_format": "jpeg",
+        "seed": 91
+      },
+      "seed": 91,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-18T17:29:29.521Z",
+      "seconds": 13
+    },
+    "interior/hotel_back": {
+      "files": [
+        "assets/generated/interior/hotel_back.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "the back wall of a grand old hotel lobby: carved wooden reception wall with brass key boxes, a big vintage clock, warm chandeliers glow, velvet drapes. perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night",
+      "input": {
+        "prompt": "the back wall of a grand old hotel lobby: carved wooden reception wall with brass key boxes, a big vintage clock, warm chandeliers glow, velvet drapes. perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night",
+        "image_size": {
+          "width": 2048,
+          "height": 1024
+        },
+        "output_format": "jpeg",
+        "seed": 91
+      },
+      "seed": 91,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-18T17:29:32.986Z",
+      "seconds": 15
+    },
+    "interior/pier9_back": {
+      "files": [
+        "assets/generated/interior/pier9_back.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "the back wall of a container yard site office: corrugated metal wall with shift rosters, safety posters, a radio set, keys on hooks, a window onto cranes in fog. perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night",
+      "input": {
+        "prompt": "the back wall of a container yard site office: corrugated metal wall with shift rosters, safety posters, a radio set, keys on hooks, a window onto cranes in fog. perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night",
+        "image_size": {
+          "width": 2048,
+          "height": 1024
+        },
+        "output_format": "jpeg",
+        "seed": 91
+      },
+      "seed": 91,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-18T17:29:33.061Z",
+      "seconds": 11
+    },
+    "interior/courthouse_back": {
+      "files": [
+        "assets/generated/interior/courthouse_back.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "the back wall of an old courthouse hall: tall wooden panelling, a faded coat of arms, notice boards with pinned papers, brass lamps, worn stone. perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night",
+      "input": {
+        "prompt": "the back wall of an old courthouse hall: tall wooden panelling, a faded coat of arms, notice boards with pinned papers, brass lamps, worn stone. perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night",
+        "image_size": {
+          "width": 2048,
+          "height": 1024
+        },
+        "output_format": "jpeg",
+        "seed": 91
+      },
+      "seed": 91,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-18T17:29:33.248Z",
+      "seconds": 16
+    },
+    "interior/union_hall_back": {
+      "files": [
+        "assets/generated/interior/union_hall_back.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "the back wall of a dock workers union hall: brick wall with union banners and strike posters, a chalkboard with vote counts, folding chairs stacked. perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night",
+      "input": {
+        "prompt": "the back wall of a dock workers union hall: brick wall with union banners and strike posters, a chalkboard with vote counts, folding chairs stacked. perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night",
+        "image_size": {
+          "width": 2048,
+          "height": 1024
+        },
+        "output_format": "jpeg",
+        "seed": 91
+      },
+      "seed": 91,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-18T17:29:40.591Z",
+      "seconds": 12
+    },
+    "interior/fish_market_back": {
+      "files": [
+        "assets/generated/interior/fish_market_back.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "the back wall of an indoor fish market: tiled wall with ice displays of fish and crabs, hanging scales, hoses, blue fluorescent light, wet surfaces. perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night",
+      "input": {
+        "prompt": "the back wall of an indoor fish market: tiled wall with ice displays of fish and crabs, hanging scales, hoses, blue fluorescent light, wet surfaces. perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night",
+        "image_size": {
+          "width": 2048,
+          "height": 1024
+        },
+        "output_format": "jpeg",
+        "seed": 91
+      },
+      "seed": 91,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-18T17:29:43.083Z",
+      "seconds": 14
+    },
+    "interior/food_side": {
+      "files": [
+        "assets/generated/interior/food_side.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "a noodle bar side wall: wooden booth backs, small framed photos, a wall mounted fan, tiled lower wall, warm light. perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night",
+      "input": {
+        "prompt": "a noodle bar side wall: wooden booth backs, small framed photos, a wall mounted fan, tiled lower wall, warm light. perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night",
+        "image_size": {
+          "width": 1536,
+          "height": 1024
+        },
+        "output_format": "jpeg",
+        "seed": 92
+      },
+      "seed": 92,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-18T17:29:44.021Z",
+      "seconds": 11
+    },
+    "interior/market_side": {
+      "files": [
+        "assets/generated/interior/market_side.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "a covered market side wall: shelves of jars and sacks, hanging baskets, tarps, string lights. perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night",
+      "input": {
+        "prompt": "a covered market side wall: shelves of jars and sacks, hanging baskets, tarps, string lights. perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night",
+        "image_size": {
+          "width": 1536,
+          "height": 1024
+        },
+        "output_format": "jpeg",
+        "seed": 92
+      },
+      "seed": 92,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-18T17:29:44.501Z",
+      "seconds": 11
+    },
+    "interior/food_window": {
+      "files": [
+        "assets/generated/interior/food_window.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "rain streaked shop window from inside looking out onto a neon lit street at night, condensation, a sticker on the glass. perfectly frontal straight-on photograph, zero perspective, fills the frame edge to edge, photorealistic",
+      "input": {
+        "prompt": "rain streaked shop window from inside looking out onto a neon lit street at night, condensation, a sticker on the glass. perfectly frontal straight-on photograph, zero perspective, fills the frame edge to edge, photorealistic",
+        "image_size": {
+          "width": 1536,
+          "height": 1024
+        },
+        "output_format": "jpeg",
+        "seed": 93
+      },
+      "seed": 93,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-18T17:29:46.370Z",
+      "seconds": 13
+    },
+    "interior/market_window": {
+      "files": [
+        "assets/generated/interior/market_window.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "an open market entrance seen from inside, plastic strip curtain, the rainy neon street beyond. perfectly frontal straight-on photograph, zero perspective, fills the frame edge to edge, photorealistic",
+      "input": {
+        "prompt": "an open market entrance seen from inside, plastic strip curtain, the rainy neon street beyond. perfectly frontal straight-on photograph, zero perspective, fills the frame edge to edge, photorealistic",
+        "image_size": {
+          "width": 1536,
+          "height": 1024
+        },
+        "output_format": "jpeg",
+        "seed": 93
+      },
+      "seed": 93,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-18T17:29:51.865Z",
+      "seconds": 11
+    },
+    "interior/shop_side": {
+      "files": [
+        "assets/generated/interior/shop_side.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "a small shop side wall: shelving with boxes and odds and ends, a poster wall, a vending machine, neon strip light. perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night",
+      "input": {
+        "prompt": "a small shop side wall: shelving with boxes and odds and ends, a poster wall, a vending machine, neon strip light. perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night",
+        "image_size": {
+          "width": 1536,
+          "height": 1024
+        },
+        "output_format": "jpeg",
+        "seed": 92
+      },
+      "seed": 92,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-18T17:29:54.777Z",
+      "seconds": 12
+    },
+    "interior/shop_window": {
+      "files": [
+        "assets/generated/interior/shop_window.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "a shop window from inside with neon window signs reversed, rain on the glass, the street outside at night. perfectly frontal straight-on photograph, zero perspective, fills the frame edge to edge, photorealistic",
+      "input": {
+        "prompt": "a shop window from inside with neon window signs reversed, rain on the glass, the street outside at night. perfectly frontal straight-on photograph, zero perspective, fills the frame edge to edge, photorealistic",
+        "image_size": {
+          "width": 1536,
+          "height": 1024
+        },
+        "output_format": "jpeg",
+        "seed": 93
+      },
+      "seed": 93,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-18T17:29:55.236Z",
+      "seconds": 11
+    },
+    "interior/clinic_side": {
+      "files": [
+        "assets/generated/interior/clinic_side.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "a clinic waiting room side wall: rows of plastic seats, health posters, a water cooler, a wall TV, fluorescent light. perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night",
+      "input": {
+        "prompt": "a clinic waiting room side wall: rows of plastic seats, health posters, a water cooler, a wall TV, fluorescent light. perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night",
+        "image_size": {
+          "width": 1536,
+          "height": 1024
+        },
+        "output_format": "jpeg",
+        "seed": 92
+      },
+      "seed": 92,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-18T17:29:55.701Z",
+      "seconds": 11
+    },
+    "interior/clinic_window": {
+      "files": [
+        "assets/generated/interior/clinic_window.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "a frosted glass clinic entrance from inside, automatic sliding doors, rain and neon outside. perfectly frontal straight-on photograph, zero perspective, fills the frame edge to edge, photorealistic",
+      "input": {
+        "prompt": "a frosted glass clinic entrance from inside, automatic sliding doors, rain and neon outside. perfectly frontal straight-on photograph, zero perspective, fills the frame edge to edge, photorealistic",
+        "image_size": {
+          "width": 1536,
+          "height": 1024
+        },
+        "output_format": "jpeg",
+        "seed": 93
+      },
+      "seed": 93,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-18T17:29:56.008Z",
+      "seconds": 10
+    },
+    "interior/lobby_side": {
+      "files": [
+        "assets/generated/interior/lobby_side.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "a lobby side wall: tall panelled wall with uplights, a large potted plant, a bench, art in a frame. perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night",
+      "input": {
+        "prompt": "a lobby side wall: tall panelled wall with uplights, a large potted plant, a bench, art in a frame. perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night",
+        "image_size": {
+          "width": 1536,
+          "height": 1024
+        },
+        "output_format": "jpeg",
+        "seed": 92
+      },
+      "seed": 92,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-18T17:30:03.196Z",
+      "seconds": 11
+    },
+    "interior/depot_window": {
+      "files": [
+        "assets/generated/interior/depot_window.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "a roller shutter door half open from inside, rain falling outside, sodium lights of a container yard. perfectly frontal straight-on photograph, zero perspective, fills the frame edge to edge, photorealistic",
+      "input": {
+        "prompt": "a roller shutter door half open from inside, rain falling outside, sodium lights of a container yard. perfectly frontal straight-on photograph, zero perspective, fills the frame edge to edge, photorealistic",
+        "image_size": {
+          "width": 1536,
+          "height": 1024
+        },
+        "output_format": "jpeg",
+        "seed": 93
+      },
+      "seed": 93,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-18T17:30:06.818Z",
+      "seconds": 11
+    },
+    "interior/lobby_window": {
+      "files": [
+        "assets/generated/interior/lobby_window.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "a tall glass lobby entrance from inside, revolving door, rainy neon city street outside. perfectly frontal straight-on photograph, zero perspective, fills the frame edge to edge, photorealistic",
+      "input": {
+        "prompt": "a tall glass lobby entrance from inside, revolving door, rainy neon city street outside. perfectly frontal straight-on photograph, zero perspective, fills the frame edge to edge, photorealistic",
+        "image_size": {
+          "width": 1536,
+          "height": 1024
+        },
+        "output_format": "jpeg",
+        "seed": 93
+      },
+      "seed": 93,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-18T17:30:08.108Z",
+      "seconds": 13
+    },
+    "interior/depot_side": {
+      "files": [
+        "assets/generated/interior/depot_side.jpg"
+      ],
+      "model": "fal-ai/flux-2-pro",
+      "prompt": "a warehouse office side wall: metal shelving with parcels and crates, a forklift charger, hazard stripes, work lights. perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night",
+      "input": {
+        "prompt": "a warehouse office side wall: metal shelving with parcels and crates, a forklift charger, hazard stripes, work lights. perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night",
+        "image_size": {
+          "width": 1536,
+          "height": 1024
+        },
+        "output_format": "jpeg",
+        "seed": 92
+      },
+      "seed": 92,
+      "cost_usd_est": 0.045,
+      "created": "2026-10-18T17:30:09.077Z",
+      "seconds": 14
     }
   }
 }

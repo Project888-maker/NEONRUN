@@ -185,7 +185,8 @@ export class Police {
   }
 
   /** player: position/velocity; onFoot: arrests faster */
-  update(dt: number, t: number, player: THREE.Vector3, playerVel: THREE.Vector3, onFoot: boolean) {
+  /** `hidden`: the courier is inside a shop: no arrest, and the trail goes cold twice as fast */
+  update(dt: number, t: number, player: THREE.Vector3, playerVel: THREE.Vector3, onFoot: boolean, hidden = false) {
     const want = Math.min(4, this.heat > 0 ? this.heat : 0);
     this.spawnT -= dt;
     if (this.units.length < want && this.spawnT <= 0) { this.spawnNear(player); this.spawnT = 4; }
@@ -278,6 +279,11 @@ export class Police {
 
     // busted / evade
     const slow = playerVel.length() < (onFoot ? 99 : 3);
+    if (hidden) {
+      this.bustT = 0;
+      if (this.heat > 0) { this.evade += dt * 2; if (this.evade > 12) { this.evade = 0; this.heat--; this.onHeat(this.heat); } }
+      return { nearest, nearestPos: nearestUnit?.pos ?? null, bustProgress: 0 };
+    }
     if (this.heat > 0 && nearest < (onFoot ? 6 : 9.5) && slow) {
       this.bustT += dt;
       if (this.bustT > (onFoot ? 1.5 : 2.5)) { this.bustT = 0; this.onBusted(); }

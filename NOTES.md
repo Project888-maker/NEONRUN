@@ -159,6 +159,30 @@ The plan is in `docs/npc-brain.md`. Phase A (talking to anyone) is built; phases
   - Spoken in each person's own voice through `/api/voice`, so they are cached after the first time. Subtitled.
   - Nobody repeats a line until they've used their set; 25–45 s per person and about 3 s globally between remarks.
 
+**Phase C: shop interiors** (`src/world/interiors.ts`)
+- **Doors:** each of the 12 named places has a lit door with its name on the shopfront. On foot, `E · Enter`. Inside, walk back to the door for `E · Leave`.
+- **How a room is built:**
+  - It is a 12 × 9 × 4 m room, built the first time you walk near its door. Rooms are placed away from the city (x/z ≈ 5000+), so the city, traffic, crowd, rain, fog and planar reflections are hidden while you're inside.
+  - Walls are photographs: a unique back wall per place, plus side walls and rain-streaked windows for each of 6 room types (`assets/interior/*.webp`, 24 images from flux-2-pro, $1.08). They are cropped to the wall proportions and mostly self-lit.
+  - Real 3D counter and props per type sit in front of them: stools and lanterns, crates and tarp, shelves, clinic seats, lobby benches and plants, depot parcels and pallet.
+  - The room's own lamps light people (light pools) and the hero (real point lights). Physics walls keep you and the camera inside.
+- **People inside:**
+  - Someone works the counter: the place's regular if it has one (regulars no longer stand outside), otherwise a clerk with a job that fits the place.
+  - Plus 2–3 customers. All of them can be talked to.
+  - Each knows where they are and their role: at work behind the counter, or a customer who can't sell you anything.
+  - Clerks often have a delivery for their shop (`shopJob`).
+- **Street jobs end inside:**
+  - Drive to the place, walk in, and `T · Hand over …` or `T · Collect …` at the counter.
+  - Fetch jobs from regulars come back to their counter: door, counter, door, counter.
+- **Hiding:** while you're inside, the police can't bust you and the trail goes cold twice as fast (one star per 6 s). Street ambience is muffled and the minimap is hidden.
+
+**Conversation layout**
+- The person's line is a cinematic subtitle along the bottom. Your choices sit in a slim column on the right: reply chips, job card, and Type / Speak / Leave.
+- The text box stays folded until you press Type, hit Enter, or simply start typing on a keyboard.
+- On phones (landscape) the subtitle sits bottom-left and the column bottom-right, both compact.
+
+**Language:** uncensored by default. People swear as their persona would, with no slurs. Settings → "People's language" offers Mild.
+
 **Limits**
 - The character models have no jaw or face bones, so mouths don't move; that is phase D.
 - Random pedestrians are remembered only for the session; regulars are remembered for good.

@@ -160,17 +160,28 @@
     <div id="context" class="hidden"></div>
     <div id="subtitle" class="hidden"></div>
     <!-- talking to a person: you speak as the courier -->
+    <div id="fade"></div>
     <div id="conv" class="hidden">
-      <div class="cv-head"><span id="cv-name"></span><span id="cv-tag"></span><button id="cv-leave" type="button">Leave <kbd>Esc</kbd></button></div>
-      <div id="cv-you" class="hidden"></div>
-      <div id="cv-line"></div>
-      <div id="cv-job" class="hidden"></div>
-      <div id="cv-replies"></div>
-      <form id="cv-form" autocomplete="off">
-        <input id="cv-input" maxlength="200" placeholder="Say something as the courier…" enterkeyhint="send" />
-        <button type="button" id="cv-mic" title="Tap, then speak">Speak</button>
-        <button type="submit" id="cv-send" class="primary">Say</button>
-      </form>
+      <!-- what they say: a cinematic subtitle at the bottom -->
+      <div id="cv-sub">
+        <div class="cv-who"><span id="cv-name"></span><span id="cv-tag"></span></div>
+        <div id="cv-you" class="hidden"></div>
+        <div id="cv-line"></div>
+      </div>
+      <!-- what you can do: a slim column at the side -->
+      <div id="cv-side">
+        <div id="cv-job" class="hidden"></div>
+        <div id="cv-replies"></div>
+        <form id="cv-form" class="collapsed" autocomplete="off">
+          <input id="cv-input" maxlength="200" placeholder="Say something as the courier…" enterkeyhint="send" />
+          <button type="submit" id="cv-send" class="primary">Say</button>
+        </form>
+        <div class="cv-tools">
+          <button type="button" id="cv-type" title="Type your own line (or just start typing)">Type</button>
+          <button type="button" id="cv-mic" title="Tap, then speak">Speak</button>
+          <button type="button" id="cv-leave">Leave <kbd>Esc</kbd></button>
+        </div>
+      </div>
     </div>
     <div id="busted" class="hidden">BUSTED</div>
   </div>

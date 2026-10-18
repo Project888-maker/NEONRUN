@@ -135,3 +135,11 @@ export function randomJob(id: number, district: DistrictId): Job | null {
   const place = others[Math.floor(h * 1000) % others.length];
   return { kind: Math.floor(h * 777) % 3 === 0 ? 'fetch' : 'deliver', item: items[Math.floor(h * 5000) % items.length], place: place.id };
 }
+
+/** A shop's own delivery: the person behind the counter needs a package taken somewhere (deterministic per person). */
+export function shopJob(id: number, from: string): Job {
+  const h = ((id * 2246822519) >>> 0) / 4294967296;
+  const items = ['a sealed parcel', 'a box of spare parts', 'a padded envelope', 'a cooler bag of orders', 'a stack of printed menus', 'a case of samples', 'a repaired radio', 'a bag of laundry'];
+  const others = PLACES.filter((p) => p.id !== from);
+  return { kind: 'deliver', item: items[Math.floor(h * 997) % items.length], place: others[Math.floor(h * 7919) % others.length].id };
+}

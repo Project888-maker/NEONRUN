@@ -52,15 +52,22 @@ const soc = new Society({
   campaign: { get active() { return started; }, start: (d: any) => { started = d; } } as any,
   save, hud: { toast: (t: string) => toasts.push(t), setCredits() {} } as any, audio: { play() {} } as any, spots,
   playerPos: () => player, busy: () => busy, suspendDeliveries: (on) => { suspended += on ? 1 : -1; },
+  counter: (id) => places.get(id)!.stand.clone().add(new THREE.Vector3(0, 0, -5)), inside: () => null,
 });
 const ish = REGULARS.find((r) => r.key === 'ishikawa')!;
 player.copy(places.get(ish.home)!.stand);
-soc.update(1);
-const t = fixed.find((p) => p.key === regularId(ish));
-ok(t, 'regular not spawned near the courier');
+// regulars work inside their place, behind the counter
+const t: any = { id: 1, type: ish.type, pos: places.get(ish.home)!.stand.clone(), state: 'talk', t: 1, key: regularId(ish), inside: ish.home, role: 'clerk', roomType: 'food', p: {} };
 const per = soc.persona(t);
 ok(per.name === 'Mr. Ishikawa' && per.hook?.includes('broth bones') && per.hook.includes('credits'), `regular persona hook: ${per.hook}`);
 ok(soc.facts(per, t, []).some((f) => f.includes('never met')), 'stranger fact');
+ok(soc.facts(per, t, []).some((f) => f.includes('behind the counter inside')), 'regular is at work inside');
+// a customer in a shop knows they don't work there; a clerk has a delivery for the shop
+const cust: any = { id: 801, type: 'ped_student', pos: new THREE.Vector3(5000, 0, 5000), state: 'talk', t: 1, inside: 'arcade', role: 'customer', roomType: 'shop', p: {} };
+ok(soc.facts(soc.persona(cust), cust, []).some((f) => f.includes('customer inside')) && !soc.persona(cust).hook, 'customer facts / no job');
+const clerk: any = { id: 802, type: 'ped_punk', pos: new THREE.Vector3(5000, 0, 5000), state: 'talk', t: 1, inside: 'arcade', role: 'clerk', roomType: 'shop', p: {} };
+const cp = soc.persona(clerk);
+ok(cp.job.includes('Pixel Palace') && cp.hook?.startsWith('take '), `clerk persona: ${cp.job} / ${cp.hook}`);
 // memory persists in the save
 soc.remember(per, { history: [{ who: 'courier', text: 'Evening!' }, { who: 'npc', text: 'Hungry, kid?' }], notes: ['polite courier'], rel: 1 });
 ok(save.npc[per.id].met === 1 && save.npc[per.id].notes[0] === 'polite courier' && soc.recall(per).history.length === 2, 'regular memory not saved');
@@ -72,7 +79,7 @@ soc.acceptJob(t, per);
 ok(started?.street && soc.active && suspended === 1, 'street job not started');
 ok(!soc.job(t, per) && !soc.persona(t).hook, 'second job offered while one is running');
 const steps = started.build({ goto: (at: THREE.Vector3, prompt: string) => ({ at, prompt }), legTime: () => 60, sfx() {} }).steps;
-ok(steps.length === 2 && steps[0].prompt.includes('Pick up') && steps[1].prompt.includes('Bring'), 'fetch job steps');
+ok(steps.length === 4 && steps[0].prompt.includes('Pick up') && steps[1].prompt().includes('Go inside') && steps[2].prompt.includes('Bring') && steps[3].marker === 'ring', 'fetch job steps: door, counter, door, counter');
 // finish: paid, reputation up, remembered, next job different
 const before = save.credits;
 started.street.onFinish(true, undefined, 20);

@@ -399,6 +399,64 @@ if (want('walls')) {
   await N('clearHeat');
   console.log('walls summary', JSON.stringify([...seen.entries()]));
 }
+if (want('chatlayout')) {
+  // the conversation layout on this screen size: subtitle + side column, faces in frame
+  await page.route('**/api/voice**', (r) => r.fulfill({ status: 503, contentType: 'application/json', body: '{"error":"no_key"}' }));
+  await page.route('**/api/talk', async (route) => {
+    const body = JSON.parse(route.request().postData() || '{}');
+    const reply = { line: body.say ? "Shit, you scared me. No, I'm not selling anything, I'm just walking home." : 'Hey. Do I know you?', emotion: 'wary', gesture: 'talk', action: 'none', replies: ['Sorry, didn\'t mean to startle you.', 'Seen anything weird around here tonight?', 'Relax, I just need directions.'], remember: '', relationship: 'same' };
+    const t = JSON.stringify(reply);
+    await route.fulfill({ status: 200, contentType: 'application/x-ndjson', body: JSON.stringify({ t: 'delta', text: t }) + '\n' + JSON.stringify({ t: 'done', reply }) + '\n' });
+  });
+  await N('setInput', {});
+  if ((await N('mode')) === 'drive') { await N('exitCar'); await sleep(2200); }
+  const pp = await N('nearestPed');
+  if (pp) {
+    await N('heroTo', pp[0] + 1.3, pp[2] + 0.5); await sleep(400);
+    await N('talk'); await sleep(2000);
+    await N('convSay', 'Can I get a coffee?'); await sleep(2500);
+    await shot('80_chat_layout');
+    await page.keyboard.press('h'); await sleep(300);
+    await shot('81_chat_typing');
+    await N('convLeave');
+  }
+}
+if (want('interior')) {
+  // Phase C: walk into Noodle Row, look around, talk to whoever runs it, take their job, walk back out
+  await page.route('**/api/voice**', (r) => r.fulfill({ status: 503, contentType: 'application/json', body: '{"error":"no_key"}' }));
+  const told = [];
+  await page.route('**/api/talk', async (route) => {
+    const body = JSON.parse(route.request().postData() || '{}');
+    told.push({ facts: body.facts, hook: body.persona.hook, job: body.persona.job, name: body.persona.name });
+    const work = /work|job/i.test(body.say || '');
+    const reply = { line: work && body.persona.hook ? `Work? Sure. ${body.persona.hook.split(';')[0]}.` : 'Kid! Get out of the rain. Sit, eat something.', emotion: 'friendly', gesture: 'talk', action: work && body.persona.hook ? 'offer_job' : 'none', replies: ['Got any work?', 'Smells amazing in here.', 'Just passing through.'], remember: '', relationship: 'same' };
+    const t = JSON.stringify(reply);
+    await route.fulfill({ status: 200, contentType: 'application/x-ndjson', body: JSON.stringify({ t: 'delta', text: t }) + '\n' + JSON.stringify({ t: 'done', reply }) + '\n' });
+  });
+  await N('unlockAll');
+  await N('setInput', {});
+  if ((await N('mode')) === 'drive') { await N('exitCar'); await sleep(2200); }
+  await N('heroToDoor', 'noodle_row'); await sleep(1500);
+  await shot('85_door_outside');
+  await N('enterPlace', 'noodle_row'); await sleep(2500);
+  console.log('indoors', JSON.stringify(await N('indoors')));
+  await shot('86_inside');
+  await N('setInput', { footZ: -1 }); await sleep(1200); await N('setInput', {});
+  await shot('87_inside_walk');
+  await N('heroToCounter'); await sleep(800);
+  await N('talk'); await sleep(2000);
+  await shot('88_inside_talk');
+  await N('convSay', 'Got any work for me tonight?'); await sleep(2500);
+  let c = await N('conv');
+  console.log('inside talk', JSON.stringify({ name: c.name, tag: c.tag, line: c.line, replies: c.replies, told: told.at(-1)?.facts?.slice(0, 2) }));
+  await shot('89_inside_offer');
+  await N('convLeave'); await sleep(500);
+  await N('heat', 2); await sleep(500);
+  for (let k = 0; k < 4; k++) { await sleep(3000); console.log('hiding, heat', (await N('indoors'))?.heat); }
+  await N('exitPlace'); await sleep(2000);
+  console.log('after exit', JSON.stringify({ indoors: await N('indoors'), mode: await N('mode') }));
+  await shot('90_back_outside');
+}
 if (want('cams')) {
   await N('camMode', 'hood');
   await sleep(1500);

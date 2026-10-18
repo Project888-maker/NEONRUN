@@ -324,6 +324,8 @@ export class AudioSys {
     try { s?.stop(); } catch { /* not started */ }
   }
   /** Lower the music while people are talking. */
+  /** Indoors: the rain and street outside become a muffled background. */
+  indoors(on: boolean) { this.amb.gain.setTargetAtTime(on ? 0.18 : 0.8, this.ctx.currentTime, 0.25); }
   private ducked = false;
   /** While people talk: music, effects and ambience (rain, traffic, sirens) step back, voices step up. */
   duckMusic(on: boolean) {

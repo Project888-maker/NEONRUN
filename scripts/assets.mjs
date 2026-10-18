@@ -406,3 +406,34 @@ for (const [k, [d, loop, p]] of Object.entries(sfx3)) add('sfx', k, 'fal-ai/elev
 
 // ---------- feedback round: calmer idle (the first one swayed side to side)
 add('motion', 'idle_calm', 'fal-ai/hunyuan-motion', { prompt: 'a person stands completely still in a neutral relaxed pose, arms hanging at the sides, feet planted shoulder width apart, only slow subtle breathing, no swaying, no weight shifting', duration: 4, output_format: 'fbx' });
+
+// ---------- Phase C: shop interiors. Frontal wall "elevations" used as photo-textured walls behind real 3D
+// counters and props (2.5D set dressing). Back walls are unique per place, side walls / windows per room type.
+const WALL = 'perfectly frontal straight-on photograph of one interior wall, zero perspective distortion, the wall fills the entire frame edge to edge, no floor and no ceiling visible, no people, no readable brand logos, practical warm and neon lighting, lived-in details, photorealistic, highly detailed, cyberpunk asian megacity at night';
+const backWalls = {
+  noodle_row: 'the back wall of a tiny noodle bar: steel kitchen with big steaming broth pots, ladles hanging on hooks, handwritten paper menu strips, red paper lanterns, steam',
+  arcade: 'the back wall of a neon arcade: a row of glowing retro arcade cabinets and claw machines, purple and teal light, posters, prize shelves',
+  clinic: 'the back wall of a small all-night clinic reception: frosted glass partition, medicine cabinets, a glowing cross sign, clipboards, plastic chairs against the wall, cold fluorescent light',
+  night_market: 'the back wall of a covered night market stall: hanging produce, crates of fruit and dried goods stacked to the ceiling, string lights, tarps, hand painted price boards',
+  laundromat: 'the back wall of a laundromat: two stacked rows of front loading washing machines and dryers with round glass doors, a few spinning, fluorescent light, folding notices',
+  tattoo: 'the back wall of a tattoo parlor: framed tattoo flash art covering the wall, a cabinet of inks, a neon hand sign, a reclining tattoo chair, moody red light',
+  tower: 'the back wall of a luxury corporate tower lobby: polished black marble wall with a backlit abstract steel sculpture, a slim reception desk wall panel, cool white light',
+  hotel: 'the back wall of a grand old hotel lobby: carved wooden reception wall with brass key boxes, a big vintage clock, warm chandeliers glow, velvet drapes',
+  courthouse: 'the back wall of an old courthouse hall: tall wooden panelling, a faded coat of arms, notice boards with pinned papers, brass lamps, worn stone',
+  pier9: 'the back wall of a container yard site office: corrugated metal wall with shift rosters, safety posters, a radio set, keys on hooks, a window onto cranes in fog',
+  union_hall: 'the back wall of a dock workers union hall: brick wall with union banners and strike posters, a chalkboard with vote counts, folding chairs stacked',
+  fish_market: 'the back wall of an indoor fish market: tiled wall with ice displays of fish and crabs, hanging scales, hoses, blue fluorescent light, wet surfaces',
+};
+for (const [k, p] of Object.entries(backWalls)) add('interior', `${k}_back`, 'fal-ai/flux-2-pro', { prompt: `${p}. ${WALL}`, image_size: { width: 2048, height: 1024 }, output_format: 'jpeg', seed: 91 });
+const roomTypes = {
+  food: ['a noodle bar side wall: wooden booth backs, small framed photos, a wall mounted fan, tiled lower wall, warm light', 'rain streaked shop window from inside looking out onto a neon lit street at night, condensation, a sticker on the glass'],
+  market: ['a covered market side wall: shelves of jars and sacks, hanging baskets, tarps, string lights', 'an open market entrance seen from inside, plastic strip curtain, the rainy neon street beyond'],
+  shop: ['a small shop side wall: shelving with boxes and odds and ends, a poster wall, a vending machine, neon strip light', 'a shop window from inside with neon window signs reversed, rain on the glass, the street outside at night'],
+  clinic: ['a clinic waiting room side wall: rows of plastic seats, health posters, a water cooler, a wall TV, fluorescent light', 'a frosted glass clinic entrance from inside, automatic sliding doors, rain and neon outside'],
+  lobby: ['a lobby side wall: tall panelled wall with uplights, a large potted plant, a bench, art in a frame', 'a tall glass lobby entrance from inside, revolving door, rainy neon city street outside'],
+  depot: ['a warehouse office side wall: metal shelving with parcels and crates, a forklift charger, hazard stripes, work lights', 'a roller shutter door half open from inside, rain falling outside, sodium lights of a container yard'],
+};
+for (const [k, [side, win]] of Object.entries(roomTypes)) {
+  add('interior', `${k}_side`, 'fal-ai/flux-2-pro', { prompt: `${side}. ${WALL}`, image_size: { width: 1536, height: 1024 }, output_format: 'jpeg', seed: 92 });
+  add('interior', `${k}_window`, 'fal-ai/flux-2-pro', { prompt: `${win}. perfectly frontal straight-on photograph, zero perspective, fills the frame edge to edge, photorealistic`, image_size: { width: 1536, height: 1024 }, output_format: 'jpeg', seed: 93 });
+}

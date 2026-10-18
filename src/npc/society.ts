@@ -11,7 +11,7 @@ import { addRep, newMemory, repLabel, writeSave, type Save } from '../game/progr
 import { makePersona } from './persona';
 import type { Persona } from './protocol';
 import type { Memory, Talker } from './conversation';
-import { REGULARS, PLACES, locatePlaces, regularId, hookText, jobPay, randomJob, type Job, type PlaceSpot, type Regular } from './regulars';
+import { REGULARS, PLACES, locatePlaces, regularId, hookText, jobPay, randomJob, shopJob, type Job, type PlaceSpot, type Regular } from './regulars';
 
 export interface SocietyHost {
   crowd: Crowd; campaign: Campaign; save: Save; hud: Hud; audio: AudioSys; spots: Spot[];
@@ -20,7 +20,15 @@ export interface SocietyHost {
   busy(): boolean;
   /** pause / resume the free-ride delivery job while a street job runs */
   suspendDeliveries(on: boolean): void;
+  /** the counter inside a place (building its room if needed) */
+  counter(placeId: string): THREE.Vector3;
+  /** the place the courier is inside right now, if any */
+  inside(): string | null;
 }
+
+const CLERK_JOB: Record<string, string> = {
+  food: 'cook behind the counter', market: 'stallholder', shop: 'works the counter', clinic: 'night receptionist', lobby: 'front desk clerk', depot: 'shift dispatcher',
+};
 
 interface Active { giverId: string; giverName: string; giverDistrict: DistrictId; job: Job; pay: number; regular: Regular | null; def: MissionDef }
 
@@ -39,18 +47,8 @@ export class Society {
 
   regularOf(t: Talker) { return t.key ? REGULARS.find((r) => regularId(r) === t.key) ?? null : null; }
 
-  /** Keep the regulars standing at their spots while the courier is anywhere near. */
-  update(dt: number) {
-    this.spawnT -= dt;
-    if (this.spawnT > 0) return;
-    this.spawnT = 0.5;
-    const pp = this.h.playerPos();
-    for (const r of REGULARS) {
-      const ps = this.places.get(r.home);
-      if (!ps || ps.stand.distanceTo(pp) > 150 || this.h.crowd.byKey(regularId(r))) continue;
-      this.h.crowd.addFixed(r.type as never, ps.stand, Math.atan2(ps.spot.nx, ps.spot.nz), regularId(r));
-    }
-  }
+  /** Regulars work inside their places now (see Interiors); nothing to keep alive out on the street. */
+  update(_dt: number) { void this.spawnT; }
 
   /** Spots of regulars who have work for the courier right now (for the minimap). */
   jobMarkers(): THREE.Vector3[] {
@@ -76,7 +74,13 @@ export class Society {
       return { ...r.persona, id: regularId(r), district: DISTRICTS[ps.place.district].name, hook: this.hookFor(t, r) };
     }
     let p = this.personas.get(t.id);
-    if (!p) { p = makePersona(t.id, t.type, districtAt(t.pos.x, t.pos.z)); this.personas.set(t.id, p); }
+    if (!p) {
+      const home = t.inside ? this.places.get(t.inside) : null;
+      p = makePersona(t.id, t.type, home ? home.place.district : districtAt(t.pos.x, t.pos.z));
+      // the person behind a counter works there
+      if (home && t.role === 'clerk') p = { ...p, job: `${CLERK_JOB[t.roomType ?? 'shop'] ?? 'works'} at ${home.place.name}` };
+      this.personas.set(t.id, p);
+    }
     if (this.personas.size > 300) this.personas.delete(this.personas.keys().next().value!);
     return { ...p, hook: this.hookFor(t, null) };
   }
@@ -91,7 +95,11 @@ export class Society {
       if (m.rel <= -3) return null; // they won't trust you with anything
       job = r.jobs[m.jobsDone % r.jobs.length];
       from = this.places.get(r.home)!.curb;
-    } else job = randomJob(t.id, districtAt(t.pos.x, t.pos.z));
+    } else if (t.inside && t.role === 'clerk') {
+      job = shopJob(t.id, t.inside);
+      from = this.places.get(t.inside)!.curb;
+    } else if (t.inside) job = null;
+    else job = randomJob(t.id, districtAt(t.pos.x, t.pos.z));
     if (!job) return null;
     const dest = this.places.get(job.place);
     if (!dest || !this.h.save.unlocked.includes(dest.place.district)) return null;
@@ -148,7 +156,9 @@ export class Society {
     const out = [...base];
     // what they are doing right now, so nobody pretends to be at a counter that isn't there
     const r = t ? this.regularOf(t) : null;
-    if (r) out.unshift(`Right now: you are at your own place, ${this.places.get(r.home)?.place.name ?? 'your spot'}, standing out front on the sidewalk. You are at work.`);
+    const here = t?.inside ? this.places.get(t.inside)?.place.name ?? 'the shop' : null;
+    if (r || (t && t.role === 'clerk')) out.unshift(`Right now: you are at work, behind the counter inside ${here ?? this.places.get(r!.home)?.place.name ?? 'your place'}. The courier has walked in out of the rain. Anything you sell or hand over, you have here.`);
+    else if (t?.inside) out.unshift(`Right now: you are a customer inside ${here}, out of the rain. You do not work here, so you cannot sell anything or speak for the shop.`);
     else if (t) out.unshift(`Right now: you were ${t.prevState === 'phone' ? 'standing on the sidewalk looking at your phone' : t.prevState === 'idle' ? 'standing on the sidewalk' : 'walking along the sidewalk'} when the courier stopped you. You are NOT at your workplace: there is no shop, stall, counter or menu here, and you have nothing to sell or hand over except what you carry (phone, bag, keys).`);
     out.push(`How people around here talk about the courier: ${repLabel(this.h.save.rep[d] ?? 0)}`);
     if (p.id.startsWith('regular:')) {
@@ -179,18 +189,43 @@ export class Society {
     const back = j.from.clone();
     const giverName = p.name.split(' ')[0] === 'Mr.' || p.name.split(' ')[0] === 'Mrs.' ? p.name : p.name.split(' ')[0];
     const pay = j.pay;
-    const giverDistrict = districtAt(back.x, back.z);
+    const giverPlace = r ? r.home : t.inside ?? null; // regulars and clerks are inside their place
+    const giverDistrict = giverPlace ? this.places.get(giverPlace)!.place.district : districtAt(back.x, back.z);
     const item = j.job.item;
     const def: MissionDef = {
       id: `street_${p.id}`, n: 0, title: this.title(j.job), district: dest.place.district, type: 'Street', desc: '', reward: pay, unlock: [],
-      build: (c) => ({
-        steps: j.job.kind === 'deliver'
-          ? [c.goto(dest.curb, `Take ${item} to ${dest.place.name}`, { marker: 'drop', radius: 8, time: c.legTime(back, dest.curb, 10, 45) })]
+      build: (c) => {
+        // the hand-over / pick-up happens at the counter inside the place
+        const atCounter = (placeId: string, label: string, prompt: string, sfx: 'pickup' | 'cash' = 'pickup') => {
+          let done = false;
+          const name = this.places.get(placeId)!.place.name;
+          return {
+            prompt: () => (this.h.inside() === placeId ? prompt : `Go inside ${name}`),
+            at: () => (this.h.inside() === placeId ? this.h.counter(placeId) : this.places.get(placeId)!.stand),
+            marker: 'ring' as const,
+            time: 'keep' as const,
+            start: () => { c.interaction = { at: this.h.counter(placeId), label, run: () => { done = true; c.sfx(sfx); } }; },
+            check: () => { if (done) { c.interaction = null; return true; } return false; },
+          };
+        };
+        const door = (placeId: string) => this.places.get(placeId)!.stand;
+        const steps = j.job.kind === 'deliver'
+          ? [
+            c.goto(door(dest.place.id), `Take ${item} to ${dest.place.name}`, { marker: 'drop', radius: 5, time: c.legTime(back, dest.curb, 10, 50) }),
+            atCounter(dest.place.id, `Hand over ${item}`, `Hand ${item} over at the counter`),
+          ]
           : [
-            c.goto(dest.curb, `Pick up ${item} at ${dest.place.name}`, { marker: 'pickup', radius: 8, time: c.legTime(back, dest.curb, 10, 45), done: () => c.sfx('pickup') }),
-            c.goto(back, `Bring ${item} back to ${giverName}`, { marker: 'drop', radius: 8, time: c.legTime(dest.curb, back, 10, 45) }),
-          ],
-      }),
+            c.goto(door(dest.place.id), `Pick up ${item} at ${dest.place.name}`, { marker: 'pickup', radius: 5, time: c.legTime(back, dest.curb, 10, 50) }),
+            atCounter(dest.place.id, `Collect ${item}`, `Collect ${item} at the counter`),
+            ...(giverPlace
+              ? [
+                c.goto(door(giverPlace), `Bring ${item} back to ${giverName}`, { marker: 'drop', radius: 5, time: c.legTime(dest.curb, back, 10, 50) }),
+                atCounter(giverPlace, `Give ${item} to ${giverName}`, `Give ${item} to ${giverName} at the counter`),
+              ]
+              : [c.goto(back, `Bring ${item} back to ${giverName}`, { marker: 'drop', radius: 8, time: c.legTime(dest.curb, back, 10, 45) })]),
+          ];
+        return { steps };
+      },
       street: { onFinish: (ok, why, left) => this.finishJob(ok, why, left) },
     };
     this.active = { giverId: p.id, giverName, giverDistrict, job: j.job, pay, regular: r, def };

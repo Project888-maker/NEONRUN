@@ -7,7 +7,11 @@ import { voiceFor, ARCHETYPES } from './persona';
 import { HERO_VOICE, type Persona, type Reply, type Turn } from './protocol';
 
 /** What the conversation needs to know about the person being talked to (a Crowd ped). */
-export interface Talker { id: number; type: string; p: Person; pos: THREE.Vector3; state: string; t: number; key?: string; prevState?: string }
+export interface Talker {
+  id: number; type: string; p: Person; pos: THREE.Vector3; state: string; t: number; key?: string; prevState?: string;
+  /** people inside a shop: which place, and whether they work the counter */
+  inside?: string; role?: 'clerk' | 'customer'; roomType?: string;
+}
 
 /** The bits of the game's audio engine used for generated speech. */
 export interface SpeechAudio {
@@ -100,6 +104,13 @@ export class Conversation {
     const input = $('cv-input') as HTMLInputElement;
     input.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Escape') { input.blur(); this.leave(); } });
     input.addEventListener('keyup', (e) => e.stopPropagation());
+    $('cv-type').addEventListener('click', () => this.openTyping());
+    // on a keyboard, just start typing: the first letter opens the box (digits 1-3 still pick replies)
+    addEventListener('keydown', (e) => {
+      if (!this.active || this.closing || document.activeElement === input || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.key === 'Enter') { e.preventDefault(); this.openTyping(); return; }
+      if (e.key.length === 1 && !/[1-3]/.test(e.key) && /\S/.test(e.key)) { e.preventDefault(); e.stopPropagation(); this.openTyping(e.key); }
+    }, true);
     this.setupMic();
   }
 
@@ -124,6 +135,7 @@ export class Conversation {
     $('cv-tag').textContent = '';
     $('cv-you').classList.add('hidden');
     $('cv-job').classList.add('hidden');
+    $('cv-form').classList.add('collapsed');
     this.setLine('…');
     this.setReplies([]);
     this.request(null);
@@ -361,7 +373,17 @@ export class Conversation {
     const input = $('cv-input') as HTMLInputElement;
     const v = input.value;
     input.value = '';
+    input.blur();
+    $('cv-form').classList.add('collapsed');
     this.say(v);
+  }
+
+  /** Show the text box (it stays folded away until you want to type). */
+  private openTyping(first = '') {
+    const input = $('cv-input') as HTMLInputElement;
+    $('cv-form').classList.remove('collapsed');
+    if (first) input.value += first;
+    input.focus();
   }
 
   private setLine(text: string) { $('cv-line').textContent = text; }
@@ -406,12 +428,13 @@ export class Conversation {
       r.interimResults = true; r.continuous = false; r.maxAlternatives = 1;
       let text = '';
       r.onresult = (ev: any) => { text = Array.from(ev.results).map((x: any) => x[0].transcript).join(' '); input.value = text; };
-      r.onend = () => { this.recog = null; idle(); if (text.trim()) { input.value = ''; this.say(text); } };
+      r.onend = () => { this.recog = null; idle(); if (text.trim()) { input.value = ''; $('cv-form').classList.add('collapsed'); this.say(text); } };
       r.onerror = (ev: any) => {
         this.recog = null; idle();
         if (ev?.error === 'not-allowed' || ev?.error === 'service-not-allowed') input.placeholder = 'Microphone blocked: allow it for this site, or type here';
         else if (ev?.error === 'no-speech') input.placeholder = "Didn't catch that: tap Speak and try again";
       };
+      $('cv-form').classList.remove('collapsed'); // show what it hears
       try { r.start(); this.recog = r; btn.classList.add('on'); btn.textContent = 'Listening…'; input.placeholder = 'Listening… speak now'; } catch { idle(); }
     });
   }

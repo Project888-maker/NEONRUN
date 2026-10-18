@@ -21,6 +21,7 @@ import { Crowd, Person, PED_TYPES, type PedType, lerpAngle } from './world/peopl
 import { Conversation } from './npc/conversation';
 import { Society } from './npc/society';
 import { REGULARS, regularId } from './npc/regulars';
+import { Interiors } from './world/interiors';
 import { Barks } from './npc/barks';
 import { voiceFor, ARCHETYPES } from './npc/persona';
 import { repLabel } from './game/progress';
@@ -64,7 +65,8 @@ canvas.addEventListener('webglcontextlost', (e) => {
 
 const scene = new THREE.Scene();
 const FOG_COLOR = new THREE.Color(0x0b0a18);
-scene.fog = new THREE.FogExp2(FOG_COLOR, 0.0062);
+const fogOutdoor = new THREE.FogExp2(FOG_COLOR, 0.0062);
+scene.fog = fogOutdoor;
 scene.background = FOG_COLOR;
 const camera = new THREE.PerspectiveCamera(62, innerWidth / innerHeight, 0.15, 3200);
 camera.layers.enable(LAYER_NO_REFLECT);
@@ -252,7 +254,7 @@ function buildWorld() {
     job: (t, p) => society.job(t, p),
     acceptJob: (t, p) => society.acceptJob(t, p),
     facts: (p, t) => society.facts(p, t, convFacts()),
-    alive: (t) => mode === 'foot' && state === 'playing' && crowd.peds.includes(t as any) && t.state === 'talk',
+    alive: (t) => mode === 'foot' && state === 'playing' && (crowd.peds.includes(t as any) || !!interiors.active?.people.includes(t as any)) && t.state === 'talk',
     flee: (t) => crowd.flee(t as any, hero!.pos),
     callPolice: (t) => { noteEvent('a bystander called the police on the courier', t.pos); setTimeout(() => police.add(1, 'reported'), 2500); },
     voiceOn: () => (save.settings.voice ?? 'on') === 'on',
@@ -338,10 +340,17 @@ function buildWorld() {
   scene.add(campaign.group);
   society = new Society({
     crowd, campaign, save, hud, audio, spots: city.spots,
-    playerPos: () => playerPos,
+    playerPos: () => streetPos(),
     busy: () => missions.state === 'toDrop',
+    counter: (id) => interiors.room(id).counter,
+    inside: () => interiors.active?.placeId ?? null,
     suspendDeliveries: (on) => missions.suspend(on, playerPos),
   });
+  interiors = new Interiors({
+    phys, scene, people: A.people as any, places: society.places,
+    regularAt: (id) => { const r = REGULARS.find((q) => q.home === id); return r ? { type: r.type, key: regularId(r) } : null; },
+  });
+  scene.add(interiors.doors);
   barks = new Barks({
     crowdPeds: () => crowd.peds,
     speaker: (ped) => {
@@ -354,7 +363,7 @@ function buildWorld() {
     play: (buf, pos) => audio.playRemark(buf, pos),
     subtitle: (who, text, dur) => { if (!conv.active) subtitle(who, text, dur); },
     voiceOn: () => (save.settings.voice ?? 'on') === 'on',
-    quiet: () => !!conv.active || state !== 'playing',
+    quiet: () => !!conv.active || state !== 'playing' || !!interiors.active,
   });
 
   // video billboards
@@ -462,6 +471,11 @@ let police: Police;
 let conv: Conversation;
 let society: Society;
 let barks: Barks;
+let interiors: Interiors;
+/** outside things hidden while the courier is indoors (restored on leaving) */
+let hiddenOutside: THREE.Object3D[] = [];
+/** where the courier is on the street (the door of the place while indoors) */
+function streetPos() { return interiors?.active ? interiors.entrance(interiors.active.placeId) : playerPos; }
 /** things the courier did that bystanders may have seen (fed to the NPC brain) */
 const recentEvents: { t: number; pos: THREE.Vector3; text: string }[] = [];
 function noteEvent(text: string, pos: THREE.Vector3) { recentEvents.push({ t: simTime, pos: pos.clone(), text }); if (recentEvents.length > 12) recentEvents.shift(); }
@@ -871,6 +885,7 @@ const dynLights: { pos: THREE.Vector3; color: THREE.Color; radius: number }[] = 
 
 function updateLightPools() {
   if (poolFrame++ % 4 !== 0) return;
+  if (interiors?.active) { roomLights(interiors.active.lights); return; }
   const focus = camera.position.clone().add(new THREE.Vector3(0, 0, -30).applyQuaternion(camera.quaternion)).setY(0);
   const cand: { l: { pos: THREE.Vector3; color: THREE.Color; radius: number }; s: number }[] = [];
   const cx = Math.floor(focus.x / 48), cz = Math.floor(focus.z / 48);
@@ -913,6 +928,23 @@ function updateLightPools() {
     rl.color.copy(c.l.color);
     rl.distance = c.l.radius * 2.2;
     rl.intensity = 60;
+  });
+}
+
+/** Indoors the room's own lamps light people (pools) and the hero (real point lights). */
+function roomLights(L: { pos: THREE.Vector3; color: THREE.Color; radius: number }[]) {
+  const P = poolUniforms.uPoolPos.value, C = poolUniforms.uPoolCol.value;
+  for (let i = 0; i < MAX_POOLS; i++) {
+    const l = L[i];
+    if (!l) { P[i].set(0, -999, 0, 1); C[i].set(0, 0, 0); continue; }
+    P[i].set(l.pos.x, l.pos.y, l.pos.z, l.radius);
+    C[i].set(l.color.r, l.color.g, l.color.b).multiplyScalar(1.1);
+  }
+  const near = L.slice().sort((a, b) => a.pos.distanceTo(playerPos) - b.pos.distanceTo(playerPos));
+  realLights.forEach((rl, i) => {
+    const l = near[i];
+    if (!l || i >= Q.realLights) { rl.intensity = 0; return; }
+    rl.position.copy(l.pos); rl.color.copy(l.color); rl.distance = l.radius * 2; rl.intensity = 28;
   });
 }
 
@@ -1181,22 +1213,83 @@ function startEnter() {
 
 function talkTo() {
   if (!hero || conv.active) return;
+  if (interiors.active) {
+    const q = interiors.nearest(hero.pos, 3.2);
+    if (!q) return;
+    if (q.state !== 'talk') q.prevState = q.state;
+    q.state = 'talk'; q.t = 999;
+    conv.start(q);
+    return;
+  }
   const ped = crowd.nearest(hero.pos, 2.8);
   if (!ped) return;
   crowd.talk(ped, hero.pos, 999);
   conv.start(ped);
 }
 
+/** Black flash between the street and a room. */
+function fade(mid: () => void) {
+  const el = $('fade');
+  el.classList.add('on');
+  setTimeout(() => { try { mid(); } finally { setTimeout(() => el.classList.remove('on'), 60); } }, 260);
+}
+
+function enterPlace(id: string) {
+  if (!hero || interiors.active) return;
+  const room = interiors.room(id);
+  hero.busy = 0.6;
+  audio.play('door_open', { volume: 0.7 });
+  fade(() => {
+    interiors.active = room;
+    const keep = new Set<THREE.Object3D>([room.group, hero!.person.root, campaign.group, ...room.people.map((q) => q.p.root)]);
+    hiddenOutside = scene.children.filter((o) => o.visible && !keep.has(o) && !(o as THREE.Light).isLight && o !== camera);
+    for (const o of hiddenOutside) o.visible = false;
+    scene.fog = null;
+    reflector.enabled = false;
+    hero!.place(room.spawn);
+    hero!.person.yaw = room.spawnYaw;
+    footCam.reset(room.spawnYaw);
+    audio.indoors(true);
+    document.body.classList.add('indoors');
+    poolFrame = 0;
+  });
+}
+
+function exitPlace() {
+  const room = interiors.active;
+  if (!room || !hero) return;
+  if (conv.active) conv.leave();
+  audio.play('door_close', { volume: 0.7 });
+  fade(() => {
+    interiors.active = null;
+    for (const o of hiddenOutside) o.visible = true;
+    hiddenOutside = [];
+    scene.fog = fogOutdoor;
+    reflector.enabled = Q.reflection;
+    const ps = society.places.get(room.placeId)!;
+    const out = ps.stand.clone().add(new THREE.Vector3(ps.spot.nx, 0, ps.spot.nz).multiplyScalar(0.6)).setY(0.2);
+    hero!.place(out);
+    const yaw = Math.atan2(ps.spot.nx, ps.spot.nz);
+    hero!.person.yaw = yaw;
+    footCam.reset(yaw);
+    audio.indoors(false);
+    document.body.classList.remove('indoors');
+    poolFrame = 0;
+  });
+}
+
 /** What a bystander knows about this moment (fed to the NPC brain with every line). */
 function convFacts(): string[] {
-  const d = districtAt(playerPos.x, playerPos.z);
-  const f = [`Place: ${DISTRICTS[d].name}, on a wet sidewalk`, 'Time: the middle of the night, steady rain, neon reflecting in puddles'];
+  const sp = streetPos();
+  const d = districtAt(sp.x, sp.z);
+  const room = interiors.active ? society.places.get(interiors.active.placeId)?.place.name : null;
+  const f = [room ? `Place: inside ${room}, ${DISTRICTS[d].name}` : `Place: ${DISTRICTS[d].name}, on a wet sidewalk`, `Time: the middle of the night, steady rain${room ? ' outside' : ', neon reflecting in puddles'}`];
   if (police.heat > 0) f.push(`The courier is wanted by the police right now (${police.heat} of 5 stars); sirens in the area`);
   for (const e of recentEvents) {
     const ago = simTime - e.t;
-    if (ago < 120 && e.pos.distanceTo(playerPos) < 70) f.push(`About ${Math.max(5, Math.round(ago / 5) * 5)} seconds ago, close by: ${e.text}`);
+    if (ago < 120 && e.pos.distanceTo(sp) < 70) f.push(`About ${Math.max(5, Math.round(ago / 5) * 5)} seconds ago, close by: ${e.text}`);
   }
-  if (carPos.distanceTo(playerPos) < 14) f.push(`The courier's car (${carDef(carId)?.name ?? 'a car'}) is parked a few metres away`);
+  if (carPos.distanceTo(sp) < 14) f.push(`The courier's car (${carDef(carId)?.name ?? 'a car'}) is parked a few metres away`);
   if (campaign.active) f.push('The courier seems to be in the middle of a job, checking their phone for directions');
   else if (missions?.state === 'toDrop') f.push('The courier is carrying a parcel for a delivery');
   return f;
@@ -1213,9 +1306,24 @@ function handleInteractions() {
     setContext(null); setTouchCtx(null, null);
   } else if (mode === 'foot' && hero) {
     const story = campaign.interaction && campaign.interaction.at.distanceTo(hero.pos.setY(campaign.interaction.at.y)) < 2.8 ? campaign.interaction : null;
-    if (e) startEnter();
+    const inside = interiors.active;
+    const tgt = inside ? null : enterTarget();
+    const door = !inside && !tgt ? interiors.nearestDoor(hero.pos) : null;
+    // build the room behind a door you are walking towards, so it's ready (walls loaded) when you step in
+    if (!inside) { const soon = interiors.nearestDoor(hero.pos, 30); if (soon) interiors.room(soon); }
+    const leave = inside && hero.pos.distanceTo(inside.exit) < 1.8;
+    if (e) { if (leave) exitPlace(); else if (door) enterPlace(door); else if (!inside) startEnter(); }
     if (t) { if (story) story.run(); else talkTo(); }
-    const tgt = enterTarget();
+    if (inside || door) {
+      const q = story ? null : inside ? interiors.nearest(hero.pos, 3.2) : null;
+      const who = q ? society.persona(q) : null;
+      const label = who && (q!.key ? (save.npc[who.id]?.met ?? 0) > 0 : true) ? `Talk to ${q!.key ? who.name : who.name.split(' ')[0]}` : 'Talk';
+      const doorName = door ? society.places.get(door)!.place.name.replace(/^the /, '') : '';
+      setContext(story ? `<b>T</b> · ${story.label}` : leave ? '<b>E</b> · Leave' : door ? `<b>E</b> · Enter ${doorName}` : q ? `<b>T</b> · ${label}` : null);
+      setTouchCtx(leave ? 'LEAVE' : door ? 'ENTER' : null, story ? 'GIVE' : q ? 'TALK' : null);
+      document.body.classList.toggle('on-foot', true);
+      return;
+    }
     const ped = story ? null : crowd.nearest(hero.pos, 2.8);
     const known = ped?.key ? society.persona(ped) : null;
     const talkLabel = known && (save.npc[known.id]?.met ?? 0) > 0 ? `Talk to ${known.name}` : 'Talk';
@@ -1313,6 +1421,7 @@ function frame(now: number) {
       for (const k of ['Digit1', 'Digit2', 'Digit3', 'Numpad1', 'Numpad2', 'Numpad3']) if (input.consume(k)) conv.key(k);
     }
     if (input.consume('Escape') || input.consume('KeyP')) { pause(); input.endFrame(); }
+    if (interiors.active && mode !== 'foot') exitPlace();
     if (input.consume('KeyC')) { chase.mode = chase.mode === 'chase' ? 'far' : chase.mode === 'far' ? 'hood' : 'chase'; save.settings.cam = chase.mode; writeSave(save); }
     if (input.consume('KeyR') && mode === 'drive') resetCar();
     if (input.consume('KeyM')) { bigMap = !bigMap; show('bigmap', bigMap); }
@@ -1324,7 +1433,7 @@ function frame(now: number) {
     hitCooldown = Math.max(0, hitCooldown - dtReal);
     if (subT > 0) { subT -= dtReal; if (subT <= 0) $('subtitle').classList.add('hidden'); }
     prof.mark('input');
-    traffic.update(dtReal, mode === 'drive' ? carPos : playerPos, carVel, vehicle.body);
+    if (!interiors.active) traffic.update(dtReal, mode === 'drive' ? carPos : playerPos, carVel, vehicle.body);
     prof.mark('traffic');
     acc += dtReal;
     let steps = 0;
@@ -1370,13 +1479,14 @@ function frame(now: number) {
     }
     prof.mark('hero+cam');
     probeHook?.(dtReal);
-    crowd.update(dtReal, playerPos, driving ? { pos: carPos, vel: carVel, halfLen: car.dims.length / 2, halfWid: car.dims.width / 2, yaw: vehicle.yaw(), speed: vehicle.speedAbs } : null);
+    if (interiors.active) interiors.update(dtReal);
+    else crowd.update(dtReal, playerPos, driving ? { pos: carPos, vel: carVel, halfLen: car.dims.length / 2, halfWid: car.dims.width / 2, yaw: vehicle.yaw(), speed: vehicle.speedAbs } : null);
     if (conv.active) conv.update(dtReal, camera);
     society.update(dtReal);
     barks.update(dtReal, playerPos, mode === 'foot', playerVel.length(), police.heat > 0);
     if (save.deliveries !== lastDeliveries) { if (lastDeliveries >= 0 && save.deliveries > lastDeliveries) society.repEvent('delivery', playerPos); lastDeliveries = save.deliveries; }
     prof.mark('crowd');
-    const pol = police.update(dtReal, simTime, playerPos, playerVel, !driving);
+    const pol = police.update(dtReal, simTime, streetPos(), interiors.active ? new THREE.Vector3() : playerVel, !driving, !!interiors.active);
     prof.mark('police');
     audio.siren(pol.nearestPos && pol.nearest < 160 ? pol.nearestPos : null);
     missions.update(dtReal, simTime, playerPos, playerVel, driving ? vehicle.speedAbs : playerVel.length(), driving && vehicle.drifting, traffic.cars, () => {
@@ -1408,7 +1518,8 @@ function frame(now: number) {
     if (spatialT <= 0) { spatialT = 0.5; audio.updateSpatial(city.sounds, camera.position); audio.sirens(0.12 + 0.1 * Math.sin(simTime * 0.05)); }
     prof.mark('audio');
     // HUD
-    const d = districtAt(playerPos.x, playerPos.z);
+    const sp = streetPos();
+    const d = districtAt(sp.x, sp.z);
     if ((save.rep[d] ?? 0) !== shownRep || d !== lastDistrict) { shownRep = save.rep[d] ?? 0; hud.setRep(shownRep, repLabel(shownRep)); }
     if (d !== lastDistrict) { hud.setDistrict(d); if (lastDistrict && save.unlocked.includes(d)) audio.say(({ neon: 'brief_neon', backstreets: 'brief_back', downtown: 'brief_downtown', docks: 'brief_docks' } as const)[d]); lastDistrict = d; }
     document.querySelector('.hud-br')!.classList.toggle('hidden', !driving);
@@ -1510,6 +1621,11 @@ function debugApi() {
     talk: () => talkTo(),
     conv: () => ({ active: !!conv.active, name: document.getElementById('cv-name')!.textContent, tag: document.getElementById('cv-tag')!.textContent, line: document.getElementById('cv-line')!.textContent, replies: [...document.querySelectorAll('#cv-replies .cv-reply')].map((b) => b.textContent), persona: conv.persona, heroBusy: hero?.busy ?? 0 }),
     convSay: (text: string) => conv.say(text),
+    heroToDoor: (id: string) => { const ps = society.places.get(id)!; hero?.place(ps.stand.clone().add(new THREE.Vector3(ps.spot.nx, 0, ps.spot.nz).multiplyScalar(0.8)).setY(0.2)); return ps.stand.toArray(); },
+    enterPlace: (id: string) => enterPlace(id),
+    exitPlace: () => exitPlace(),
+    indoors: () => interiors.active ? { place: interiors.active.placeId, people: interiors.active.people.map((q) => ({ type: q.type, role: q.role, key: q.key ?? null })), hero: hero?.pos.toArray().map((n) => +n.toFixed(1)), counter: interiors.active.counter.toArray().map((n) => +n.toFixed(1)), heat: police.heat } : null,
+    heroToCounter: () => { if (interiors.active && hero) hero.place(interiors.active.counter.clone().setY(0.2)); },
     convAccept: () => (document.querySelector('#cv-replies .cv-reply.accept') as HTMLButtonElement | null)?.click(),
     regulars: () => [...society.places.values()].length && REGULARS.map((r) => ({ key: r.key, home: r.home, at: society.places.get(r.home)?.stand.toArray().map((n) => Math.round(n)), present: !!crowd.byKey(regularId(r)) })),
     heroToRegular: (key: string) => {
