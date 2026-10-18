@@ -25,7 +25,35 @@ export interface StreamClient {
   messages: { stream: (body: Anthropic.MessageStreamParams) => AsyncIterable<Anthropic.MessageStreamEvent> & { finalMessage(): Promise<Anthropic.Message> } };
 }
 
+/** GET /api/talk?check: one real (tiny) model call to confirm the key and model work after a deploy. */
+async function healthCheck(req: Request, client: StreamClient | null): Promise<Response> {
+  const out = (body: Record<string, unknown>, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } });
+  if (!client) return out({ ok: false, reason: 'ANTHROPIC_API_KEY is not set for this deployment' }, 503);
+  const ip = (req.headers.get('x-forwarded-for') ?? '').split(',')[0].trim() || 'local';
+  if (limited(ip)) return out({ ok: false, reason: 'rate limited' }, 429);
+  const t0 = Date.now();
+  try {
+    const talk = sanitizeRequest({ persona: { id: 'check', name: 'Mei Tanaka', age: 61, job: 'noodle stand owner', district: 'Neon District', traits: { warmth: 0.6, chatty: 0.5 }, mood: 'busy but cheerful', quirk: 'calls everyone kid', goal: 'sell out before dawn', fear: 'the health inspector', speech: 'warm and quick' }, facts: ['Place: Neon District', 'Time: night, raining'], history: [], say: 'Evening! Still open?', notes: [] })!;
+    const s = client.messages.stream({
+      model: MODEL, max_tokens: 400, thinking: { type: 'disabled' },
+      output_config: { effort: 'low', format: { type: 'json_schema', schema: REPLY_SCHEMA as unknown as Record<string, unknown> } },
+      system: [{ type: 'text', text: WORLD_RULES, cache_control: { type: 'ephemeral' } }],
+      messages: [{ role: 'user', content: buildUserMessage(talk) }],
+    });
+    let first = 0;
+    for await (const ev of s) if (!first && ev.type === 'content_block_delta') first = Date.now() - t0;
+    const msg = await s.finalMessage();
+    const text = msg.content.map((b) => (b.type === 'text' ? b.text : '')).join('');
+    let reply = null;
+    try { reply = normalizeReply(JSON.parse(text)); } catch { /* reported below */ }
+    return out({ ok: !!reply, model: msg.model, stop: msg.stop_reason, firstTokenMs: first, totalMs: Date.now() - t0, usage: msg.usage, reply: reply ?? text.slice(0, 300) });
+  } catch (e) {
+    return out({ ok: false, reason: e instanceof Anthropic.APIError ? `${e.status} ${e.message}`.slice(0, 300) : String(e).slice(0, 300) }, 502);
+  }
+}
+
 export async function handleTalk(req: Request, client: StreamClient | null): Promise<Response> {
+  if (req.method === 'GET' && new URL(req.url).searchParams.has('check')) return healthCheck(req, client);
   if (req.method !== 'POST') return new Response('Method not allowed', { status: 405 });
   // only our own pages may call this (the browser always sends Origin on a cross-site POST)
   const origin = req.headers.get('origin');
