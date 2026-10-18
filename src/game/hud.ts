@@ -69,7 +69,7 @@ export class Hud {
   private mapK = 1024 / (HALF * 2 + 80);
   private m2p(x: number) { return (x + HALF + 40) * this.mapK; }
 
-  drawMinimap(pos: THREE.Vector3, yaw: number, target: THREE.Vector3 | null, route: THREE.Vector3[], drones: THREE.Vector3[], pickupKind: 'pickup' | 'drop' | null, people: THREE.Vector3[] = []) {
+  drawMinimap(pos: THREE.Vector3, yaw: number, target: THREE.Vector3 | null, route: THREE.Vector3[], drones: THREE.Vector3[], pickupKind: 'pickup' | 'drop' | null, people: THREE.Vector3[] = [], shops: THREE.Vector3[] = []) {
     const g = this.mctx, W = this.mini.width;
     const zoom = 2.2; // map px per minimap px scale
     g.save();
@@ -102,6 +102,9 @@ export class Hud {
       g.stroke();
       g.shadowBlur = 0;
     }
+    // shops you can walk into: small warm squares
+    g.fillStyle = 'rgba(255, 214, 160, 0.85)';
+    for (const q of shops) g.fillRect(this.m2p(q.x) - 2.5, this.m2p(q.z) - 2.5, 5, 5);
     // regulars with work: amber diamonds
     g.fillStyle = '#ffb347';
     for (const q of people) {

@@ -120,13 +120,14 @@ export class Interiors {
     const n = new THREE.Vector3(ps.spot.nx, 0, ps.spot.nz);
     g.position.set(ps.spot.x - n.x * 4.42, 0, ps.spot.z - n.z * 4.42);
     g.rotation.y = Math.atan2(n.x, n.z);
-    const glow = new THREE.MeshBasicMaterial({ color: new THREE.Color(2.2, 1.5, 0.5) });
-    for (const [x, y, w, hh] of [[-0.85, 1.25, 0.08, 2.5], [0.85, 1.25, 0.08, 2.5], [0, 2.5, 1.78, 0.08]] as const) {
+    const glow = new THREE.MeshBasicMaterial({ color: new THREE.Color(1.6, 1.05, 0.35) });
+    for (const [x, y, w, hh] of [[-0.82, 1.25, 0.05, 2.5], [0.82, 1.25, 0.05, 2.5], [0, 2.5, 1.69, 0.05]] as const) {
       const b = new THREE.Mesh(new THREE.BoxGeometry(w, hh, 0.06), glow);
       b.position.set(x, y, 0);
       g.add(b);
     }
-    const glass = new THREE.Mesh(new THREE.PlaneGeometry(1.62, 2.42), new THREE.MeshStandardMaterial({ color: 0x0a0d14, roughness: 0.15, metalness: 0.6, emissive: new THREE.Color(0.35, 0.22, 0.08), emissiveIntensity: 0.6 }));
+    // dark tinted glass with a faint warm glow from inside
+    const glass = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 2.42), new THREE.MeshStandardMaterial({ color: 0x06080d, roughness: 0.08, metalness: 0.7, emissive: new THREE.Color(0.09, 0.055, 0.02), envMapIntensity: 0.6 }));
     glass.position.set(0, 1.22, 0.01);
     g.add(glass);
     // name sign
@@ -138,12 +139,12 @@ export class Interiors {
     x.textAlign = 'center'; x.textBaseline = 'middle';
     x.shadowColor = '#ffb347'; x.shadowBlur = 18;
     x.fillStyle = '#ffe2b0';
-    const name = ps.place.name.replace(/^the /, '').toUpperCase();
+    const name = ps.place.name.replace(/^the /, '').replace(/ on the strip$/, '').toUpperCase();
     x.fillText(name.length > 22 ? name.slice(0, 22) : name, 256, 50);
     const tex = new THREE.CanvasTexture(c);
     tex.colorSpace = THREE.SRGBColorSpace;
-    const sign = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 0.49), new THREE.MeshBasicMaterial({ map: tex, transparent: true, color: new THREE.Color(1.8, 1.8, 1.8), depthWrite: false }));
-    sign.position.set(0, 2.95, 0.03);
+    const sign = new THREE.Mesh(new THREE.PlaneGeometry(2.0, 0.375), new THREE.MeshBasicMaterial({ map: tex, transparent: true, color: new THREE.Color(1.4, 1.4, 1.4), depthWrite: false }));
+    sign.position.set(0, 2.82, 0.05);
     g.add(sign);
     g.userData.placeId = id;
     return g;
@@ -196,8 +197,8 @@ export class Interiors {
     g.add(floor, ceil);
     // light strips / fittings on the ceiling and the lights they give off
     const lights: Room['lights'] = [];
-    const lampMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(st.light).multiplyScalar(2.4) });
-    const accentMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(st.light2).multiplyScalar(2.2) });
+    const lampMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(st.light).multiplyScalar(1.5) });
+    const accentMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(st.light2).multiplyScalar(1.6) });
     for (const [x, z] of [[-3, -1.8], [3, -1.8], [-3, 2], [3, 2]]) {
       const lamp = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.06, 0.25), lampMat);
       lamp.position.set(x, H - 0.05, z);
@@ -262,11 +263,11 @@ export class Interiors {
     const box = (w: number, h: number, d: number, m: THREE.Material, x: number, y: number, z: number) => { const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); b.position.set(x, y, z); g.add(b); return b; };
     const cyl = (r: number, h: number, m: THREE.Material, x: number, y: number, z: number) => { const c = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, 16), m); c.position.set(x, y, z); g.add(c); return c; };
     if (type === 'food') {
-      const chrome = mat(0xb8bcc4, 0.25, 0.9), seat = mat(0x8a1c1c, 0.5);
+      const chrome = new THREE.MeshStandardMaterial({ color: 0x8a8e94, roughness: 0.35, metalness: 0.6, envMapIntensity: 0.3 }), seat = mat(0x8a1c1c, 0.5);
       for (let i = 0; i < 5; i++) { const x = -2.4 + i * 1.2; cyl(0.04, 0.72, chrome, x, 0.36, cz + 0.85); cyl(0.2, 0.08, seat, x, 0.76, cz + 0.85); }
-      const lantern = new THREE.MeshBasicMaterial({ color: new THREE.Color(2.4, 0.5, 0.25) });
+      const lantern = new THREE.MeshStandardMaterial({ color: 0x7a1408, emissive: new THREE.Color(0.9, 0.22, 0.08), roughness: 0.7 }); // paper glowing from inside
       for (let i = 0; i < 4; i++) { const s = new THREE.Mesh(new THREE.SphereGeometry(0.22, 14, 10), lantern); s.scale.y = 1.25; s.position.set(-2.7 + i * 1.8, 3.1, cz + 0.2); g.add(s); }
-      const steel = mat(0x9aa0a8, 0.35, 0.8);
+      const steel = new THREE.MeshStandardMaterial({ color: 0x5c6066, roughness: 0.45, metalness: 0.5, envMapIntensity: 0.25 }); // dull pots, not a neon mirror
       cyl(0.32, 0.45, steel, 1.6, 1.28, cz - 0.05); cyl(0.26, 0.38, steel, -1.2, 1.25, cz - 0.05);
     } else if (type === 'market') {
       const wood = mat(0x6b4f30, 0.85);

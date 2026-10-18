@@ -358,6 +358,7 @@ function buildWorld() {
     regularAt: (id) => { const r = REGULARS.find((q) => q.home === id); return r ? { type: r.type, key: regularId(r) } : null; },
   });
   scene.add(interiors.doors);
+  shopMarkers = [...society.places.values()].map((p) => p.stand);
   barks = new Barks({
     crowdPeds: () => crowd.peds,
     speaker: (ped) => {
@@ -479,6 +480,7 @@ let conv: Conversation;
 let society: Society;
 let barks: Barks;
 let interiors: Interiors;
+let shopMarkers: THREE.Vector3[] = [];
 /** outside things hidden while the courier is indoors (restored on leaving) */
 let hiddenOutside: THREE.Object3D[] = [];
 /** where the courier is on the street (the door of the place while indoors) */
@@ -1540,7 +1542,7 @@ function frame(now: number) {
     document.querySelector('.hud-br')!.classList.toggle('hidden', !driving);
     if (driving) hud.drawSpeedo(Math.abs(vehicle.speed) * 3.6, vehicle.rpm, vehicle.speed < -0.5 ? 0 : vehicle.gear, vehicle.boost, vehicle.boosting);
     const yaw = driving || !hero ? vehicle.yaw() : hero.person.yaw;
-    hud.drawMinimap(playerPos, yaw, obj.target, obj.route, [...obj.drones.map((q) => q.mesh.position), ...police.units.map((u) => u.pos)], obj.kind, society.jobMarkers());
+    hud.drawMinimap(playerPos, yaw, obj.target, obj.route, [...obj.drones.map((q) => q.mesh.position), ...police.units.map((u) => u.pos)], obj.kind, society.jobMarkers(), shopMarkers);
     if (bigMap) hud.drawBigMap(playerPos, yaw, obj.target, obj.route);
     hud.arrow(camera, obj.target, obj.kind === 'drop' ? '#ff2fb4' : '#21f3ff');
     hud.tick(dtReal);
