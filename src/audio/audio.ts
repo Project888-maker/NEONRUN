@@ -13,6 +13,9 @@ export type MusicName = 'menu' | 'chill' | 'drive' | 'urgent' | 'chase' | 'final
 
 interface Loop { src: AudioBufferSourceNode; gain: GainNode; panner?: PannerNode; filter?: BiquadFilterNode }
 
+/** mix while a conversation is on (multipliers of the player's volume settings) */
+const DUCK = { music: 0.25, sfx: 0.35, voice: 1.3 };
+
 export class AudioSys {
   ctx: AudioContext;
   master: GainNode; sfx: GainNode; music: GainNode; voice: GainNode; amb: GainNode;
@@ -73,8 +76,8 @@ export class AudioSys {
   setVolumes(v: Partial<typeof this.volumes>) {
     Object.assign(this.volumes, v);
     this.master.gain.value = this.volumes.master;
-    this.music.gain.value = this.volumes.music;
-    this.sfx.gain.value = this.volumes.sfx;
+    this.music.gain.value = this.volumes.music * (this.ducked ? DUCK.music : 1);
+    this.sfx.gain.value = this.volumes.sfx * (this.ducked ? DUCK.sfx : 1);
   }
 
   play(name: SfxName, opts: { volume?: number; rate?: number; pos?: THREE.Vector3 } = {}) {
@@ -321,8 +324,14 @@ export class AudioSys {
     try { s?.stop(); } catch { /* not started */ }
   }
   /** Lower the music while people are talking. */
+  private ducked = false;
+  /** While people talk: music, effects and ambience (rain, traffic, sirens) step back, voices step up. */
   duckMusic(on: boolean) {
-    this.music.gain.setTargetAtTime(this.volumes.music * (on ? 0.3 : 1), this.ctx.currentTime, 0.3);
+    this.ducked = on;
+    const t = this.ctx.currentTime;
+    this.music.gain.setTargetAtTime(this.volumes.music * (on ? DUCK.music : 1), t, 0.3);
+    this.sfx.gain.setTargetAtTime(this.volumes.sfx * (on ? DUCK.sfx : 1), t, 0.3);
+    this.voice.gain.setTargetAtTime(on ? DUCK.voice : 1, t, 0.3);
   }
 
   sirenLoop?: Loop;
