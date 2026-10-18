@@ -90,13 +90,42 @@ node scripts/story_json.mjs                 # campaign subtitles
 - `npx tsx tests/rollover.test.ts` — hard knocks must end on the wheels (fails without the anti-rollover assist)
 - `npx tsx tests/police.test.ts` — pursuit closes in, boxes the player, never touches the car
 - `npx tsx tests/drones.test.ts` — drones can be outrun by car, warn before striking, back off after a hit
+- `npx tsx tests/npc.test.ts` — NPC personas, the /api/talk function and the client stream
 - `node scripts/shots.mjs <url> <dir> stride` — prints both hero feet per frame while walking and running; a planted foot must hold its position for several frames
 - `node scripts/shots.mjs <url> <dir> gait` / `police` — get in/out frames; police pressure (closest cruiser distance, car stays upright)
 - `npx vite preview` then `node scripts/shots.mjs "http://localhost:4173/?debug&q=high&fixed" screenshots [scenarios]` — headless Chromium screenshots + console errors. Scenarios include `drive`, `cars`, `foot` (exit, walk, talk, carjack) and `story` (teleports through every mission; `STORY=m1,m4` limits it). `?fixed` makes the sim advance 1/30 s per frame so software rendering still produces representative sim time.
 - URL flags: `?debug` (fps / draw calls overlay), `?q=low|med|high`, `?touch` (force touch controls), `?fixed`, `?allmissions` (open every story mission).
 
-## NPC brain (proposal)
-See `docs/npc-brain.md`: one fast model behind a Vercel function, a persona card and memory for each person, talking as the courier, tasks from people, and realism while talking. Not built yet; it needs an API key and a budget decision.
+## NPC brain
+The plan is in `docs/npc-brain.md`. Phase A (talking to anyone) is built; phases B–D (bark library, tasks from people, interiors, lip sync) are not.
+
+**Personas** — `src/npc/persona.ts`
+- Every pedestrian gets a seeded card from its spawn id and model type: name, age, job, five temperament sliders, mood, quirk, goal, fear and speech style.
+- No model call is needed. The same person always gets the same card.
+
+**Server** — `api/talk.ts`
+- Calls Claude Haiku 5.5 with no thinking and low effort, for the fastest first words.
+- Uses a cached shared world prompt (`WORLD_RULES` in `src/npc/protocol.ts`) and a structured reply: line, emotion, gesture, action, three suggested courier replies, and a memory note.
+- Streams NDJSON events (`TalkEvent`).
+- Same-origin only, 40 lines per IP per 5 minutes, and inputs are clipped (`sanitizeRequest`).
+- The key comes from `ANTHROPIC_API_KEY` in the Vercel project environment; the SDK also honours `ANTHROPIC_BASE_URL`. Without a key the function answers `no_key` and the game uses the recorded street lines.
+- `vite.config.ts` serves the same function from `vite` / `vite preview`, so it works locally with the key exported in the shell.
+
+**Game** — `src/npc/conversation.ts`
+- **T** near someone opens the talk panel: three suggested replies (keys 1–3), a text box, hold-to-talk speech input where the browser has it, and **Esc** to leave.
+- Camera and bodies: an over-the-shoulder two-shot; both turn to face each other; neck/head look-at (`Person.look`) and head motion while speaking (`Person.speak`); the reply's gesture plays.
+- Actions: `end` (walks off), `flee`, `call_police` (one wanted star after 2.5 s).
+- What the person is told (`convFacts()`): district, rain, wanted level, the courier's car nearby, and recent events within 70 m and 2 minutes (carjack, hitting a pedestrian).
+- Each person remembers the last 16 lines and up to 6 notes for the session.
+- Voices: the device's speech voices, with pitch and rate per persona. Settings → "People's voices" switches to subtitles only.
+
+**Limits**
+- The character models have no jaw or face bones, so mouths don't move; that is phase D.
+- Memory is per spawned pedestrian for the session; recurring characters are phase B.
+
+**Tests**
+- `npx tsx tests/npc.test.ts`: persona variety, prompt and limits, the server stream with a fake model client, the 403/400/429/503 paths, client streaming and the offline fallback.
+- `node scripts/shots.mjs <url> <dir> converse`: in-game with a stand-in `/api/talk`.
 
 ## Deployment
 - GitHub: branch `claude/keen-thompson-j8ie3f` of Project888-maker/NEONRUN.

@@ -218,8 +218,10 @@ export class Conversation {
     const dist = dir.length() || 1;
     dir.divideScalar(dist);
     const side = _d.set(dir.z, 0, -dir.x); // to the courier's right
-    const want = _e.copy(heroEye).addScaledVector(dir, -1.35).addScaledVector(side, 0.55).add(_up.set(0, 0.12, 0));
-    const look = _f.copy(heroEye).lerp(npcEye, 0.72).add(_up.set(0, -0.05, 0));
+    // camera wide of the courier's shoulder so the person isn't hidden behind them, aimed below eye
+    // level so both faces sit in the upper half of the frame, clear of the talk panel
+    const want = _e.copy(heroEye).addScaledVector(dir, -1.5).addScaledVector(side, 0.95).add(_up.set(0, 0.15, 0));
+    const look = _f.copy(heroEye).lerp(npcEye, 0.8).add(_up.set(0, -0.6, 0));
     if (!this.camInit) { this.cam.copy(camera.position); this.camLook.copy(look); this.camInit = true; }
     const k = Math.min(1, dt * 3.5);
     this.cam.lerp(want, k);
