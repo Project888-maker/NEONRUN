@@ -7,7 +7,7 @@ import { voiceFor, ARCHETYPES } from './persona';
 import { HERO_VOICE, type Persona, type Reply, type Turn } from './protocol';
 
 /** What the conversation needs to know about the person being talked to (a Crowd ped). */
-export interface Talker { id: number; type: string; p: Person; pos: THREE.Vector3; state: string; t: number; key?: string }
+export interface Talker { id: number; type: string; p: Person; pos: THREE.Vector3; state: string; t: number; key?: string; prevState?: string }
 
 /** The bits of the game's audio engine used for generated speech. */
 export interface SpeechAudio {
@@ -32,7 +32,7 @@ export interface ConvHost {
   heroPerson(): Person;
   heroPos(): THREE.Vector3;
   setHeroBusy(on: boolean): void;
-  facts(p: Persona): string[];
+  facts(p: Persona, t: Talker): string[];
   alive(t: Talker): boolean;
   flee(t: Talker): void;
   callPolice(t: Talker): void;
@@ -43,7 +43,9 @@ export interface ConvHost {
 }
 
 const $ = (id: string) => document.getElementById(id)!;
-const GESTURE_CLIP: Record<string, Anim | null> = { talk: 'talk', shrug: 'shrug', wave: 'wave', nod: 'talk', dismiss: 'push', phone: 'phone', none: null };
+// one-off gestures play once and settle back into talking; 'push' (a shove) is never a conversation gesture
+const GESTURE_CLIP: Record<string, Anim | null> = { talk: 'talk', shrug: 'shrug', wave: 'wave', nod: 'talk', dismiss: 'shrug', phone: 'phone', none: null };
+const ONCE = new Set<Anim>(['shrug', 'wave']);
 
 /** Natural voices from /api/voice (ElevenLabs through fal), cached per line. */
 class Voices {
@@ -198,7 +200,7 @@ export class Conversation {
     let early: Promise<AudioBuffer | null> | null = null;
     let earlyText = '';
     try {
-      const res = await this.brain.ask({ persona: p, facts: this.host.facts(p), history: m.history, say, notes: m.notes }, t.type, (partial, done) => {
+      const res = await this.brain.ask({ persona: p, facts: this.host.facts(p, t), history: m.history, say, notes: m.notes }, t.type, (partial, done) => {
         if (this.active !== t || turn !== this.turn) return;
         // start generating their voice the moment the sentence is complete
         if (done && this.host.voiceOn()) { early = this.voices.get(v.name, partial, v.speed); earlyText = partial; }
@@ -232,7 +234,10 @@ export class Conversation {
     const t = this.active!;
     this.setLine(r.line);
     const clip = GESTURE_CLIP[r.gesture];
-    t.p.play(clip && t.p.has(clip) ? clip : 'talk', { fade: 0.25 });
+    if (clip && t.p.has(clip) && ONCE.has(clip)) {
+      const d = t.p.play(clip, { fade: 0.25, loop: false, restart: true });
+      setTimeout(() => { if (this.active === t && turn === this.turn && this.speakT > 0.3) t.p.play('talk', { fade: 0.35 }); }, d * 850);
+    } else t.p.play(clip && t.p.has(clip) ? clip : 'talk', { fade: 0.25 });
     const job = r.action === 'offer_job' ? this.host.job(t, this.persona!) : null;
     if (job) this.offerJob(job, t, turn);
     else if (r.action === 'none' || r.action === 'offer_job') this.setReplies(r.replies); // you can answer while they are still talking

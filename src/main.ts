@@ -251,7 +251,7 @@ function buildWorld() {
     remember: (p, m) => society.remember(p, m),
     job: (t, p) => society.job(t, p),
     acceptJob: (t, p) => society.acceptJob(t, p),
-    facts: (p) => society.facts(p, convFacts()),
+    facts: (p, t) => society.facts(p, t, convFacts()),
     alive: (t) => mode === 'foot' && state === 'playing' && crowd.peds.includes(t as any) && t.state === 'talk',
     flee: (t) => crowd.flee(t as any, hero!.pos),
     callPolice: (t) => { noteEvent('a bystander called the police on the courier', t.pos); setTimeout(() => police.add(1, 'reported'), 2500); },
@@ -1520,6 +1520,21 @@ function debugApi() {
     convLeave: () => conv.leave(),
     personaSample: (n: number) => crowd.peds.slice(0, n).map((p) => conv.personaOf(p)),
     heat: (n: number) => police.add(n, 'debug'),
+    /** who is inside a building right now (a fixed collider at chest height) */
+    wallCheck: () => {
+      const inWall = (x: number, z: number) => {
+        let hit: string | null = null;
+        phys.world.intersectionsWithPoint({ x, y: 1.0, z }, (c) => { const b = c.parent(); if (b && b.isFixed() && !c.isSensor()) { const h = c.halfExtents?.(); hit = h ? `box ${h.x.toFixed(1)}x${h.z.toFixed(1)}` : 'shape'; return false; } return true; });
+        return hit;
+      };
+      const out: string[] = [];
+      for (const p of crowd.peds) { const h = inWall(p.pos.x, p.pos.z); if (h) out.push(`ped ${p.type} ${p.state} at ${p.pos.x.toFixed(1)},${p.pos.z.toFixed(1)} in ${h}`); }
+      for (const u of police.units) { const h = inWall(u.pos.x, u.pos.z); if (h) out.push(`police at ${u.pos.x.toFixed(1)},${u.pos.z.toFixed(1)} in ${h}`); }
+      for (const c of traffic.cars) { const h = inWall(c.pos.x, c.pos.z); if (h) out.push(`traffic at ${c.pos.x.toFixed(1)},${c.pos.z.toFixed(1)} in ${h}`); }
+      return { peds: crowd.peds.length, police: police.units.length, traffic: traffic.cars.length, inside: out };
+    },
+    panicNear: (r: number) => crowd.panic(playerPos, r),
+    clearHeat: () => police.clear(),
     peds: () => crowd.peds.map((p) => ({ type: p.type, state: p.state, d: +p.pos.distanceTo(playerPos).toFixed(1) })).sort((a, b) => a.d - b.d).slice(0, 6),
     heroTo: (x: number, z: number) => hero?.place(new THREE.Vector3(x, 0.2, z)),
     nearestPed: () => { const p = crowd.peds.slice().sort((a, b) => a.pos.distanceTo(playerPos) - b.pos.distanceTo(playerPos))[0]; return p ? p.pos.toArray() : null; },

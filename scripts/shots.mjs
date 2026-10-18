@@ -384,6 +384,21 @@ if (want('jobs')) {
   console.log('second visit told', JSON.stringify({ facts: said.at(-1)?.facts?.slice(-2), notes: said.at(-1)?.notes, hook: said.at(-1)?.hook }));
   await N('convLeave');
 }
+if (want('walls')) {
+  // who ends up inside buildings: people walking / fleeing, police chasing an on-foot courier, traffic
+  const seen = new Map();
+  const sample = async (label) => { const w = await N('wallCheck'); for (const x of w.inside) seen.set(x.replace(/ at .*? in /, ' in '), (seen.get(x.replace(/ at .*? in /, ' in ')) ?? 0) + 1); if (w.inside.length) console.log(label, JSON.stringify(w.inside)); return w; };
+  await N('setInput', {});
+  if ((await N('mode')) === 'drive') { await N('exitCar'); await sleep(2200); }
+  let w = await sample('foot start');
+  console.log('population', JSON.stringify({ peds: w.peds, police: w.police, traffic: w.traffic }));
+  for (let k = 0; k < 12; k++) { if (k % 3 === 0) await N('panicNear', 40); await sleep(1000); await sample(`foot ${k}`); }
+  await N('heat', 3);
+  for (let k = 0; k < 25; k++) { await sleep(1000); await sample(`chase ${k}`); }
+  await shot('99_walls_chase');
+  await N('clearHeat');
+  console.log('walls summary', JSON.stringify([...seen.entries()]));
+}
 if (want('cams')) {
   await N('camMode', 'hood');
   await sleep(1500);

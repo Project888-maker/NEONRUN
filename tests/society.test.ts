@@ -60,7 +60,7 @@ const t = fixed.find((p) => p.key === regularId(ish));
 ok(t, 'regular not spawned near the courier');
 const per = soc.persona(t);
 ok(per.name === 'Mr. Ishikawa' && per.hook?.includes('broth bones') && per.hook.includes('credits'), `regular persona hook: ${per.hook}`);
-ok(soc.facts(per, []).some((f) => f.includes('never met')), 'stranger fact');
+ok(soc.facts(per, t, []).some((f) => f.includes('never met')), 'stranger fact');
 // memory persists in the save
 soc.remember(per, { history: [{ who: 'courier', text: 'Evening!' }, { who: 'npc', text: 'Hungry, kid?' }], notes: ['polite courier'], rel: 1 });
 ok(save.npc[per.id].met === 1 && save.npc[per.id].notes[0] === 'polite courier' && soc.recall(per).history.length === 2, 'regular memory not saved');
@@ -79,7 +79,7 @@ started.street.onFinish(true, undefined, 20);
 started = null;
 ok(save.credits === before + job.pay + 80 && suspended === 0, 'job pay');
 ok(save.rep.neon >= 6 && save.npc[per.id].jobsDone === 1 && save.npc[per.id].rel === 2, 'reputation / memory after job');
-ok(soc.facts(soc.persona(t), []).some((f) => f.includes('done 1 job')), 'job remembered in facts');
+ok(soc.facts(soc.persona(t), t, []).some((f) => f.includes('done 1 job')), 'job remembered in facts');
 ok(soc.persona(t).hook?.includes('noodle boxes'), 'next job not offered');
 console.log(`job: "${job.title}" for ${job.pay} CR -> paid ${job.pay + 80}, neon rep ${save.rep.neon}, Ishikawa remembers ${save.npc[per.id].jobsDone} job, relationship ${save.npc[per.id].rel}`);
 // a regular you burned won't give you work; locked districts are never job destinations

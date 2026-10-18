@@ -326,6 +326,8 @@ interface Ped {
   state: PedState; t: number; pos: THREE.Vector3; vel: THREE.Vector3; id: number;
   /** regulars: their spot, the way they face, and who they are */
   home?: THREE.Vector3; homeYaw?: number; key?: string;
+  /** what they were doing before someone stopped them to talk */
+  prevState?: PedState;
 }
 
 /** Sidewalk crowds: pedestrians loop around blocks near the player, stop, chat on phones, flee from cars. */
@@ -427,6 +429,7 @@ export class Crowd {
 
   /** Make a pedestrian stop and talk, facing the hero. */
   talk(ped: Ped, facing: THREE.Vector3, dur: number) {
+    if (ped.state !== 'talk') ped.prevState = ped.state;
     ped.state = 'talk';
     ped.t = dur;
     ped.p.yaw = Math.atan2(facing.x - ped.pos.x, facing.z - ped.pos.z);
@@ -487,9 +490,10 @@ export class Crowd {
           p.p.yaw = lerpAngle(p.p.yaw, want, Math.min(1, dt * 6));
           if (p.t <= 0) {
             const r = this.rng.next();
-            p.state = r < 0.45 ? 'idle' : r < 0.8 ? 'phone' : 'wave';
+            // stop for a moment: stand, or check the phone (waving at nobody looked odd)
+            p.state = r < 0.55 ? 'idle' : 'phone';
             p.t = this.rng.range(3, 8);
-            p.p.play(p.state === 'idle' ? 'idle' : p.state === 'phone' ? 'phone' : 'wave', { fade: 0.4 });
+            p.p.play(p.state, { fade: 0.4 });
           }
           break;
         }

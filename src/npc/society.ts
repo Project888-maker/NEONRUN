@@ -142,10 +142,15 @@ export class Society {
   }
 
   /** What this person knows about the courier beyond the moment itself. */
-  facts(p: Persona, base: string[]): string[] {
+  facts(p: Persona, t: Talker | null, base: string[]): string[] {
     const pp = this.h.playerPos();
     const d = districtAt(pp.x, pp.z);
-    const out = [...base, `How people around here talk about the courier: ${repLabel(this.h.save.rep[d] ?? 0)}`];
+    const out = [...base];
+    // what they are doing right now, so nobody pretends to be at a counter that isn't there
+    const r = t ? this.regularOf(t) : null;
+    if (r) out.unshift(`Right now: you are at your own place, ${this.places.get(r.home)?.place.name ?? 'your spot'}, standing out front on the sidewalk. You are at work.`);
+    else if (t) out.unshift(`Right now: you were ${t.prevState === 'phone' ? 'standing on the sidewalk looking at your phone' : t.prevState === 'idle' ? 'standing on the sidewalk' : 'walking along the sidewalk'} when the courier stopped you. You are NOT at your workplace: there is no shop, stall, counter or menu here, and you have nothing to sell or hand over except what you carry (phone, bag, keys).`);
+    out.push(`How people around here talk about the courier: ${repLabel(this.h.save.rep[d] ?? 0)}`);
     if (p.id.startsWith('regular:')) {
       const m = this.h.save.npc[p.id];
       if (m && (m.met || m.jobsDone || m.jobsFailed)) {
