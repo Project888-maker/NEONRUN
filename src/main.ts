@@ -257,6 +257,7 @@ function buildWorld() {
     callPolice: (t) => { noteEvent('a bystander called the police on the courier', t.pos); setTimeout(() => police.add(1, 'reported'), 2500); },
     voiceOn: () => (save.settings.voice ?? 'on') === 'on',
     audio,
+    uncensored: () => (save.settings.language ?? 'uncensored') === 'uncensored',
     onOpen: () => { document.exitPointerLock?.(); },
     onClose: () => { if (hero) footCam.yaw = hero.person.yaw; },
   }, () => A.lines);
@@ -700,6 +701,7 @@ function openSettings() {
     segQ.querySelectorAll<HTMLButtonElement>('button').forEach((b) => b.classList.toggle('on', b.dataset.q === save.settings.quality));
     segC.querySelectorAll<HTMLButtonElement>('button').forEach((b) => b.classList.toggle('on', b.dataset.cam === save.settings.cam));
     $('voice-seg').querySelectorAll<HTMLButtonElement>('button').forEach((b) => b.classList.toggle('on', b.dataset.voice === (save.settings.voice ?? 'on')));
+    $('lang-seg').querySelectorAll<HTMLButtonElement>('button').forEach((b) => b.classList.toggle('on', b.dataset.lang === (save.settings.language ?? 'uncensored')));
   };
   segQ.querySelectorAll<HTMLButtonElement>('button').forEach((b) => (b.onclick = () => {
     save.settings.quality = b.dataset.q as any;
@@ -709,6 +711,7 @@ function openSettings() {
   }));
   segC.querySelectorAll<HTMLButtonElement>('button').forEach((b) => (b.onclick = () => { save.settings.cam = b.dataset.cam as any; chase.mode = save.settings.cam; writeSave(save); refresh(); }));
   $('voice-seg').querySelectorAll<HTMLButtonElement>('button').forEach((b) => (b.onclick = () => { save.settings.voice = b.dataset.voice as 'on' | 'off'; writeSave(save); refresh(); }));
+  $('lang-seg').querySelectorAll<HTMLButtonElement>('button').forEach((b) => (b.onclick = () => { save.settings.language = b.dataset.lang as 'uncensored' | 'mild'; writeSave(save); refresh(); }));
   for (const k of ['master', 'music', 'sfx'] as const) {
     const el = $(`v-${k}`) as HTMLInputElement;
     el.value = String(save.settings[k]);

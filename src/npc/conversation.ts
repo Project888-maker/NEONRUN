@@ -37,6 +37,7 @@ export interface ConvHost {
   flee(t: Talker): void;
   callPolice(t: Talker): void;
   voiceOn(): boolean;
+  uncensored(): boolean;
   audio: SpeechAudio;
   onOpen(): void;
   onClose(): void;
@@ -200,7 +201,7 @@ export class Conversation {
     let early: Promise<AudioBuffer | null> | null = null;
     let earlyText = '';
     try {
-      const res = await this.brain.ask({ persona: p, facts: this.host.facts(p, t), history: m.history, say, notes: m.notes }, t.type, (partial, done) => {
+      const res = await this.brain.ask({ persona: p, facts: this.host.facts(p, t), history: m.history, say, notes: m.notes, uncensored: this.host.uncensored() }, t.type, (partial, done) => {
         if (this.active !== t || turn !== this.turn) return;
         // start generating their voice the moment the sentence is complete
         if (done && this.host.voiceOn()) { early = this.voices.get(v.name, partial, v.speed); earlyText = partial; }

@@ -14,7 +14,7 @@ export interface Save {
   ownedCars: string[];
   /** story campaign: completed mission ids and best times (s) */
   story: { done: string[]; best: Record<string, number> };
-  settings: { quality: QualityLevel | 'auto'; master: number; music: number; sfx: number; cam: 'chase' | 'far' | 'hood'; voice?: 'on' | 'off' };
+  settings: { quality: QualityLevel | 'auto'; master: number; music: number; sfx: number; cam: 'chase' | 'far' | 'hood'; voice?: 'on' | 'off'; language?: 'uncensored' | 'mild' };
   /** what the regulars remember about the courier (keyed by persona id) */
   npc: Record<string, NpcMemory>;
   /** how each district sees the courier, -100 (menace) .. 100 (local hero) */
