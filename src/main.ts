@@ -26,6 +26,7 @@ import { Barks } from './npc/barks';
 import { voiceFor, ARCHETYPES } from './npc/persona';
 import { repLabel } from './game/progress';
 import { Police, carMesh } from './game/police';
+import { Fight } from './game/fight';
 import { ChaseCam } from './vehicle/chaseCam';
 import { AudioSys } from './audio/audio';
 import { Hud } from './game/hud';
@@ -372,6 +373,33 @@ function buildWorld() {
     quiet: () => !!conv.active || state !== 'playing' || !!interiors.active,
   });
 
+  fight = new Fight({
+    scene, crowd, hero: () => hero, walkRects: city.walkRects,
+    sound: (name, pos, volume = 1) => audio.play(name as Parameters<typeof audio.play>[0], { pos, volume }),
+    onAssault: (victim, ko) => {
+      // bystanders scatter (not whoever is fighting), the district hears about it, someone may call the police
+      for (const q of crowd.peds) if (q !== victim && q.state !== 'fight' && q.state !== 'down' && q.pos.distanceTo(victim.pos) < 14) crowd.flee(q, victim.pos);
+      if (simTime - assaultT < 4 && !ko) return;
+      assaultT = simTime;
+      society.repEvent('assault', victim.pos);
+      barks.event('fight', victim.pos, 22);
+      const who = society.persona(victim as any);
+      noteEvent(ko ? `the courier beat ${who.name} unconscious in the street` : `the courier punched ${who.name} in the street`, victim.pos);
+      const near = police.units.some((u) => u.pos.distanceTo(victim.pos) < 90);
+      if (near || Math.random() < (ko ? 0.85 : 0.4)) police.add(ko ? 2 : 1, 'assault');
+    },
+    say: (victim, line) => barks.sayAs(victim, line),
+    onKnockout: () => fade(() => {
+      const lost = Math.round(save.credits * 0.1);
+      save.credits -= lost;
+      writeSave(save);
+      hud.setCredits(save.credits);
+      hud.toast(`Knocked out · lost ${lost.toLocaleString()} CR`, 3.5);
+    }),
+    shatter: (pos) => { for (let i = 0; i < 26; i++) sparks.emit(pos, new THREE.Vector3((Math.random() - 0.5) * 4, Math.random() * 3, (Math.random() - 0.5) * 4), 0.5 + Math.random() * 0.4, 0.035, new THREE.Color(0.5, 1.4, 0.6), 1, { gravity: 12, drag: 0.8 }); },
+    later,
+  });
+
   // video billboards
   for (const clip of new Set(city.videoScreens.map((s) => s.clip))) {
     const v = document.createElement('video');
@@ -481,6 +509,9 @@ let police: Police;
 let conv: Conversation;
 let society: Society;
 let barks: Barks;
+let fight: Fight;
+const healthEl = document.getElementById('h-health')!, healthBar = healthEl.querySelector('i') as HTMLElement;
+let assaultT = 0;
 let interiors: Interiors;
 let shopMarkers: THREE.Vector3[] = [];
 /** directions to a place picked from the Places list */
@@ -906,14 +937,19 @@ function setupTouch() {
   tap('t-jump', 'Space');
   tap('t-action', 'KeyE');
   tap('t-talk', 'KeyT');
+  tap('t-punch', 'KeyJ');
+  tap('t-kick', 'KeyK');
+  tap('t-grab', 'KeyG');
   $('t-pause').addEventListener('click', pause);
 }
 
 /** Context buttons on touch screens: shown only when the action is possible right now. */
-function setTouchCtx(action: string | null, talk: string | null) {
-  const a = $('t-action'), t = $('t-talk');
+function setTouchCtx(action: string | null, talk: string | null, grab: string | null = null) {
+  const a = $('t-action'), t = $('t-talk'), g = $('t-grab');
   a.classList.toggle('hidden', !action);
   t.classList.toggle('hidden', !talk);
+  g.classList.toggle('hidden', !grab);
+  if (grab && g.textContent !== grab) g.textContent = grab;
   if (action && a.textContent !== action) a.textContent = action;
   if (talk && t.textContent !== talk) t.textContent = talk;
 }
@@ -1361,6 +1397,13 @@ function handleInteractions() {
   } else if (conv.active) {
     setContext(null); setTouchCtx(null, null);
   } else if (mode === 'foot' && hero) {
+    // fighting: left click / J punches (combo), right click / K kicks, G picks up or drops a bottle or pipe
+    const punch = input.consume('KeyJ') || input.consume('Mouse0'), kick = input.consume('KeyK') || input.consume('Mouse2'), grab = input.consume('KeyG');
+    if (!interiors.active) {
+      if (punch) fight.attack('punch');
+      if (kick) fight.attack('kick');
+      if (grab) fight.toggleItem();
+    } else if (punch || kick) hud.toast('Not in here.', 1.5);
     const story = campaign.interaction && campaign.interaction.at.distanceTo(hero.pos.setY(campaign.interaction.at.y)) < 2.8 ? campaign.interaction : null;
     const inside = interiors.active;
     const tgt = inside ? null : enterTarget();
@@ -1381,10 +1424,12 @@ function handleInteractions() {
       return;
     }
     const ped = story ? null : crowd.nearest(hero.pos, 2.8);
+    const fighting = ped?.state === 'fight';
     const known = ped?.key ? society.persona(ped) : null;
     const talkLabel = known && (save.npc[known.id]?.met ?? 0) > 0 ? `Talk to ${known.name}` : 'Talk';
-    setContext(story ? `<b>T</b> · ${story.label}` : tgt ? `<b>E</b> · ${tgt.kind === 'traffic' ? 'Steal car' : 'Get in'}` : ped ? `<b>T</b> · ${talkLabel}` : null);
-    setTouchCtx(tgt ? (tgt.kind === 'traffic' ? 'STEAL' : 'GET IN') : null, story ? 'GIVE' : ped ? 'TALK' : null);
+    const item = fight.weapon ? null : fight.nearestItem(hero.pos, 1.7);
+    setContext(story ? `<b>T</b> · ${story.label}` : tgt ? `<b>E</b> · ${tgt.kind === 'traffic' ? 'Steal car' : 'Get in'}` : item ? `<b>G</b> · Pick up ${item.kind}` : ped && !fighting ? `<b>T</b> · ${talkLabel}` : null);
+    setTouchCtx(tgt ? (tgt.kind === 'traffic' ? 'STEAL' : 'GET IN') : null, story ? 'GIVE' : ped && !fighting ? 'TALK' : null, item ? 'GRAB' : fight.weapon ? 'DROP' : null);
   } else { setContext(null); setTouchCtx(null, null); }
   document.body.classList.toggle('on-foot', mode !== 'drive');
 }
@@ -1538,6 +1583,13 @@ function frame(now: number) {
     if (debugCam) { camera.position.copy(debugCam.pos); camera.lookAt(debugCam.at); }
     prof.mark('hero+cam');
     probeHook?.(dtReal);
+    if (!interiors.active) fight.update(dtReal);
+    {
+      // health: shown while fighting or hurt
+      const showHp = !!hero && mode !== 'drive' && (fight.heroHp < 99.5 || hero.guard > 0);
+      healthEl.classList.toggle('hidden', !showHp);
+      if (showHp) { healthBar.style.width = `${Math.max(0, fight.heroHp)}%`; healthEl.classList.toggle('low', fight.heroHp < 30); }
+    }
     if (interiors.active) interiors.update(dtReal);
     else crowd.update(dtReal, playerPos, driving ? { pos: carPos, vel: carVel, halfLen: car.dims.length / 2, halfWid: car.dims.width / 2, yaw: vehicle.yaw(), speed: vehicle.speedAbs } : null);
     if (!driving && hero?.active) {
@@ -1713,6 +1765,20 @@ function debugApi() {
       return ped.type;
     },
     clearFaceShot: () => { debugCam = null; },
+    /** a person of `type` squares up 1.3 m in front of the courier (fight tests) */
+    fightSetup: (type: string, brawl = true) => {
+      if (!hero) return null;
+      const yaw = hero.person.yaw, at = hero.pos.clone().add(new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw)).multiplyScalar(1.3)).setY(0);
+      const p = crowd.spawnAt(type as PedType, at, yaw + Math.PI);
+      if (p && brawl) { p.state = 'fight'; p.swingCd = 1.5; p.p.play('fight_idle', { fade: 0 }); }
+      return p ? p.id : null;
+    },
+    fightAttack: (kind: 'punch' | 'kick') => fight.attack(kind),
+    fightItem: (kind: 'bottle' | 'pipe') => { if (hero) { fight.dropItemAt(kind, hero.pos.clone().setY(0.15)); fight.toggleItem(); } return fight.weapon?.kind ?? null; },
+    /** debug: pin the camera at a point looking at another (null clears) */
+    camAt: (p: number[] | null, at?: number[]) => { debugCam = p ? { pos: new THREE.Vector3(...p), at: new THREE.Vector3(...at!) } : null; },
+    weaponInfo: () => { const m = fight.weapon?.mesh; let hand: number[] | null = null; hero?.person.root.traverse((o) => { if (/^righthand$/i.test(o.name)) hand = o.getWorldPosition(new THREE.Vector3()).toArray().map((n) => +n.toFixed(2)); }); return { weapon: m ? m.position.toArray().map((n) => +n.toFixed(2)) : null, inScene: !!m?.parent, hand, hero: hero?.pos.toArray().map((n) => +n.toFixed(2)) }; },
+    fightInfo: () => ({ heroHp: Math.round(fight.heroHp), weapon: fight.weapon?.kind ?? null, items: fight.items.length, near: crowd.peds.filter((p) => hero && p.pos.distanceTo(hero.pos) < 6).map((p) => ({ type: p.type, state: p.state, hp: p.hp ?? null })) }),
     /** debug: hide parts of the player's car (door/cabin investigation) */
     carParts: (door: boolean, cabin: boolean, hero_: boolean) => { if (car.door) car.door.visible = door; car.body.traverse((o) => { if ((o as THREE.Mesh).isMesh && ((o as THREE.Mesh).material as THREE.Material).side === THREE.BackSide) o.visible = cabin; }); if (hero) hero.person.root.visible = hero_; },
     camInfo: () => ({ cam: camera.position.toArray().map((n) => +n.toFixed(2)), dir: camera.getWorldDirection(new THREE.Vector3()).toArray().map((n) => +n.toFixed(2)), hero: hero?.pos.toArray().map((n) => +n.toFixed(2)), car: carPos.toArray().map((n) => +n.toFixed(2)), mode, yaw: +footCam.yaw.toFixed(2) }),

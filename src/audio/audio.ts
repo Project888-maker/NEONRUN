@@ -4,7 +4,7 @@ import { av } from '../core/version';
 const SFX = ['engine_idle', 'engine_low', 'engine_high', 'boost', 'tire_squeal', 'drift_wet', 'gear_shift', 'horn', 'hit_light', 'hit_heavy', 'hit_metal', 'hit_glass', 'suspension',
   'rain_light', 'rain_heavy', 'rain_roof', 'tire_hiss', 'sirens', 'city_hum', 'neon_buzz', 'steam_vent', 'ui_click', 'ui_hover', 'ui_confirm', 'ui_error', 'mission_start', 'mission_complete',
   'timer_tick', 'timer_warning', 'pickup', 'drone_hum', 'crowd', 'train', 'near_miss', 'cash',
-  'footstep_wet', 'footsteps_run', 'door_open', 'door_close', 'carjack', 'body_hit', 'scream', 'siren_close', 'jump_land', 'crowd_panic', 'radio_squelch',
+  'punch_hit', 'kick_hit', 'whoosh', 'bottle_smash', 'pipe_hit', 'grunt_m', 'grunt_f', 'footstep_wet', 'footsteps_run', 'door_open', 'door_close', 'carjack', 'body_hit', 'scream', 'siren_close', 'jump_land', 'crowd_panic', 'radio_squelch',
   'checkpoint', 'glass_rattle', 'cheer', 'objective', 'camera_flash'] as const;
 export type SfxName = typeof SFX[number];
 const VOICES = ['brief_1', 'brief_2', 'brief_3', 'brief_neon', 'brief_docks', 'brief_downtown', 'brief_back', 'pickup', 'ten_left', 'twenty_left', 'success_1', 'success_2', 'fail_1', 'fail_2', 'near_miss_1', 'near_miss_2', 'drone', 'upgrade', 'unlock'] as const;

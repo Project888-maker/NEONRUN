@@ -302,3 +302,9 @@ body.indoors #minimap { display: none; }
 .places-list .pl-sub { color: var(--muted); font-size: 12px; }
 .places-list .pl button { padding: 7px 12px; font-size: 10px; letter-spacing: 0.14em; }
 .places-list .pl.locked { opacity: 0.45; }
+
+/* courier health (fighting) */
+.health { width: 150px; height: 6px; margin-top: 6px; background: rgba(255, 255, 255, 0.12); border-radius: 3px; overflow: hidden; }
+.health i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, #ff3b4e, #ff8a5c); transition: width 0.15s; }
+.health.low i { animation: hp-pulse 0.7s ease-in-out infinite alternate; }
+@keyframes hp-pulse { from { opacity: 1; } to { opacity: 0.35; } }

@@ -7,7 +7,8 @@ import { Rng } from './city';
 import { poolUniforms, MAX_POOLS } from '../render/groundMaterial';
 
 /** Animation names baked by blender/build_people.py */
-export type Anim = 'walk' | 'run' | 'idle' | 'jump' | 'enter_car' | 'exit_car' | 'talk' | 'wave' | 'flee' | 'phone' | 'shrug' | 'push' | 'fall';
+export type Anim = 'walk' | 'run' | 'idle' | 'jump' | 'enter_car' | 'exit_car' | 'talk' | 'wave' | 'flee' | 'phone' | 'shrug' | 'push' | 'fall'
+  | 'fight_idle' | 'punch' | 'jab' | 'kick' | 'get_up';
 
 export const PED_TYPES = ['ped_suit', 'ped_vendor', 'ped_punk', 'ped_worker', 'ped_student', 'ped_elder', 'ped_techwear', 'ped_nurse', 'ped_rider'] as const;
 export type PedType = typeof PED_TYPES[number];
@@ -261,7 +262,7 @@ function gaitSpeeds(gltf: GLTF) {
 const _up = new THREE.Vector3(0, 1, 0), _lookAxis = new THREE.Vector3();
 const _qW = new THREE.Quaternion(), _qP = new THREE.Quaternion(), _qParent = new THREE.Quaternion();
 
-const UNGROUNDED = new Set(['jump', 'fall', 'enter_car', 'exit_car', 'push']);
+const UNGROUNDED = new Set(['jump', 'fall', 'enter_car', 'exit_car', 'push', 'get_up']);
 
 /** A rigged, animated human (pedestrian or the hero). */
 export class Person {
@@ -293,6 +294,12 @@ export class Person {
   /** loudness of their voice right now (0..1) drives the jaw; null = speaking without a voice track */
   mouthLevel: number | null = 0;
   private mouth = { value: 0 };
+  /** recoil from a hit: 0..1, decays; `hitDir` +1 = knocked backwards, -1 = forwards */
+  private hitK = 0;
+  private hitDir = 1;
+  private spineBone?: THREE.Object3D;
+  /** take a hit: the upper body snaps back (or forward) and settles */
+  hitReact(strength = 1, fromFront = true) { this.hitK = Math.min(1, this.hitK + strength); this.hitDir = fromFront ? 1 : -1; }
   private mouthT = Math.random() * 10;
 
   constructor(gltf: GLTF, public type: string) {
@@ -310,6 +317,7 @@ export class Person {
       if (/(left|right)foot$/i.test(o.name)) this.feet.push(o);
       if (/^neck$/i.test(o.name)) this.neck = o;
       if (/^head$/i.test(o.name)) this.head = o;
+      if (/^spine01$/i.test(o.name)) this.spineBone = o;
     });
     // ankle height in the bind pose = where the foot bones sit when standing on the ground
     this.root.updateMatrixWorld(true);
@@ -387,6 +395,21 @@ export class Person {
     } else open = this.mouthLevel;
     // opens fast, closes a little slower: reads as speech rather than flapping
     this.mouth.value += (open - this.mouth.value) * Math.min(1, dt * (open > this.mouth.value ? 28 : 16));
+    if (this.hitK > 0.001) {
+      // recoil: the chest and head snap away from the blow, then settle
+      const by = this.root.rotation.y;
+      const right = _lookAxis.set(-Math.cos(by), 0, Math.sin(by));
+      const a = -this.hitK * this.hitDir * 0.5;
+      this.root.updateMatrixWorld(true);
+      for (const [bone, share] of [[this.spineBone, 0.55], [this.head, 0.45]] as const) {
+        if (!bone || !bone.parent) continue;
+        _qW.setFromAxisAngle(right, a * share);
+        bone.parent.getWorldQuaternion(_qParent);
+        bone.quaternion.premultiply(_qParent).premultiply(_qW).premultiply(_qParent.invert());
+        bone.updateMatrixWorld(true);
+      }
+      this.hitK = Math.max(0, this.hitK - dt * 3.2);
+    }
     const want = this.look && this.head ? 1 : 0;
     this.lookW += (want - this.lookW) * Math.min(1, dt * 4);
     if (this.lookW < 0.01 || !this.head) return;
@@ -427,9 +450,9 @@ export class Person {
   }
 }
 
-type PedState = 'walk' | 'idle' | 'flee' | 'down' | 'talk' | 'wave' | 'phone';
+export type PedState = 'walk' | 'idle' | 'flee' | 'down' | 'talk' | 'wave' | 'phone' | 'fight' | 'getup';
 
-interface Ped {
+export interface Ped {
   p: Person; type: PedType;
   rect: number; s: number; dir: 1 | -1; speed: number;
   state: PedState; t: number; pos: THREE.Vector3; vel: THREE.Vector3; id: number;
@@ -439,6 +462,8 @@ interface Ped {
   prevState?: PedState;
   /** sideways step off the loop line (m, + = walker's right): keeping to their side and going around people */
   off?: number;
+  /** fighting (game/fight.ts): health, knocked out, next swing, a swing in progress */
+  hp?: number; ko?: boolean; swingCd?: number; swing?: { t: number; hit: number; done: boolean; kind: 'punch' | 'jab' };
 }
 const BODY_R = 0.32; // how close two people's centres may get before they push apart (m)
 
@@ -786,6 +811,19 @@ export class Crowd {
     if (side === 1) return W + (pt.z - (r.z - r.hd));
     if (side === 2) return W + D + ((r.x + r.hw) - pt.x);
     return 2 * W + D + ((r.z + r.hd) - pt.z);
+  }
+
+  /** A person standing at `pos` facing `yaw` (tests and scripted scenes), on the nearest sidewalk loop. */
+  spawnAt(type: PedType, pos: THREE.Vector3, yaw: number): Ped | null {
+    if (!this.assets[type]) return null;
+    const p = this.take(type);
+    let best = 0, bd = Infinity;
+    this.city.walkRects.forEach((r, i) => { const d = Math.hypot(r.x - pos.x, r.z - pos.z); if (d < bd) { bd = d; best = i; } });
+    const ped: Ped = { p, type, rect: best, s: this.arcOf(best, pos), dir: 1, speed: 1.3, state: 'idle', t: 30, pos: pos.clone(), vel: new THREE.Vector3(), id: this.nextId++ };
+    p.yaw = yaw;
+    p.play('idle', { fade: 0 });
+    this.peds.push(ped);
+    return ped;
   }
 
   /** Spawn a one-off person (e.g. a carjacked driver) who falls then runs away. */

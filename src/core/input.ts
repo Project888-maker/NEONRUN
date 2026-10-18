@@ -16,6 +16,9 @@ export class Input {
       if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
     });
     addEventListener('keyup', (e) => this.keys.delete(e.code));
+    // with the mouse captured (playing on foot): left button punches, right button kicks
+    addEventListener('mousedown', (e) => { if (document.pointerLockElement) this.pressed.add(`Mouse${e.button}`); });
+    addEventListener('contextmenu', (e) => { if (document.pointerLockElement) e.preventDefault(); });
     addEventListener('blur', () => this.keys.clear());
   }
 

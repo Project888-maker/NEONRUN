@@ -93,6 +93,7 @@ node scripts/story_json.mjs                 # campaign subtitles
 - `npx tsx tests/npc.test.ts` — NPC personas, the /api/talk function and the client stream
 - `npx tsx tests/crowd_walls.test.ts` — people fleeing or knocked over stop at building facades
 - `npx tsx tests/crowd_pass.test.ts` — walkers keep to their side, step around people standing or coming the other way (and the courier), slow down behind slower walkers; nobody overlaps
+- `npx tsx tests/fight.test.ts` — strikes land in front (not behind), a fighter squares up, hurts the courier, gives up and runs; a knockdown gets back up; health regenerates; the courier can be knocked out; bottles break, pipes last
 - `/tests/face/?types=hero,ped_punk&open=0,1` (with `npx vite`): renders faces up close with the jaw shut and open. Add `&debug&lines=0.06,0.09` to draw calibration lines for the lip heights (`MOUTH_U` in people.ts)
 - `npx tsx tests/society.test.ts` — places, regulars, saved memory, reputation, street jobs (offer, accept, pay, remember), remarks never repeat
 - `node scripts/shots.mjs <url> <dir> jobs` — in-game: a regular offers a job, accept it, run it, get paid, be remembered (stand-in /api/talk)
@@ -242,4 +243,12 @@ Requests that failed or were replaced:
 - `/tests/cars/` (with `npx vite`): every car from the driver's side (door shut and open), three-quarter front and rear.
 - People's walk, run, flee, idle, talk, wave and shrug are real motion capture from the CMU database (`assets/mocap/*.bvh`, fetched from the GitHub mirror una-dinosauria/cmu-mocap). `blender/build_people.py --mocap` picks the best-matching loop inside a window (pose distance over the main joints), turns the motion onto the skeleton's rest heading (a yaw on every bone's world rotation; turning the source object does nothing, since motion is copied relative to rest), and transfers it like the other clips. Hands and toes are not copied (the capture skeleton's hand and toe bones point differently); they follow the forearm and foot. The elder walks with the old-man take (137_33). Jump, car, phone, push and fall stay generated (no captures for them).
 - `/tests/motion/?type=hero&clips=walk,run` renders each clip at evenly spaced moments. `MOCAP_TRY=idle2:77_02 ... --mocap` builds extra candidate clips for comparison.
+
+**Fighting** (`src/game/fight.ts`)
+- Controls on foot: left click / J punch (presses alternate cross and jab), right click / K kick, G picks up or drops a bottle or pipe. Touch: PUNCH and KICK buttons, GRAB / DROP when one is near. Not inside shops.
+- Moves are motion capture (CMU): `punch` and `jab` from a boxing take (13_17), `kick` (141_14), `fight_idle` (the boxer bouncing in guard), `get_up` (77_16). The build aims each strike along the hand / foot at impact (a boxer's hips are side-on); impact moments are in `IMPACT`.
+- A strike lands on the nearest person within reach in a cone in front (light aim assist turns the courier toward someone close). Hits: procedural recoil of chest and head (`Person.hitReact`), impact + pain sounds, a small stagger. People have health (elder 45, others 100); at zero they go down (`fall`), lie there a few seconds, get up (`get_up`) and run.
+- Who fights back depends on the type (`FIGHT_BACK`: punks most, elders never). A brawler closes in, keeps guard, swings every 1–2 s (punch 13 / jab 9 damage when within 1.5 m) and gives up below 30 health. Everyone else begs and runs. Bystanders within 14 m scatter, someone may shout, the district's reputation drops, and police heat goes up (likely after a knockout, certain with a cruiser nearby). The event goes into what people know (conversation facts).
+- The courier's health shows under the stars while fighting or hurt and comes back after 5 s out of combat. At zero: knocked out, fade, 10 % of credits gone, back up with 55.
+- Bottles (break on the first hit) and pipes (8 hits) lie on the sidewalks near the courier; a held item is placed in the right fist each frame from the hand and forearm bones.
 

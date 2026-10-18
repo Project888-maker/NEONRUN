@@ -461,3 +461,15 @@ for (const [k, p] of Object.entries(fronts)) add('storefront', k, 'fal-ai/flux-2
 // ================= Oct 18: the courier's own car, realistic (the old hero car was a rough half-shell) =================
 add('concept', 'car_courier', 'fal-ai/gpt-image-2', { prompt: `modern four door sports sedan, original design not resembling any real production car or brand, low and wide, dark graphite metallic paint, dark tinted windows, slim LED headlights, black multi-spoke wheels with low profile tires, clean and realistic. ${CAR}`, image_size: 'landscape_4_3', quality: 'high' });
 add('model3d', 'car_courier', 'tripo3d/h3.1/image-to-3d', { image_url: '@file:assets/generated/concept/car_courier.png', texture: true, pbr: true, texture_quality: 'detailed', geometry_quality: 'detailed', face_limit: 40000 });
+
+// ---------- fighting (Oct 18): impacts, swings, pain
+const sfxFight = {
+  punch_hit: [0.6, false, 'single hard punch landing on a body, fleshy thud with a slap, close up, no voice'],
+  kick_hit: [0.7, false, 'heavy kick landing on a torso, deep body thud, close up, no voice'],
+  whoosh: [0.5, false, 'fast fist swinging through the air, short whoosh'],
+  bottle_smash: [1.0, false, 'glass bottle smashing over a head, glass shards scattering on wet pavement'],
+  pipe_hit: [0.7, false, 'metal pipe striking a body, dull clang with a thud'],
+  grunt_m: [0.6, false, 'adult man grunting in pain after being punched, short, no words'],
+  grunt_f: [0.6, false, 'adult woman gasping in pain after being hit, short, no words'],
+};
+for (const [k, [d, loop, p]] of Object.entries(sfxFight)) add('sfx', k, 'fal-ai/elevenlabs/sound-effects/v2', { text: p, duration_seconds: d, loop, prompt_influence: 0.7, output_format: 'mp3_44100_128' });

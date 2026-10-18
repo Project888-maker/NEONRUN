@@ -1,6 +1,6 @@
 {
   "budget_usd": 25,
-  "spent_usd_est": 43.2556,
+  "spent_usd_est": 43.4656,
   "assets": {
     "_tests/probe": {
       "files": [],
@@ -6750,6 +6750,132 @@
       "cost_usd_est": 0.6,
       "created": "2026-10-18T21:42:41.236Z",
       "seconds": 130
+    },
+    "sfx/pipe_hit": {
+      "files": [
+        "assets/generated/sfx/pipe_hit.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "metal pipe striking a body, dull clang with a thud",
+      "input": {
+        "text": "metal pipe striking a body, dull clang with a thud",
+        "duration_seconds": 0.7,
+        "loop": false,
+        "prompt_influence": 0.7,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-18T22:48:22.855Z",
+      "seconds": 3
+    },
+    "sfx/punch_hit": {
+      "files": [
+        "assets/generated/sfx/punch_hit.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "single hard punch landing on a body, fleshy thud with a slap, close up, no voice",
+      "input": {
+        "text": "single hard punch landing on a body, fleshy thud with a slap, close up, no voice",
+        "duration_seconds": 0.6,
+        "loop": false,
+        "prompt_influence": 0.7,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-18T22:48:22.936Z",
+      "seconds": 3
+    },
+    "sfx/kick_hit": {
+      "files": [
+        "assets/generated/sfx/kick_hit.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "heavy kick landing on a torso, deep body thud, close up, no voice",
+      "input": {
+        "text": "heavy kick landing on a torso, deep body thud, close up, no voice",
+        "duration_seconds": 0.7,
+        "loop": false,
+        "prompt_influence": 0.7,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-18T22:48:23.107Z",
+      "seconds": 4
+    },
+    "sfx/bottle_smash": {
+      "files": [
+        "assets/generated/sfx/bottle_smash.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "glass bottle smashing over a head, glass shards scattering on wet pavement",
+      "input": {
+        "text": "glass bottle smashing over a head, glass shards scattering on wet pavement",
+        "duration_seconds": 1,
+        "loop": false,
+        "prompt_influence": 0.7,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-18T22:48:25.001Z",
+      "seconds": 5
+    },
+    "sfx/grunt_m": {
+      "files": [
+        "assets/generated/sfx/grunt_m.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "adult man grunting in pain after being punched, short, no words",
+      "input": {
+        "text": "adult man grunting in pain after being punched, short, no words",
+        "duration_seconds": 0.6,
+        "loop": false,
+        "prompt_influence": 0.7,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-18T22:48:25.552Z",
+      "seconds": 3
+    },
+    "sfx/grunt_f": {
+      "files": [
+        "assets/generated/sfx/grunt_f.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "adult woman gasping in pain after being hit, short, no words",
+      "input": {
+        "text": "adult woman gasping in pain after being hit, short, no words",
+        "duration_seconds": 0.6,
+        "loop": false,
+        "prompt_influence": 0.7,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-18T22:48:27.651Z",
+      "seconds": 5
+    },
+    "sfx/whoosh": {
+      "files": [
+        "assets/generated/sfx/whoosh.mp3"
+      ],
+      "model": "fal-ai/elevenlabs/sound-effects/v2",
+      "prompt": "fast fist swinging through the air, short whoosh",
+      "input": {
+        "text": "fast fist swinging through the air, short whoosh",
+        "duration_seconds": 0.5,
+        "loop": false,
+        "prompt_influence": 0.7,
+        "output_format": "mp3_44100_128"
+      },
+      "seed": null,
+      "cost_usd_est": 0.03,
+      "created": "2026-10-18T22:51:26.946Z",
+      "seconds": 3
     }
   }
 }

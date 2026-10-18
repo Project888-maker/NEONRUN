@@ -107,6 +107,9 @@
         <tr><td>R</td><td>Reset car</td></tr>
         <tr><td>E</td><td>Get out / get in / steal a car</td></tr>
         <tr><td>T</td><td>Talk to someone nearby (on foot)</td></tr>
+        <tr><td>Left click / J</td><td>Punch (press again for a combo, on foot)</td></tr>
+        <tr><td>Right click / K</td><td>Kick (on foot)</td></tr>
+        <tr><td>G</td><td>Pick up / drop a bottle or pipe</td></tr>
         <tr><td>Mouse / Q</td><td>Look around on foot (click to capture the mouse)</td></tr>
         <tr><td>M</td><td>Toggle big map</td></tr>
         <tr><td>Esc / P</td><td>Pause</td></tr>
@@ -150,6 +153,7 @@
       <div class="district" id="h-district">Neon District</div>
       <div id="h-rep" class="rep"></div>
       <div id="h-wanted" class="wanted"></div>
+      <div id="h-health" class="health hidden"><i></i></div>
     </div>
     <div class="hud-tc">
       <div id="h-prompt">Get to the pickup</div>
@@ -222,8 +226,11 @@
     <div class="t-pad foot-set">
       <button id="t-jump">JUMP</button>
       <button id="t-run">RUN</button>
+      <button id="t-punch">PUNCH</button>
+      <button id="t-kick">KICK</button>
     </div>
     <div class="t-ctx">
+      <button id="t-grab" class="hidden">GRAB</button>
       <button id="t-talk" class="hidden">TALK</button>
       <button id="t-action" class="hidden">EXIT</button>
     </div>

@@ -258,9 +258,9 @@ export class Society {
   }
 
   /** Something the courier did that the district hears about. */
-  repEvent(kind: 'delivery' | 'carjack' | 'hit' | 'busted', pos: THREE.Vector3) {
+  repEvent(kind: 'delivery' | 'carjack' | 'hit' | 'busted' | 'assault', pos: THREE.Vector3) {
     const d = districtAt(pos.x, pos.z);
-    addRep(this.h.save, d, { delivery: 3, carjack: -6, hit: -8, busted: -2 }[kind]);
+    addRep(this.h.save, d, { delivery: 3, carjack: -6, hit: -8, busted: -2, assault: -5 }[kind]);
     writeSave(this.h.save);
   }
 }

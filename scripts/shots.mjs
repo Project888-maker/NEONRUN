@@ -486,6 +486,30 @@ if (want('face')) {
   }
   await N('clearFaceShot');
 }
+if (want('fight')) {
+  // a punk squares up: trade punches and a kick, then a pipe; she gives up or goes down
+  await N('setInput', {});
+  if ((await N('mode')) === 'drive') { await N('exitCar'); for (let k = 0; k < 20 && (await N('mode')) !== 'foot'; k++) await sleep(500); await sleep(800); }
+  await N('heroToDoor', 'noodle_row'); await sleep(800);
+  console.log('setup', await N('fightSetup', 'ped_punk'));
+  await sleep(600); await shot('80_fight_guard');
+  await N('fightAttack', 'punch'); await sleep(300); await shot('81_fight_punch');
+  await sleep(500); await N('fightAttack', 'punch'); await sleep(250); await shot('82_fight_jab');
+  await sleep(600); await N('fightAttack', 'kick'); await sleep(380); await shot('83_fight_kick');
+  await sleep(1500); console.log('after strikes', JSON.stringify(await N('fightInfo'))); await shot('84_fight_back');
+  console.log('item', await N('fightItem', 'pipe')); await sleep(400); await shot('85_fight_pipe');
+  await N('fightSetup', 'ped_worker'); await sleep(300); await N('fightAttack', 'punch'); await sleep(350); await shot('86_fight_pipe_hit');
+  await sleep(3000); console.log('end', JSON.stringify(await N('fightInfo'))); await shot('87_fight_end');
+}
+if (want('weapon')) {
+  await N('setInput', {});
+  if ((await N('mode')) === 'drive') { await N('exitCar'); for (let k = 0; k < 20 && (await N('mode')) !== 'foot'; k++) await sleep(500); await sleep(800); }
+  console.log('item', await N('fightItem', 'pipe')); await sleep(600);
+  const w = await N('weaponInfo'); console.log('weapon', JSON.stringify(w));
+  const h = w.hero; await N('camAt', [h[0] + 1.6, h[1] + 1.5, h[2] + 1.6], [h[0], h[1] + 1.1, h[2]]); await sleep(400); await shot('88_weapon_close');
+  await N('fightAttack', 'punch'); await sleep(330); await shot('89_weapon_swing');
+  await N('camAt', null);
+}
 if (want('places')) {
   // Pause > Places: the list of shops and directions to one on the minimap
   await N('setInput', {});

@@ -61,7 +61,15 @@ MOCAP = {
     'talk': ('18_08', (1.0, 16.0), (5.0, 8.0)),
     'wave': ('141_16', (0.2, 2.4), None),
     'shrug': ('141_21', (0.2, 2.2), None),
+    # fighting: aimed along the strike (a boxer's hips are turned side-on, so the pelvis would misaim)
+    'fight_idle': ('13_17', (5.6, 8.8), (1.0, 2.2), ('shoulders',)),  # the boxer bouncing in guard between punches
+    'punch': ('13_17', (1.6, 2.45), None, ('aim', 'RightHand', 61)),
+    'jab': ('13_17', (2.85, 3.45), None, ('aim', 'LeftHand', 93)),
+    'kick': ('141_14', (1.7, 2.75), None, ('aim', 'RightFoot', 65)),
+    'get_up': ('77_16', (0.15, 3.3), None, ('shoulders',)),
 }
+# impact moments inside the one-shot fight clips (seconds from clip start), for hit timing in game
+FIGHT_IMPACT = {'punch': (61 - 1.6 * 30) / 30, 'jab': (93 - 2.85 * 30) / 30, 'kick': (65 - 1.7 * 30) / 30}
 if os.environ.get('MOCAP_TRY'):  # preview alternatives: MOCAP_TRY=idle2:140_06,idle3:77_02
     for item in os.environ['MOCAP_TRY'].split(','):
         n, f = item.split(':')
@@ -108,7 +116,7 @@ def pick_loop(src, window, loop):
     return pair
 
 
-def face_forward(src, a, b, moving):
+def face_forward(src, a, b, moving, heading=None):
     """Yaw that turns the motion's heading onto the source skeleton's rest heading.
 
     Motion is transferred relative to the rest pose, so the clip has to face the way its own rest
@@ -119,7 +127,17 @@ def face_forward(src, a, b, moving):
         l = get('LeftUpLeg') - get('RightUpLeg')
         return l.cross(Vector((0, 0, 1)))
     rest = pelvis_facing(lambda n: src.matrix_world @ src.data.bones[n].head_local)
-    if moving:
+    W = lambda n: src.matrix_world @ src.pose.bones[n].head
+    if heading and heading[0] == 'aim':
+        # the strike goes straight ahead: chest -> hand / foot at the moment of impact
+        bpy.context.scene.frame_set(int(heading[2]))
+        d = W(heading[1]) - W('Spine1')
+    elif heading and heading[0] == 'shoulders':
+        d = Vector()
+        for f in range(a, b + 1, 3):
+            bpy.context.scene.frame_set(f)
+            d += (W('LeftArm') - W('RightArm')).cross(Vector((0, 0, 1)))
+    elif moving:
         def hip(f):
             bpy.context.scene.frame_set(f)
             return src.matrix_world @ src.pose.bones['Hips'].head
@@ -137,12 +155,13 @@ def face_forward(src, a, b, moving):
 
 
 def mocap_clip(arm, name, spec):
-    file, window, loop = spec
+    file, window, loop = spec[:3]
+    heading = spec[3] if len(spec) > 3 else None
     src = import_bvh(file)
     src.animation_data.action.name = f'src_{name}'
     a, b = pick_loop(src, window, loop)
-    yaw = face_forward(src, a, b, name in ('walk', 'run', 'flee'))
-    act = retarget(src, arm, name, (a, b), CMU_MAP, yaw)
+    yaw = face_forward(src, a, b, name in ('walk', 'run', 'flee'), heading)
+    act = retarget(src, arm, name, (a, b), CMU_MAP, yaw, ground_from_end=name == 'get_up')
     act.use_fake_user = True
     arm.animation_data.action = None
     bpy.data.actions.remove(src.animation_data.action)
@@ -169,7 +188,7 @@ def world_rot(arm, pb_or_bone, rest=False):
     return m.to_quaternion().normalized(), m.to_translation()
 
 
-def retarget(src, dst, action_name, frame_range, mapping=None, yaw=None):
+def retarget(src, dst, action_name, frame_range, mapping=None, yaw=None, ground_from_end=False):
     """Bake src animation onto dst armature as a new action (mapping: src bone -> dst bone)."""
     MAP = mapping or globals()['MAP']
     hip_s = next(k for k, v in MAP.items() if v == 'Hips')
@@ -211,6 +230,10 @@ def retarget(src, dst, action_name, frame_range, mapping=None, yaw=None):
     f0, f1 = frame_range
     start_pose_xz = None
     base_z = None
+    if ground_from_end:
+        # clips that start on the ground (getting up): the standing end is the height baseline
+        scene.frame_set(int(frame_range[1]))
+        base_z = world_rot(src, src.pose.bones[hip_s])[1].z
     for f in range(int(f0), int(f1) + 1):
         scene.frame_set(f)
         for t in order:

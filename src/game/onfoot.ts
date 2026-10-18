@@ -19,6 +19,8 @@ export class HeroOnFoot {
   grounded = true;
   speed = 0;
   busy = 0; // seconds of a scripted animation (enter car, talk) during which input is ignored
+  /** seconds left in a fighting stance (after throwing or taking punches): standing still means guard up */
+  guard = 0;
   active = false;
   private stepT = 0;
   onStep: () => void = () => {};
@@ -74,6 +76,7 @@ export class HeroOnFoot {
     let move = new THREE.Vector3();
     const busy = this.busy > 0;
     this.busy = Math.max(0, this.busy - dt);
+    this.guard = Math.max(0, this.guard - dt);
     if (!busy) {
       // camera-relative input: forward = away from camera
       const fwd = new THREE.Vector3(Math.sin(camYaw), 0, Math.cos(camYaw));
@@ -104,7 +107,7 @@ export class HeroOnFoot {
       // clip rate follows the real ground speed so the planted foot doesn't slide
       else if (this.speed > 2.7) this.person.play('run', { speed: Math.max(0.7, this.person.gaitRate('run', this.speed)) });
       else if (this.speed > 0.35) this.person.play('walk', { speed: Math.max(0.45, this.person.gaitRate('walk', this.speed)) });
-      else this.person.play('idle', { fade: 0.35 });
+      else this.person.play(this.guard > 0 && this.person.has('fight_idle') ? 'fight_idle' : 'idle', { fade: 0.35 });
     }
     // footsteps
     if (this.grounded && this.speed > 0.5) {
