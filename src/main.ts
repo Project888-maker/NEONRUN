@@ -152,6 +152,7 @@ async function warmUp(progress: (p: number) => void) {
   const liv = Object.values(A.liveries).find(Boolean);
   if (liv) extras.push(new THREE.Mesh(new THREE.PlaneGeometry(1, 1), liveryMaterial(liv)));
   const dr = new Drone(); dr.beam.visible = true; extras.push(dr.mesh, dr.beam);
+  extras.push(...interiors.warmMeshes());
   progress(0.2);
   await warmCompile(extras);
   progress(0.7);
@@ -629,7 +630,10 @@ function openStory() {
   }));
 }
 
-function startStory(def: MissionDef) {
+/** Start a story mission behind a short fade: the click returns at once (no frozen button), the heavy
+ * work (placing the car, building the mission) runs while the screen is black. */
+function startStory(def: MissionDef) { fade(() => startStoryNow(def)); }
+function startStoryNow(def: MissionDef) {
   missions.suspend(true, playerPos);
   campaign.start(def);
   $('pause').classList.add('in-story');
@@ -1237,11 +1241,13 @@ function talkTo() {
 function fade(mid: () => void) {
   const el = $('fade');
   el.classList.add('on');
-  setTimeout(() => { try { mid(); } finally { setTimeout(() => el.classList.remove('on'), 60); } }, 260);
+  setTimeout(() => { try { mid(); } catch (e) { doorBusy = false; reportFrameError(e); } finally { setTimeout(() => el.classList.remove('on'), 60); } }, 260);
 }
 
+let doorBusy = false;
 function enterPlace(id: string) {
-  if (!hero || interiors.active) return;
+  if (!hero || interiors.active || doorBusy) return;
+  doorBusy = true;
   const room = interiors.room(id);
   hero.busy = 0.6;
   audio.play('door_open', { volume: 0.7 });
@@ -1258,12 +1264,14 @@ function enterPlace(id: string) {
     audio.indoors(true);
     document.body.classList.add('indoors');
     poolFrame = 0;
+    doorBusy = false;
   });
 }
 
 function exitPlace() {
   const room = interiors.active;
-  if (!room || !hero) return;
+  if (!room || !hero || doorBusy) return;
+  doorBusy = true;
   if (conv.active) conv.leave();
   audio.play('door_close', { volume: 0.7 });
   fade(() => {
@@ -1281,6 +1289,7 @@ function exitPlace() {
     audio.indoors(false);
     document.body.classList.remove('indoors');
     poolFrame = 0;
+    doorBusy = false;
   });
 }
 

@@ -84,6 +84,17 @@ export class Interiors {
     for (const [id, ps] of h.places) this.doors.add(this.doorFrame(id, ps));
   }
 
+  /** One of each material kind doors and rooms use, for the loading-screen shader warm-up. */
+  warmMeshes(): THREE.Object3D[] {
+    const tex = new THREE.DataTexture(new Uint8Array([128, 128, 128, 255]), 1, 1);
+    tex.needsUpdate = true;
+    const wall = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshStandardMaterial({ map: tex, emissiveMap: tex, emissive: 0xffffff, emissiveIntensity: 0.62, color: 0x777777, roughness: 0.85 }));
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshStandardMaterial({ map: tex, color: 0x888888, roughness: 0.25, metalness: 0.15 }));
+    const plain = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ color: 0x444444, roughness: 0.6, metalness: 0.3 }));
+    const door = this.doors.children[0]?.clone() ?? new THREE.Group();
+    return [wall, floor, plain, door];
+  }
+
   /** where you stand on the street to go in (the sidewalk in front of the shopfront) */
   entrance(placeId: string) { return this.h.places.get(placeId)!.stand; }
 
