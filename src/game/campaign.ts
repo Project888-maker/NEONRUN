@@ -5,7 +5,7 @@ import type { City, Spot } from '../world/city';
 import { RoadGraph, lineCoord, DISTRICTS, type DistrictId } from '../world/layout';
 import type { Hud } from './hud';
 import type { AudioSys, MusicName, SfxName } from '../audio/audio';
-import { writeSave, type Save } from './progress';
+import { writeSave, addRep, type Save } from './progress';
 import { beamMesh } from './missions';
 import { Drone } from '../world/ambient';
 import { Person, lerpAngle } from '../world/people';
@@ -62,7 +62,9 @@ interface Step {
 export interface MissionDef {
   id: string; n: number; title: string; district: DistrictId; type: string; desc: string; reward: number;
   unlock: DistrictId[]; music?: MusicName;
-  build(c: Campaign): { start: { x: number; z: number; yaw: number }; steps: Step[] };
+  build(c: Campaign): { start?: { x: number; z: number; yaw: number }; steps: Step[] };
+  /** a job someone on the street gave you: runs where you are, no story progress or results card */
+  street?: { onFinish(ok: boolean, why: string | undefined, timeLeft: number): void };
 }
 
 // ------------------------------------------------------------------ geometry helpers
@@ -262,17 +264,17 @@ export class Campaign {
     this.damage = 0; this.comfort = 100; this.driftBank = 0; this.driftChain = 0; this.drones_hits = 0;
     this.elapsed = 0;
     for (const d of def.unlock) this.h.unlock(d);
-    this.h.clearHeat();
+    if (!def.street) this.h.clearHeat();
     const { start, steps } = def.build(this);
     this.steps = steps;
     // a failure while moving the player must not leave a half-started mission behind
-    try { this.h.placePlayer(start.x, start.z, start.yaw); } catch (e) { console.error('placePlayer failed', e); }
+    if (start) try { this.h.placePlayer(start.x, start.z, start.yaw); } catch (e) { console.error('placePlayer failed', e); }
     this.idx = -1;
     this.timer = null;
-    this.h.hud.banner(def.title, `Mission ${def.n} · ${DISTRICTS[def.district].name}`);
+    this.h.hud.banner(def.title, def.street ? `Street job · ${DISTRICTS[def.district].name}` : `Mission ${def.n} · ${DISTRICTS[def.district].name}`);
     this.h.audio.play('mission_start', { volume: 0.7 });
     this.h.audio.music_(def.music ?? 'drive');
-    setTimeout(() => { if (this.active === def) this.say(`${def.id}_brief`); }, 900);
+    if (!def.street) setTimeout(() => { if (this.active === def) this.say(`${def.id}_brief`); }, 900);
     this.next();
   }
 
@@ -382,6 +384,15 @@ export class Campaign {
 
   private finish(ok: boolean, why?: Fail) {
     const def = this.active!;
+    if (def.street) {
+      const left = this.timer ?? 0;
+      this.stop();
+      this.h.hud.setPrompt(ok ? `${def.title} · done` : FAIL_TEXT[why ?? 'time']);
+      this.h.audio.play(ok ? 'mission_complete' : 'ui_error');
+      this.h.audio.music_('chill');
+      def.street.onFinish(ok, why, left);
+      return;
+    }
     this.state = 'results';
     const timeLeft = this.timer ?? 0;
     for (const d of this.drones) d.dispose();
@@ -414,6 +425,7 @@ export class Campaign {
       const bonus = Math.round(Math.max(0, timeLeft) * 12 + (this.active!.type === 'Fragile' ? (100 - this.damage) * 8 : 0) + (this.active!.type === 'VIP' ? this.comfort * 10 : 0));
       const sum = reward + bonus;
       save.credits += sum;
+      addRep(save, def.district, first ? 6 : 2); // word gets around
       rows.innerHTML = `<div>${def.title}</div><div>Time <b>${fmt(this.elapsed)}${newBest ? ' · best' : ''}</b></div><div>${first ? 'Contract' : 'Replay pay'} <b>${reward}</b></div>${bonus ? `<div>Bonus <b>${bonus}</b></div>` : ''}`;
       total.textContent = `+${sum.toLocaleString()} CR`;
       this.h.audio.play('mission_complete');

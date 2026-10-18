@@ -92,6 +92,8 @@ node scripts/story_json.mjs                 # campaign subtitles
 - `npx tsx tests/drones.test.ts` — drones can be outrun by car, warn before striking, back off after a hit
 - `npx tsx tests/npc.test.ts` — NPC personas, the /api/talk function and the client stream
 - `npx tsx tests/crowd_walls.test.ts` — people fleeing or knocked over stop at building facades
+- `npx tsx tests/society.test.ts` — places, regulars, saved memory, reputation, street jobs (offer, accept, pay, remember), remarks never repeat
+- `node scripts/shots.mjs <url> <dir> jobs` — in-game: a regular offers a job, accept it, run it, get paid, be remembered (stand-in /api/talk)
 - `node scripts/shots.mjs <url> <dir> stride` — prints both hero feet per frame while walking and running; a planted foot must hold its position for several frames
 - `node scripts/shots.mjs <url> <dir> gait` / `police` — get in/out frames; police pressure (closest cruiser distance, car stays upright)
 - `npx vite preview` then `node scripts/shots.mjs "http://localhost:4173/?debug&q=high&fixed" screenshots [scenarios]` — headless Chromium screenshots + console errors. Scenarios include `drive`, `cars`, `foot` (exit, walk, talk, carjack) and `story` (teleports through every mission; `STORY=m1,m4` limits it). `?fixed` makes the sim advance 1/30 s per frame so software rendering still produces representative sim time.
@@ -128,9 +130,38 @@ The plan is in `docs/npc-brain.md`. Phase A (talking to anyone) is built; phases
   - Cost is about $0.005 per spoken line (repeats are free), so roughly $0.01 per exchange.
 - Mic: **Speak** is tap-to-talk. It listens until you pause, then the courier says it; it shows a hint if the microphone is blocked.
 
+**Phase B** (`src/npc/regulars.ts`, `society.ts`, `barks.ts`)
+- **Places:** 12 named places, 3 per district (Noodle Row, the night market, Meridian Tower lobby, Pier 9…). Each is placed deterministically at a shopfront spread across its district (`locatePlaces`).
+- **Regulars:** 8 hand-written people, 2 per district, each standing at their place.
+  - Mr. Ishikawa (noodles), Juno Varga (arcade bookie), Mrs. Okafor (laundromat), Hiro Delgado (implant tech), Anton Lindqvist (tower whistle-blower), Rosa Kowalski (hotel medic), Kwame Mensah (union steward), Diego Ferreira (stranded rider).
+  - They spawn when the courier is within 150 m (`Crowd.addFixed`). They don't wander or flee, and they walk back to their spot if knocked away.
+  - Their memory is saved (`save.npc`): last 6 lines, 6 notes, times met, relationship −5..5, jobs done and failed. They are told all of it and greet you accordingly. Once you've met them, the Talk prompt shows their name.
+- **Reputation:** `save.rep` per district, −100..100, shown under the district name and passed to every conversation.
+
+  | Event | Change |
+  |---|---|
+  | Delivery | +3 |
+  | Story win | +6 (+2 on replays) |
+  | Street job done | +6 in the giver's district, +2 at the destination |
+  | Street job failed | −3 |
+  | Carjack | −6 |
+  | Hitting a pedestrian | −8 |
+  | Busted | −2 |
+- **Street jobs:**
+  - Each regular has two jobs, deliver or fetch, offered in order.
+  - About one pedestrian in eight has a small job (`randomJob`).
+  - The job is written into the persona card. The model only decides when to offer it (`action: offer_job`), based on trust, reputation and memory.
+  - The game then shows a job card with Accept / Not now. Accepting runs it through the mission system's street mode (`MissionDef.street`): no teleport, no story progress or results card, and free-ride deliveries pause meanwhile.
+  - Pay is 150–900 CR by distance, plus a time bonus.
+  - No jobs are offered while you carry a free-ride parcel, while another job or story mission runs, into locked districts, or from a regular who despises you (relationship ≤ −3).
+  - Regulars with work show as amber diamonds on the minimap.
+- **Street remarks:** 153 written lines across 9 kinds of people, for greet, bump, near miss, carjack and hit witness, wanted courier, and phone chatter.
+  - Spoken in each person's own voice through `/api/voice`, so they are cached after the first time. Subtitled.
+  - Nobody repeats a line until they've used their set; 25–45 s per person and about 3 s globally between remarks.
+
 **Limits**
 - The character models have no jaw or face bones, so mouths don't move; that is phase D.
-- Memory is per spawned pedestrian for the session; recurring characters are phase B.
+- Random pedestrians are remembered only for the session; regulars are remembered for good.
 
 **Tests**
 - `npx tsx tests/npc.test.ts`: persona variety, prompt and limits, the server stream with a fake model client, the 403/400/429/503 paths, client streaming and the offline fallback.

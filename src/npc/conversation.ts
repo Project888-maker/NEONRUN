@@ -3,11 +3,11 @@
 import * as THREE from 'three';
 import type { Person, Anim } from '../world/people';
 import { Brain } from './brain';
-import { makePersona, voiceFor, ARCHETYPES } from './persona';
+import { voiceFor, ARCHETYPES } from './persona';
 import { HERO_VOICE, type Persona, type Reply, type Turn } from './protocol';
 
 /** What the conversation needs to know about the person being talked to (a Crowd ped). */
-export interface Talker { id: number; type: string; p: Person; pos: THREE.Vector3; state: string; t: number }
+export interface Talker { id: number; type: string; p: Person; pos: THREE.Vector3; state: string; t: number; key?: string }
 
 /** The bits of the game's audio engine used for generated speech. */
 export interface SpeechAudio {
@@ -17,12 +17,22 @@ export interface SpeechAudio {
   duckMusic(on: boolean): void;
 }
 
+/** What a person remembers about the courier. */
+export interface Memory { history: Turn[]; notes: string[]; rel: number }
+
 export interface ConvHost {
+  /** who this is (a regular's fixed card, or one generated from the pedestrian's id) */
+  persona(t: Talker): Persona;
+  /** memory store: regulars persist across sessions, everyone else for this session */
+  recall(p: Persona): Memory;
+  remember(p: Persona, m: Memory): void;
+  /** the job behind the persona's hook, if they can give it now */
+  job(t: Talker, p: Persona): { title: string; pay: number } | null;
+  acceptJob(t: Talker, p: Persona): void;
   heroPerson(): Person;
   heroPos(): THREE.Vector3;
   setHeroBusy(on: boolean): void;
-  district(pos: THREE.Vector3): string;
-  facts(): string[];
+  facts(p: Persona): string[];
   alive(t: Talker): boolean;
   flee(t: Talker): void;
   callPolice(t: Talker): void;
@@ -31,8 +41,6 @@ export interface ConvHost {
   onOpen(): void;
   onClose(): void;
 }
-
-interface Memory { history: Turn[]; notes: string[] }
 
 const $ = (id: string) => document.getElementById(id)!;
 const GESTURE_CLIP: Record<string, Anim | null> = { talk: 'talk', shrug: 'shrug', wave: 'wave', nod: 'talk', dismiss: 'push', phone: 'phone', none: null };
@@ -65,8 +73,6 @@ class Voices {
 export class Conversation {
   active: Talker | null = null;
   persona: Persona | null = null;
-  private mem = new Map<string, Memory>();
-  private personas = new Map<number, Persona>();
   private waiting = false;
   private abort: AbortController | null = null;
   private closing = false;
@@ -94,18 +100,13 @@ export class Conversation {
     this.setupMic();
   }
 
-  personaOf(t: Talker) {
-    let p = this.personas.get(t.id);
-    if (!p) { p = makePersona(t.id, t.type, this.host.district(t.pos)); this.personas.set(t.id, p); }
-    if (this.personas.size > 300) this.personas.delete(this.personas.keys().next().value!);
-    return p;
-  }
+  personaOf(t: Talker) { return this.host.persona(t); }
 
   start(t: Talker) {
     if (this.active) return;
     this.active = t;
     const p = (this.persona = this.personaOf(t));
-    const m = this.memory(p);
+    const m = this.host.recall(p);
     this.closing = false;
     this.camInit = false;
     this.turn++;
@@ -119,6 +120,7 @@ export class Conversation {
     $('cv-name').textContent = m.history.length ? p.name : ARCHETYPES[t.type]?.title ?? 'Stranger';
     $('cv-tag').textContent = '';
     $('cv-you').classList.add('hidden');
+    $('cv-job').classList.add('hidden');
     this.setLine('…');
     this.setReplies([]);
     this.request(null);
@@ -165,12 +167,6 @@ export class Conversation {
     this.host.onClose();
   }
 
-  private memory(p: Persona) {
-    let m = this.mem.get(p.id);
-    if (!m) { m = { history: [], notes: [] }; this.mem.set(p.id, m); }
-    return m;
-  }
-
   /** The courier's own line in his voice; resolves when he has finished saying it. */
   private async speakHero(text: string, turn: number) {
     const est = Math.min(6, 0.6 + text.split(/\s+/).length * 0.32);
@@ -192,7 +188,7 @@ export class Conversation {
     const t = this.active, p = this.persona;
     if (!t || !p) return;
     const turn = this.turn;
-    const m = this.memory(p);
+    const m = this.host.recall(p);
     const v = voiceFor(p, t.type);
     this.waiting = true;
     $('conv').classList.add('waiting');
@@ -202,7 +198,7 @@ export class Conversation {
     let early: Promise<AudioBuffer | null> | null = null;
     let earlyText = '';
     try {
-      const res = await this.brain.ask({ persona: p, facts: this.host.facts(), history: m.history, say, notes: m.notes }, t.type, (partial, done) => {
+      const res = await this.brain.ask({ persona: p, facts: this.host.facts(p), history: m.history, say, notes: m.notes }, t.type, (partial, done) => {
         if (this.active !== t || turn !== this.turn) return;
         // start generating their voice the moment the sentence is complete
         if (done && this.host.voiceOn()) { early = this.voices.get(v.name, partial, v.speed); earlyText = partial; }
@@ -215,6 +211,8 @@ export class Conversation {
       m.history.push({ who: 'npc', text: res.reply.line });
       if (m.history.length > 16) m.history.splice(0, m.history.length - 16);
       if (res.reply.remember) { m.notes.push(res.reply.remember); if (m.notes.length > 6) m.notes.shift(); }
+      m.rel = Math.max(-5, Math.min(5, m.rel + (res.reply.relationship === 'warmer' ? 1 : res.reply.relationship === 'colder' ? -1 : 0)));
+      this.host.remember(p, m);
       $('cv-name').textContent = p.name;
       $('cv-tag').textContent = `${p.job}${res.offline ? ' · offline lines' : ''}`;
       const audio = !this.host.voiceOn() ? null : earlyText === res.reply.line && early ? early : this.voices.get(v.name, res.reply.line, v.speed);
@@ -235,7 +233,9 @@ export class Conversation {
     this.setLine(r.line);
     const clip = GESTURE_CLIP[r.gesture];
     t.p.play(clip && t.p.has(clip) ? clip : 'talk', { fade: 0.25 });
-    if (r.action === 'none') this.setReplies(r.replies); // you can answer while they are still talking
+    const job = r.action === 'offer_job' ? this.host.job(t, this.persona!) : null;
+    if (job) this.offerJob(job, t, turn);
+    else if (r.action === 'none' || r.action === 'offer_job') this.setReplies(r.replies); // you can answer while they are still talking
     else this.closing = true;
     if (r.action === 'call_police') { t.p.play('phone', { fade: 0.3 }); this.host.callPolice(t); }
     // say it
@@ -252,7 +252,39 @@ export class Conversation {
     this.speakT = Math.min(this.speakT, 0.2);
     if (this.active !== t || turn !== this.turn) return;
     if (r.action === 'flee') { this.leave(); this.host.flee(t); }
-    else if (r.action !== 'none') setTimeout(() => { if (this.active === t && turn === this.turn) this.leave(); }, 500);
+    else if (r.action !== 'none' && r.action !== 'offer_job') setTimeout(() => { if (this.active === t && turn === this.turn) this.leave(); }, 500);
+  }
+
+  /** A job is on the table: accept it (the courier agrees, then off you go) or turn it down. */
+  private offerJob(job: { title: string; pay: number }, t: Talker, turn: number) {
+    $('cv-job').textContent = `Job · ${job.title} · ${job.pay} CR`;
+    $('cv-job').classList.remove('hidden');
+    const box = $('cv-replies');
+    box.innerHTML = '';
+    const add = (label: string, cls: string, fn: () => void) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = `cv-reply ${cls}`; b.textContent = label; b.dataset.k = String(box.children.length + 1);
+      b.addEventListener('click', fn);
+      box.appendChild(b);
+    };
+    add(`Accept · ${job.pay} CR`, 'accept', () => {
+      if (this.active !== t || turn !== this.turn || this.closing) return;
+      const p = this.persona!;
+      this.closing = true;
+      this.turn++;
+      this.host.audio.stopSpeech();
+      $('cv-job').classList.add('hidden');
+      $('cv-you').textContent = "Deal. I'm on it.";
+      $('cv-you').classList.remove('hidden');
+      this.setReplies([]);
+      this.host.heroPerson().play('talk', { fade: 0.25 });
+      void this.speakHero("Deal. I'm on it.", this.turn).then(() => {
+        if (this.active !== t) return;
+        this.leave();
+        this.host.acceptJob(t, p);
+      });
+    });
+    add('Not now', '', () => { $('cv-job').classList.add('hidden'); this.say("Not tonight, sorry. Maybe another time."); });
   }
 
   /** Fallback when the voice service is not set up: the device's best-sounding voice. */

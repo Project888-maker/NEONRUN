@@ -19,6 +19,11 @@ import { CAR_DEFS, carDef } from './vehicle/carModels';
 import { HeroOnFoot, FootCam } from './game/onfoot';
 import { Crowd, Person, PED_TYPES, type PedType, lerpAngle } from './world/people';
 import { Conversation } from './npc/conversation';
+import { Society } from './npc/society';
+import { REGULARS, regularId } from './npc/regulars';
+import { Barks } from './npc/barks';
+import { voiceFor, ARCHETYPES } from './npc/persona';
+import { repLabel } from './game/progress';
 import { Police, carMesh } from './game/police';
 import { ChaseCam } from './vehicle/chaseCam';
 import { AudioSys } from './audio/audio';
@@ -223,12 +228,13 @@ function buildWorld() {
     audio.play('body_hit', { pos: p, volume: 1 });
     if (Math.random() < 0.6) audio.play('scream', { pos: p, volume: 0.9 });
     crowd.panic(p, 20);
-    if (mode === 'drive') noteEvent('the courier hit a pedestrian with their car', p);
+    if (mode === 'drive') { noteEvent('the courier hit a pedestrian with their car', p); society.repEvent('hit', p); setTimeout(() => barks.event('hit', p, 30), 700); }
     chase.impact(Math.min(0.5, spd / 40));
     if (hitCooldown <= 0) { police.add(1, 'pedestrian'); hitCooldown = 4; }
   };
   crowd.onScream = (p) => audio.play('scream', { pos: p, volume: 0.6, rate: 0.9 + Math.random() * 0.25 });
   scene.add(crowd.group);
+  crowd.onFlee = (ped, from) => { if (from.distanceTo(ped.pos) < 9 && mode === 'drive') barks?.event('near_miss', ped.pos, 1, 0.5); };
   if (A.people.hero) {
     hero = new HeroOnFoot(phys, A.people.hero);
     hero.onStep = () => audio.play('footstep_wet', { volume: 0.35, rate: 0.85 + Math.random() * 0.3 });
@@ -240,8 +246,12 @@ function buildWorld() {
     heroPerson: () => hero!.person,
     heroPos: () => hero!.pos,
     setHeroBusy: (on) => { if (hero) hero.busy = on ? 1e6 : 0; },
-    district: (p) => districtAt(p.x, p.z),
-    facts: () => convFacts(),
+    persona: (t) => society.persona(t),
+    recall: (p) => society.recall(p),
+    remember: (p, m) => society.remember(p, m),
+    job: (t, p) => society.job(t, p),
+    acceptJob: (t, p) => society.acceptJob(t, p),
+    facts: (p) => society.facts(p, convFacts()),
     alive: (t) => mode === 'foot' && state === 'playing' && crowd.peds.includes(t as any) && t.state === 'talk',
     flee: (t) => crowd.flee(t as any, hero!.pos),
     callPolice: (t) => { noteEvent('a bystander called the police on the courier', t.pos); setTimeout(() => police.add(1, 'reported'), 2500); },
@@ -325,6 +335,26 @@ function buildWorld() {
     },
   });
   scene.add(campaign.group);
+  society = new Society({
+    crowd, campaign, save, hud, audio, spots: city.spots,
+    playerPos: () => playerPos,
+    busy: () => missions.state === 'toDrop',
+    suspendDeliveries: (on) => missions.suspend(on, playerPos),
+  });
+  barks = new Barks({
+    crowdPeds: () => crowd.peds,
+    speaker: (ped) => {
+      const p = society.persona(ped as any);
+      const known = !ped.key || (save.npc[p.id]?.met ?? 0) > 0;
+      const v = voiceFor(p, ped.type);
+      return { name: known && ped.key ? p.name : ARCHETYPES[ped.type]?.title ?? 'Stranger', voice: v.name, speed: v.speed, key: p.id };
+    },
+    voice: (v, text, speed) => conv.voices.get(v, text, speed),
+    play: (buf, pos) => audio.playRemark(buf, pos),
+    subtitle: (who, text, dur) => { if (!conv.active) subtitle(who, text, dur); },
+    voiceOn: () => (save.settings.voice ?? 'on') === 'on',
+    quiet: () => !!conv.active || state !== 'playing',
+  });
 
   // video billboards
   for (const clip of new Set(city.videoScreens.map((s) => s.clip))) {
@@ -429,6 +459,8 @@ let footCam: FootCam;
 let crowd: Crowd;
 let police: Police;
 let conv: Conversation;
+let society: Society;
+let barks: Barks;
 /** things the courier did that bystanders may have seen (fed to the NPC brain) */
 const recentEvents: { t: number; pos: THREE.Vector3; text: string }[] = [];
 function noteEvent(text: string, pos: THREE.Vector3) { recentEvents.push({ t: simTime, pos: pos.clone(), text }); if (recentEvents.length > 12) recentEvents.shift(); }
@@ -979,6 +1011,7 @@ function subtitle(who: string, text: string, dur: number) {
 }
 
 function busted() {
+  society.repEvent('busted', playerPos);
   campaign.onBusted();
   show('busted', true);
   audio.play('radio_squelch');
@@ -1097,6 +1130,8 @@ function startEnter() {
       audio.talk(`victim_${vi}`, out).then((dur) => subtitle('Driver', A.lines.victim?.[vi] ?? '', dur + 0.5));
       crowd.panic(tgt.door, 25);
       noteEvent('the courier dragged a driver out of their car and stole it', tgt.door);
+      society.repEvent('carjack', tgt.door);
+      setTimeout(() => barks.event('carjack', tgt.door, 30), 900);
       const near = police.units.some((u) => u.pos.distanceTo(tgt.door) < 80);
       police.add(near ? 2 : 1, 'carjack');
     }, delay * 400);
@@ -1179,7 +1214,9 @@ function handleInteractions() {
     if (t) { if (story) story.run(); else talkTo(); }
     const tgt = enterTarget();
     const ped = story ? null : crowd.nearest(hero.pos, 2.8);
-    setContext(story ? `<b>T</b> · ${story.label}` : tgt ? `<b>E</b> · ${tgt.kind === 'traffic' ? 'Steal car' : 'Get in'}` : ped ? '<b>T</b> · Talk' : null);
+    const known = ped?.key ? society.persona(ped) : null;
+    const talkLabel = known && (save.npc[known.id]?.met ?? 0) > 0 ? `Talk to ${known.name}` : 'Talk';
+    setContext(story ? `<b>T</b> · ${story.label}` : tgt ? `<b>E</b> · ${tgt.kind === 'traffic' ? 'Steal car' : 'Get in'}` : ped ? `<b>T</b> · ${talkLabel}` : null);
     setTouchCtx(tgt ? (tgt.kind === 'traffic' ? 'STEAL' : 'GET IN') : null, story ? 'GIVE' : ped ? 'TALK' : null);
   } else { setContext(null); setTouchCtx(null, null); }
   document.body.classList.toggle('on-foot', mode !== 'drive');
@@ -1249,7 +1286,7 @@ let acc = 0;
 let last = performance.now();
 let upsideT = 0;
 let bigMap = false;
-let spatialT = 0, lockBeepT = 0;
+let spatialT = 0, lockBeepT = 0, lastDeliveries = -1, shownRep = NaN;
 let fpsT = 0, fpsN = 0;
 let lastDistrict: DistrictId | null = null;
 
@@ -1332,6 +1369,9 @@ function frame(now: number) {
     probeHook?.(dtReal);
     crowd.update(dtReal, playerPos, driving ? { pos: carPos, vel: carVel, halfLen: car.dims.length / 2, halfWid: car.dims.width / 2, yaw: vehicle.yaw(), speed: vehicle.speedAbs } : null);
     if (conv.active) conv.update(dtReal, camera);
+    society.update(dtReal);
+    barks.update(dtReal, playerPos, mode === 'foot', playerVel.length(), police.heat > 0);
+    if (save.deliveries !== lastDeliveries) { if (lastDeliveries >= 0 && save.deliveries > lastDeliveries) society.repEvent('delivery', playerPos); lastDeliveries = save.deliveries; }
     prof.mark('crowd');
     const pol = police.update(dtReal, simTime, playerPos, playerVel, !driving);
     prof.mark('police');
@@ -1366,11 +1406,12 @@ function frame(now: number) {
     prof.mark('audio');
     // HUD
     const d = districtAt(playerPos.x, playerPos.z);
+    if ((save.rep[d] ?? 0) !== shownRep || d !== lastDistrict) { shownRep = save.rep[d] ?? 0; hud.setRep(shownRep, repLabel(shownRep)); }
     if (d !== lastDistrict) { hud.setDistrict(d); if (lastDistrict && save.unlocked.includes(d)) audio.say(({ neon: 'brief_neon', backstreets: 'brief_back', downtown: 'brief_downtown', docks: 'brief_docks' } as const)[d]); lastDistrict = d; }
     document.querySelector('.hud-br')!.classList.toggle('hidden', !driving);
     if (driving) hud.drawSpeedo(Math.abs(vehicle.speed) * 3.6, vehicle.rpm, vehicle.speed < -0.5 ? 0 : vehicle.gear, vehicle.boost, vehicle.boosting);
     const yaw = driving || !hero ? vehicle.yaw() : hero.person.yaw;
-    hud.drawMinimap(playerPos, yaw, obj.target, obj.route, [...obj.drones.map((q) => q.mesh.position), ...police.units.map((u) => u.pos)], obj.kind);
+    hud.drawMinimap(playerPos, yaw, obj.target, obj.route, [...obj.drones.map((q) => q.mesh.position), ...police.units.map((u) => u.pos)], obj.kind, society.jobMarkers());
     if (bigMap) hud.drawBigMap(playerPos, yaw, obj.target, obj.route);
     hud.arrow(camera, obj.target, obj.kind === 'drop' ? '#ff2fb4' : '#21f3ff');
     hud.tick(dtReal);
@@ -1466,6 +1507,16 @@ function debugApi() {
     talk: () => talkTo(),
     conv: () => ({ active: !!conv.active, name: document.getElementById('cv-name')!.textContent, tag: document.getElementById('cv-tag')!.textContent, line: document.getElementById('cv-line')!.textContent, replies: [...document.querySelectorAll('#cv-replies .cv-reply')].map((b) => b.textContent), persona: conv.persona, heroBusy: hero?.busy ?? 0 }),
     convSay: (text: string) => conv.say(text),
+    convAccept: () => (document.querySelector('#cv-replies .cv-reply.accept') as HTMLButtonElement | null)?.click(),
+    regulars: () => [...society.places.values()].length && REGULARS.map((r) => ({ key: r.key, home: r.home, at: society.places.get(r.home)?.stand.toArray().map((n) => Math.round(n)), present: !!crowd.byKey(regularId(r)) })),
+    heroToRegular: (key: string) => {
+      const r = REGULARS.find((q) => q.key === key)!;
+      const ps = society.places.get(r.home)!;
+      society.update(1);
+      hero?.place(ps.stand.clone().add(new THREE.Vector3(ps.spot.nx, 0, ps.spot.nz).multiplyScalar(1.4)));
+      return ps.stand.toArray();
+    },
+    social: () => ({ job: society.active ? { title: society.active.def.title, pay: society.active.pay, giver: society.active.giverName } : null, story: campaign.active?.id ?? null, steps: campaign.steps.length, step: campaign.idx, target: campaign.target?.toArray().map((n) => Math.round(n)), rep: { ...save.rep }, npc: JSON.parse(JSON.stringify(save.npc)), credits: save.credits, markers: society.jobMarkers().length }),
     convLeave: () => conv.leave(),
     personaSample: (n: number) => crowd.peds.slice(0, n).map((p) => conv.personaOf(p)),
     heat: (n: number) => police.add(n, 'debug'),

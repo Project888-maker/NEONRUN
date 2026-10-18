@@ -341,6 +341,49 @@ if (want('converse')) {
     console.log('sample personas', JSON.stringify((await N('personaSample', 4)).map((p) => `${p.name}, ${p.age}, ${p.job}; ${p.mood}; ${p.speech}`)));
   }
 }
+if (want('jobs')) {
+  // Phase B: a regular offers a job, the courier takes it, does the fetch run, gets paid and is remembered.
+  // /api/talk is a stand-in (no key needed): offers the job when asked for work.
+  const said = [];
+  await page.route('**/api/voice**', (r) => r.fulfill({ status: 503, contentType: 'application/json', body: '{"error":"no_key"}' }));
+  await page.route('**/api/talk', async (route) => {
+    const body = JSON.parse(route.request().postData() || '{}');
+    said.push({ say: body.say, hook: body.persona.hook, facts: body.facts, notes: body.notes });
+    const wantsWork = /work|job/i.test(body.say || '');
+    const line = !body.say ? 'Kid! Back again? Sit, sit.' : wantsWork ? `Work? Fine. ${body.persona.hook ? 'Get me ' + body.persona.hook.split(';')[0].replace(/^pick up /, '') : 'Nothing tonight.'}` : 'Hm.';
+    const reply = { line, emotion: 'friendly', gesture: 'talk', action: wantsWork && body.persona.hook ? 'offer_job' : 'none', replies: ['Got any work?', 'How is business?', 'See you.'], remember: wantsWork ? 'asked for work' : '', relationship: 'warmer' };
+    const text = JSON.stringify(reply);
+    await route.fulfill({ status: 200, contentType: 'application/x-ndjson', body: JSON.stringify({ t: 'delta', text }) + '\n' + JSON.stringify({ t: 'done', reply }) + '\n' });
+  });
+  await N('unlockAll');
+  await N('setInput', {});
+  await sleep(300);
+  if ((await N('mode')) === 'drive') { await N('exitCar'); await sleep(2200); }
+  console.log('regulars', JSON.stringify(await N('regulars')));
+  console.log('social before', JSON.stringify(await N('social')));
+  await N('heroToRegular', 'ishikawa'); await sleep(1200);
+  await shot('95_regular');
+  await N('talk'); await sleep(1800);
+  await N('convSay', 'Got any work for me tonight?'); await sleep(2500);
+  let c = await N('conv');
+  console.log('offer', JSON.stringify({ line: c.line, replies: c.replies, job: await page.evaluate(() => document.getElementById('cv-job').textContent) }));
+  await shot('96_job_offer');
+  console.log('hook sent', JSON.stringify(said.at(-1)?.hook), 'facts', JSON.stringify(said.at(-1)?.facts?.slice(-2)));
+  await N('convAccept'); await sleep(4000);
+  let so = await N('social');
+  console.log('accepted', JSON.stringify({ conv: (await N('conv')).active, job: so.job, step: so.step, steps: so.steps, target: so.target }));
+  await shot('97_job_running');
+  for (let k = 0; k < 2; k++) { await N('storyWarp'); await sleep(1500); so = await N('social'); console.log('after warp', k, JSON.stringify({ job: so.job?.title ?? null, step: so.step, target: so.target })); }
+  await sleep(1000);
+  so = await N('social');
+  console.log('done', JSON.stringify({ job: so.job, credits: so.credits, rep: so.rep, ishikawa: so.npc['regular:ishikawa'], markers: so.markers }));
+  await shot('98_job_done');
+  // he remembers: talk again and check what the brain is told
+  await N('heroToRegular', 'ishikawa'); await sleep(1200);
+  await N('talk'); await sleep(1800);
+  console.log('second visit told', JSON.stringify({ facts: said.at(-1)?.facts?.slice(-2), notes: said.at(-1)?.notes, hook: said.at(-1)?.hook }));
+  await N('convLeave');
+}
 if (want('cams')) {
   await N('camMode', 'hood');
   await sleep(1500);

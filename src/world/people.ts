@@ -324,6 +324,8 @@ interface Ped {
   p: Person; type: PedType;
   rect: number; s: number; dir: 1 | -1; speed: number;
   state: PedState; t: number; pos: THREE.Vector3; vel: THREE.Vector3; id: number;
+  /** regulars: their spot, the way they face, and who they are */
+  home?: THREE.Vector3; homeYaw?: number; key?: string;
 }
 
 /** Sidewalk crowds: pedestrians loop around blocks near the player, stop, chat on phones, flee from cars. */
@@ -335,6 +337,8 @@ export class Crowd {
   private nextId = 1;
   onHit: (pos: THREE.Vector3, speed: number) => void = () => {};
   onScream: (pos: THREE.Vector3) => void = () => {};
+  /** someone started running from a car (for street reactions) */
+  onFlee: (ped: Ped, from: THREE.Vector3) => void = () => {};
 
   constructor(private assets: Partial<Record<PedType, GLTF>>, private city: City, public target: number) {}
 
@@ -397,6 +401,19 @@ export class Crowd {
     }
   }
 
+  /** A regular: stands at their spot (and walks back to it), never wanders off. */
+  addFixed(type: PedType, pos: THREE.Vector3, yaw: number, key: string): Ped | null {
+    if (!this.assets[type]) return null;
+    const p = this.take(type);
+    const ped: Ped = { p, type, rect: 0, s: 0, dir: 1, speed: 1.2, state: 'idle', t: 1e9, pos: pos.clone(), vel: new THREE.Vector3(), id: this.nextId++, home: pos.clone(), homeYaw: yaw, key };
+    p.yaw = yaw;
+    p.play('idle', { fade: 0 });
+    p.mixer.setTime(this.rng.next() * 3);
+    this.peds.push(ped);
+    return ped;
+  }
+  byKey(key: string) { return this.peds.find((p) => p.key === key) ?? null; }
+
   /** Nearest standing pedestrian within r (for talking). */
   nearest(pos: THREE.Vector3, r: number) {
     let best: Ped | null = null, bd = r;
@@ -421,6 +438,7 @@ export class Crowd {
     for (const p of this.peds) if (p.state !== 'down' && p.pos.distanceTo(at) < radius) this.flee(p, at);
   }
   flee(p: Ped, from: THREE.Vector3) {
+    if (p.home) return; // regulars hold their ground
     if (p.state === 'flee') { p.t = Math.max(p.t, 3); return; }
     p.state = 'flee';
     p.t = this.rng.range(4, 7);
@@ -428,6 +446,7 @@ export class Crowd {
     if (away.lengthSq() < 0.01) away.set(1, 0, 0);
     away.normalize();
     p.vel.copy(away).multiplyScalar(3.4);
+    this.onFlee(p, from);
     p.p.play(p.p.has('run') ? 'run' : 'flee', { fade: 0.15, speed: p.p.has('run') ? p.p.gaitRate('run', 3.4) : 1.1 });
     if (this.rng.chance(0.35)) this.onScream(p.pos);
   }
@@ -475,6 +494,7 @@ export class Crowd {
           break;
         }
         case 'idle': case 'phone': case 'wave': case 'talk':
+          if (p.home) { this.atHome(p, dt); break; }
           if (p.t <= 0) { p.state = 'walk'; p.t = this.rng.range(6, 18); if (this.rng.chance(0.3)) p.dir = (p.dir * -1) as 1 | -1; p.p.play('walk', { fade: 0.4, speed: p.p.gaitRate('walk', p.speed) }); }
           break;
         case 'flee': {
@@ -496,6 +516,7 @@ export class Crowd {
           p.pos.addScaledVector(p.vel, dt);
           this.keepOutOfBuildings(p);
           p.vel.multiplyScalar(Math.max(0, 1 - dt * 3));
+          if (p.home && p.t <= 0) { p.state = 'idle'; p.t = 1e9; p.p.play('idle', { fade: 0.6 }); }
           break;
       }
       const ground = this.onSidewalk(p.pos) ? CURB_H : 0;
@@ -507,6 +528,23 @@ export class Crowd {
     this.frame++;
   }
   private frame = 0;
+
+  /** Regulars: walk back to their spot if knocked away, then stand facing the street. */
+  private atHome(p: Ped, dt: number) {
+    if (p.state === 'talk' && p.t > 0) return; // in a conversation: it controls facing
+    if (p.state === 'talk') { p.state = 'idle'; p.t = 1e9; }
+    const to = p.home!.clone().sub(p.pos).setY(0);
+    const d = to.length();
+    if (d > 0.4) {
+      const step = Math.min(d, 1.2 * dt);
+      p.pos.addScaledVector(to.normalize(), step);
+      p.p.yaw = lerpAngle(p.p.yaw, Math.atan2(to.x, to.z), Math.min(1, dt * 6));
+      if (p.p.currentName !== 'walk') p.p.play('walk', { fade: 0.3, speed: p.p.gaitRate('walk', 1.2) });
+    } else {
+      p.p.yaw = lerpAngle(p.p.yaw, p.homeYaw!, Math.min(1, dt * 3));
+      if (p.p.currentName === 'walk' || p.p.currentName === 'talk') p.p.play('idle', { fade: 0.5 });
+    }
+  }
 
   /**
    * Buildings fill each block inside its sidewalk loop. Someone running off in a straight line (fleeing,

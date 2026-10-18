@@ -69,7 +69,7 @@ export class Hud {
   private mapK = 1024 / (HALF * 2 + 80);
   private m2p(x: number) { return (x + HALF + 40) * this.mapK; }
 
-  drawMinimap(pos: THREE.Vector3, yaw: number, target: THREE.Vector3 | null, route: THREE.Vector3[], drones: THREE.Vector3[], pickupKind: 'pickup' | 'drop' | null) {
+  drawMinimap(pos: THREE.Vector3, yaw: number, target: THREE.Vector3 | null, route: THREE.Vector3[], drones: THREE.Vector3[], pickupKind: 'pickup' | 'drop' | null, people: THREE.Vector3[] = []) {
     const g = this.mctx, W = this.mini.width;
     const zoom = 2.2; // map px per minimap px scale
     g.save();
@@ -101,6 +101,12 @@ export class Hud {
       for (const p of route) g.lineTo(this.m2p(p.x), this.m2p(p.z));
       g.stroke();
       g.shadowBlur = 0;
+    }
+    // regulars with work: amber diamonds
+    g.fillStyle = '#ffb347';
+    for (const q of people) {
+      const x = this.m2p(q.x), z = this.m2p(q.z);
+      g.beginPath(); g.moveTo(x, z - 4.5); g.lineTo(x + 4.5, z); g.lineTo(x, z + 4.5); g.lineTo(x - 4.5, z); g.closePath(); g.fill();
     }
     for (const d of drones) {
       g.fillStyle = '#ff3030';
@@ -227,6 +233,14 @@ export class Hud {
     $('h-district').textContent = DISTRICTS[d].name;
     if (this.lastDistrict && this.lastDistrict !== d) this.banner(DISTRICTS[d].name, 'Entering');
     this.lastDistrict = d;
+  }
+  /** the courier's standing in the current district (people talk) */
+  setRep(v: number, label: string) {
+    const el = $('h-rep');
+    el.textContent = `Rep ${v > 0 ? '+' : ''}${v}`;
+    el.title = label;
+    el.classList.toggle('good', v >= 12);
+    el.classList.toggle('bad', v <= -12);
   }
   banner(title: string, sub = '') {
     const b = $('banner');

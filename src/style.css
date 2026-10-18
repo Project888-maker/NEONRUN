@@ -276,3 +276,7 @@ body.conversing #touch, body.conversing #subtitle, body.conversing #h-prompt { d
 body.touch #conv { width: min(720px, calc(100vw - 24px)); padding: 10px 12px 12px; gap: 8px; }
 body.touch #cv-line { font-size: 17px; }
 @media (max-height: 480px) { #cv-line { font-size: 16px; } #cv-replies .cv-reply { font-size: 13px; padding: 6px 10px; } #conv { gap: 6px; } }
+#cv-job { align-self: flex-start; font: 600 12px 'JetBrains Mono', monospace; letter-spacing: 0.06em; color: var(--ink); background: var(--amber); padding: 5px 10px; text-transform: uppercase; }
+#cv-replies .cv-reply.accept { background: rgba(255, 179, 71, 0.22); border-color: var(--amber); }
+.rep { margin-top: 2px; font: 600 11px 'JetBrains Mono', monospace; letter-spacing: 0.08em; color: var(--muted); }
+.rep.good { color: #7dffb2; } .rep.bad { color: #ff6b8a; }

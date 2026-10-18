@@ -1,6 +1,6 @@
 # NPC brain: personalities, conversation, street tasks (proposal)
 
-Status: phase A (section 8) is built, with Haiku 5.5 for everyone; see NOTES.md → NPC brain. Prices are first-party Claude API list prices as of October 2026.
+Status: phases A and B (section 8) are built, with Haiku 5.5 for everyone; see NOTES.md → NPC brain. Prices are first-party Claude API list prices as of October 2026.
 
 ## 1. One brain, many people
 

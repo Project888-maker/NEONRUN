@@ -306,6 +306,15 @@ export class AudioSys {
     s.start();
     return ended;
   }
+  /** A short spoken remark in the street (doesn't cut off conversation speech). */
+  playRemark(b: AudioBuffer, pos: THREE.Vector3) {
+    if (this.ctx.state !== 'running') return;
+    const s = this.ctx.createBufferSource();
+    s.buffer = b;
+    const p = this.panner(pos); p.refDistance = 3;
+    s.connect(p).connect(this.voice);
+    s.start();
+  }
   stopSpeech() {
     const s = this.speechSrc;
     this.speechSrc = null;

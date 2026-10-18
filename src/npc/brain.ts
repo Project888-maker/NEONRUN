@@ -83,6 +83,7 @@ export class Brain {
         line, emotion: 'neutral', gesture: n === 0 ? 'talk' : 'shrug', action: last ? 'end' : 'none',
         replies: last ? [] : ['How is the night treating you?', 'Seen anything strange around here?', 'Relax, I am just passing through.'],
         remember: '',
+        relationship: 'same',
       },
     };
   }

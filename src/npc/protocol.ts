@@ -14,6 +14,8 @@ export interface Persona {
   goal: string;
   fear: string;
   speech: string;
+  /** a job this person could give a courier they trust, in plain words (null for most people) */
+  hook?: string | null;
 }
 
 export interface Turn { who: 'courier' | 'npc'; text: string }
@@ -30,7 +32,8 @@ export interface TalkRequest {
 
 export const EMOTIONS = ['neutral', 'friendly', 'amused', 'curious', 'wary', 'annoyed', 'angry', 'scared', 'sad'] as const;
 export const GESTURES = ['talk', 'shrug', 'wave', 'nod', 'dismiss', 'phone', 'none'] as const;
-export const ACTIONS = ['none', 'end', 'flee', 'call_police'] as const;
+export const ACTIONS = ['none', 'end', 'flee', 'call_police', 'offer_job'] as const;
+export const RELATIONSHIP = ['warmer', 'same', 'colder'] as const;
 
 export interface Reply {
   line: string;
@@ -41,6 +44,8 @@ export interface Reply {
   replies: string[];
   /** one short fact this person will remember about the courier ('' for nothing) */
   remember: string;
+  /** how this exchange changed their feeling about the courier */
+  relationship: typeof RELATIONSHIP[number];
 }
 
 /** Structured-output schema; `line` is first so the game can show it while it streams. */
@@ -53,8 +58,9 @@ export const REPLY_SCHEMA = {
     action: { type: 'string', enum: [...ACTIONS] },
     replies: { type: 'array', items: { type: 'string' }, description: 'Exactly three short things the courier could say next.' },
     remember: { type: 'string' },
+    relationship: { type: 'string', enum: [...RELATIONSHIP] },
   },
-  required: ['line', 'emotion', 'gesture', 'action', 'replies', 'remember'],
+  required: ['line', 'emotion', 'gesture', 'action', 'replies', 'remember', 'relationship'],
   additionalProperties: false,
 } as const;
 
@@ -88,9 +94,10 @@ YOUR CHOICES (fields of your reply)
 - line: what you say out loud now.
 - emotion: how you feel right now.
 - gesture: one body gesture to go with the line (talk, shrug, wave, nod, dismiss = a dismissive hand or turn away, phone = pull out your phone, none).
-- action: none; end = you are done talking and walk off (say goodbye or a parting shot in the line); flee = you are frightened and run away (threats, a weapon, a wanted courier being aggressive); call_police = you call the cops on the courier (only after real threats or crimes, never casually).
+- action: none; end = you are done talking and walk off (say goodbye or a parting shot in the line); flee = you are frightened and run away (threats, a weapon, a wanted courier being aggressive); call_police = you call the cops on the courier (only after real threats or crimes, never casually); offer_job = you ask the courier to do the job described in your persona card (only if you have one; describe it in your own words in the line, including where and roughly what it pays, and only once you are reasonably comfortable with them: their reputation, how they treated you and what you remember all count. A stranger with a bad reputation does not get your job; a courier who asks for work politely and has a decent reputation usually does).
 - replies: exactly three short things the courier could plausibly say next, written in the courier's voice (a laid-back, quick-witted night courier), varied in tone: one friendly, one curious or practical, one cheeky or tough. Under 12 words each.
 - remember: one short fact about the courier worth remembering next time (or an empty string).
+- relationship: warmer if this exchange made you like or trust the courier more, colder if less, same otherwise.
 
 If the courier has only walked up and said nothing yet, react to being approached: greet, brush them off, or ask what they want, true to your persona.`;
 
@@ -108,6 +115,7 @@ export function buildUserMessage(r: TalkRequest): string {
     `Wants: ${p.goal}`,
     `Afraid of: ${p.fear}`,
     `Speech style: ${p.speech}`,
+    p.hook ? `A job you could give a courier you trust: ${p.hook}` : 'You have no job to give anyone tonight.',
   ].join('\n');
   const convo = r.history.length
     ? r.history.map((t) => `${t.who === 'courier' ? 'Courier' : p.name}: ${t.text}`).join('\n')
@@ -128,6 +136,7 @@ export function sanitizeRequest(b: any): TalkRequest | null {
     job: clip(p.job, 80), district: clip(p.district, 60),
     traits: { warmth: num(p.traits?.warmth), nerve: num(p.traits?.nerve), honesty: num(p.traits?.honesty), chatty: num(p.traits?.chatty), courage: num(p.traits?.courage) },
     mood: clip(p.mood, 120), quirk: clip(p.quirk, 160), goal: clip(p.goal, 160), fear: clip(p.fear, 120), speech: clip(p.speech, 160),
+    hook: clip(p.hook, 240) || null,
   };
   if (!persona.name) return null;
   const facts = Array.isArray(b.facts) ? b.facts.slice(0, 10).map((f: unknown) => clip(f, 160)).filter(Boolean) : [];
@@ -151,6 +160,7 @@ export function normalizeReply(r: any): Reply | null {
     action: pick(r.action, ACTIONS, 'none'),
     replies,
     remember: typeof r.remember === 'string' ? r.remember.slice(0, 160) : '',
+    relationship: pick(r.relationship, RELATIONSHIP, 'same'),
   };
 }
 
