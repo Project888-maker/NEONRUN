@@ -54,6 +54,15 @@ Living document: decisions, known issues, and how to rebuild every asset.
     - each drop is lit by the nearby light pools (signs, lamps, headlights), so rain glows near light and fades in the dark
     - the streak quads are double-sided: a falling drop's tail sits above its head, which flips the winding, so with back-face culling nothing was drawn
 - **Freeze on Story with a livery** (fixed): starting a mission re-applies the car's customisation. Removing the old livery decal (a group of meshes) called `.geometry.dispose()` on the group, which threw. That left the mission half-started, and every frame then threw too: a frozen picture with only the music playing. The livery removal now disposes each child mesh. A mission start can no longer be left half-done, and the frame loop catches errors, keeps rendering and shows a short on-screen note instead of freezing.
+- **Tap lag / "glitch" on Story, Play and garage taps** (fixed; the browser's INP warning blamed 240 ms of input handling): every customisation tap re-projected the livery decals. `DecalGeometry` walks every body triangle three times, which took 170–290 ms on the main thread. The projection now runs once per car model in a Web Worker (`src/vehicle/decalWorker.ts`), and the result is shared by every instance and every tap. The livery material is shared per texture, and its shader (plus the drone's) is compiled during warm-up.
+- **Drones** (reworked; the old ones were faster than the car at 44 m/s and homed in forever): `Drone` in `src/world/ambient.ts` is a state machine:
+  - **patrol** a post along the route
+  - **chase** when the player comes within 60 m, at no more than 19 m/s (68 km/h)
+  - **give up** after 3 s more than 110 m away, then fly home
+  - **strike** only after holding a lock within 8 m for 0.8 s, shown by a red targeting laser and speeding-up beeps
+  - **retreat** for 6 s after a strike
+
+  Free-ride drones start at 4 deliveries (was 2), at most 2 per job (was 3). `tests/drones.test.ts` checks that a car at 108 km/h escapes, a parked car gets the warning first, and strikes are at least 6 s apart.
 - **Asset caching**: `vercel.json` used to mark all of `/assets/` as cacheable for a year (`immutable`). That suits Vite's hashed code chunks, but models, sounds and textures in `public/assets` keep fixed names, so players' browsers kept old versions (e.g. the first hero model with the swaying idle) after updates. Now every asset URL carries a content fingerprint (`?v=<md5>`):
   - `vite.config.ts` hashes `public/assets` at build time and versions the references in `index.html`
   - `src/core/version.ts` does the same for runtime loads
@@ -80,10 +89,14 @@ node scripts/story_json.mjs                 # campaign subtitles
 - `npx tsx tests/physics.test.ts` — driving model telemetry
 - `npx tsx tests/rollover.test.ts` — hard knocks must end on the wheels (fails without the anti-rollover assist)
 - `npx tsx tests/police.test.ts` — pursuit closes in, boxes the player, never touches the car
+- `npx tsx tests/drones.test.ts` — drones can be outrun by car, warn before striking, back off after a hit
 - `node scripts/shots.mjs <url> <dir> stride` — prints both hero feet per frame while walking and running; a planted foot must hold its position for several frames
 - `node scripts/shots.mjs <url> <dir> gait` / `police` — get in/out frames; police pressure (closest cruiser distance, car stays upright)
 - `npx vite preview` then `node scripts/shots.mjs "http://localhost:4173/?debug&q=high&fixed" screenshots [scenarios]` — headless Chromium screenshots + console errors. Scenarios include `drive`, `cars`, `foot` (exit, walk, talk, carjack) and `story` (teleports through every mission; `STORY=m1,m4` limits it). `?fixed` makes the sim advance 1/30 s per frame so software rendering still produces representative sim time.
 - URL flags: `?debug` (fps / draw calls overlay), `?q=low|med|high`, `?touch` (force touch controls), `?fixed`, `?allmissions` (open every story mission).
+
+## NPC brain (proposal)
+See `docs/npc-brain.md`: one fast model behind a Vercel function, a persona card and memory for each person, talking as the courier, tasks from people, and realism while talking. Not built yet; it needs an API key and a budget decision.
 
 ## Deployment
 - GitHub: branch `claude/keen-thompson-j8ie3f` of Project888-maker/NEONRUN.
@@ -111,7 +124,7 @@ Requests that failed or were replaced:
   Adaptive quality drops High → Med → Low below 38 fps. If a mid laptop struggles, the first levers are `reflectionEvery` and `viewDistance` in `src/core/quality.ts`.
 - The hero car is image-to-3D. Its underside has some generated "fins" behind the rear wheels, and its texture is baked, so paint colours are tints over the baked gunmetal.
 - The physics wheels use the same positions as the model, but tire grip is arcade-tuned, not simulation.
-- Hazard drones are simple pursuers (no obstacle avoidance) and can clip through buildings.
+- Hazard drones fly over buildings without obstacle avoidance; they cruise at 26 m, above most rooftops, but can clip the towers downtown.
 - Traffic uses a fixed population around the player and kinematic bodies: cars stop when hit, but they aren't knocked around.
 - Audio was verified to load and decode without errors, but couldn't be listened to here. Engine loop crossfade points are tuned by ear-less heuristics.
 - In the artifact build it is unknown whether the sandbox CSP permits WebAssembly compilation (Rapier). If the artifact hangs on "Loading", use `npm run preview` locally or the Vercel route above.

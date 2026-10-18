@@ -12,9 +12,9 @@ import { City, type LightSrc } from './world/city';
 import { buildRoadGraph, lineCoord, districtAt, HALF, PITCH, GRID, DISTRICTS, DISTRICT_ORDER, RAIL_Z, type DistrictId } from './world/layout';
 import { Rain, Splashes, Particles, FogLayers } from './world/weather';
 import { Traffic } from './world/traffic';
-import { Train, SkyTraffic } from './world/ambient';
+import { Train, SkyTraffic, Drone } from './world/ambient';
 import { Vehicle } from './vehicle/vehicle';
-import { CarVisual, PAINTS, UNDERGLOW } from './vehicle/carVisual';
+import { CarVisual, PAINTS, UNDERGLOW, liveryMaterial } from './vehicle/carVisual';
 import { CAR_DEFS, carDef } from './vehicle/carModels';
 import { HeroOnFoot, FootCam } from './game/onfoot';
 import { Crowd, Person, PED_TYPES, type PedType, lerpAngle } from './world/people';
@@ -141,6 +141,9 @@ async function warmUp(progress: (p: number) => void) {
   for (const g of Object.values(A.people)) if (g) extras.push(new Person(g, 'warm').root);
   // meshes only: extra lights here would change the light count that every shader is compiled for
   for (const a of Object.values(A.carsLod)) extras.push(carMesh(a, envTex).root);
+  const liv = Object.values(A.liveries).find(Boolean);
+  if (liv) extras.push(new THREE.Mesh(new THREE.PlaneGeometry(1, 1), liveryMaterial(liv)));
+  const dr = new Drone(); dr.beam.visible = true; extras.push(dr.mesh, dr.beam);
   progress(0.2);
   await warmCompile(extras);
   progress(0.7);
@@ -634,8 +637,6 @@ function applyCustomization() {
   car.setPaint(save.paint);
   car.setUnderglow(save.underglow);
   vehicle.upgrades = { ...save.upgrades };
-  // decals need the car's world matrix: place temporarily at origin
-  car.root.updateMatrixWorld(true);
   car.setLivery(save.livery ? A.liveries[save.livery] : null);
 }
 
@@ -1201,12 +1202,29 @@ function reportFrameError(e: unknown) {
   (el as any)._t = setTimeout(() => el!.classList.add('hidden'), 15000);
 }
 
+/** Frame-section profiler (debug API only): where does each frame's CPU time go, and which frames spike? */
+const prof = {
+  on: false, t0: 0, last: 0, cur: {} as Record<string, number>, frames: [] as { total: number; s: Record<string, number> }[],
+  begin() { if (!this.on) return; this.cur = {}; this.t0 = this.last = performance.now(); },
+  mark(n: string) { if (!this.on) return; const t = performance.now(); this.cur[n] = (this.cur[n] ?? 0) + t - this.last; this.last = t; },
+  progs: 0, compiled: [] as string[],
+  end() {
+    if (!this.on) return;
+    this.frames.push({ total: performance.now() - this.t0, s: this.cur });
+    if (this.frames.length > 2000) this.frames.shift();
+    // shader programs compiled during this frame (a mid-game compile is a hitch)
+    const ps = (renderer.info.programs ?? []) as { name: string; cacheKey: string }[];
+    if (ps.length > this.progs) for (const pr of ps.slice(this.progs)) this.compiled.push(`${pr.name || '?'} [${(pr.cacheKey || '').slice(0, 60)}]`);
+    this.progs = ps.length;
+  },
+};
+
 const FIX = 1 / 60;
 let acc = 0;
 let last = performance.now();
 let upsideT = 0;
 let bigMap = false;
-let spatialT = 0;
+let spatialT = 0, lockBeepT = 0;
 let fpsT = 0, fpsN = 0;
 let lastDistrict: DistrictId | null = null;
 
@@ -1221,6 +1239,7 @@ function frame(now: number) {
   poolUniforms.uTime.value = simTime;
   (post.lens as any).set(simTime, Q.lensFx ? 0.55 : 0, 0);
 
+  prof.begin();
   if (state === 'playing') {
     try {
     if (campaign.state === 'results') { for (const k of ['Enter', 'KeyF']) if (input.consume(k) && campaign.resultsKey(k)) break; }
@@ -1235,7 +1254,9 @@ function frame(now: number) {
     talking = Math.max(0, talking - dtReal);
     hitCooldown = Math.max(0, hitCooldown - dtReal);
     if (subT > 0) { subT -= dtReal; if (subT <= 0) $('subtitle').classList.add('hidden'); }
+    prof.mark('input');
     traffic.update(dtReal, mode === 'drive' ? carPos : playerPos, carVel, vehicle.body);
+    prof.mark('traffic');
     acc += dtReal;
     let steps = 0;
     while (acc >= FIX && steps < 6) {
@@ -1250,6 +1271,7 @@ function frame(now: number) {
       acc -= FIX;
       steps++;
     }
+    prof.mark('physics');
     vehicle.getTransform(carPos, carQuat);
     const lv = vehicle.body.linvel();
     carVel.set(lv.x, lv.y, lv.z);
@@ -1264,6 +1286,7 @@ function frame(now: number) {
       pc.vehicle.getTransform(pp, pq);
       pc.car.update(dtReal, pc.vehicle, pp, pq, 0);
     }
+    prof.mark('cars');
     // the hero on foot (also during get-in / get-out animations)
     if (hero && hero.active) hero.update(dtReal, mode === 'foot' ? input.readFoot() : { x: 0, z: 0, run: false, jump: false }, footCam.yaw);
     updateCarSeq(dtReal);
@@ -1276,9 +1299,12 @@ function frame(now: number) {
       playerPos.copy(hp);
       footCam.update(dtReal, hp, input.keys, hero.collider);
     }
+    prof.mark('hero+cam');
     probeHook?.(dtReal);
     crowd.update(dtReal, playerPos, driving ? { pos: carPos, vel: carVel, halfLen: car.dims.length / 2, halfWid: car.dims.width / 2, yaw: vehicle.yaw(), speed: vehicle.speedAbs } : null);
+    prof.mark('crowd');
     const pol = police.update(dtReal, simTime, playerPos, playerVel, !driving);
+    prof.mark('police');
     audio.siren(pol.nearestPos && pol.nearest < 160 ? pol.nearestPos : null);
     missions.update(dtReal, simTime, playerPos, playerVel, driving ? vehicle.speedAbs : playerVel.length(), driving && vehicle.drifting, traffic.cars, () => {
       chase.impact(0.6);
@@ -1286,7 +1312,9 @@ function frame(now: number) {
       vehicle.body.applyImpulse({ x: (Math.random() - 0.5) * 3000, y: 2500, z: (Math.random() - 0.5) * 3000 }, true);
     });
     campaign.update({ dt: dtReal, t: simTime, pos: playerPos, vel: playerVel, speed: driving ? vehicle.speedAbs : playerVel.length(), drifting: driving && vehicle.drifting, driving, onFoot: mode === 'foot', heat: police.heat, traffic: traffic.cars });
+    prof.mark('missions');
     if (driving) emitEffects(dtReal);
+    prof.mark('effects');
     // audio
     const slip = Math.max(...vehicle.wheels.map((w) => (w.contact ? Math.abs(w.slipLat) + w.slipLong * 0.5 : 0)));
     if (driving) audio.updateEngine(vehicle.rpm, inp.throttle, vehicle.speedAbs, slip, vehicle.drifting, vehicle.boosting);
@@ -1296,10 +1324,16 @@ function frame(now: number) {
     audio.updateListener(camera);
     audio.setPos(audio.trainLoop, train.position, 1.0);
     const obj = objective();
-    const nearestDrone = obj.drones[0];
+    let nearestDrone: (typeof obj.drones)[number] | undefined, nd = Infinity;
+    for (const d of obj.drones) { const k = d.mesh.position.distanceToSquared(playerPos); if (k < nd) { nd = k; nearestDrone = d; } }
     audio.setPos(audio.droneLoop, nearestDrone ? nearestDrone.mesh.position : new THREE.Vector3(0, -999, 0), nearestDrone ? 0.8 : 0);
+    // lock-on warning: beeps speed up as a drone's lock builds
+    const lock = Math.max(0, ...obj.drones.map((d) => d.lock / Drone.LOCK_TIME));
+    lockBeepT -= dtReal;
+    if (lock > 0.05 && lockBeepT <= 0) { audio.play('timer_warning', { volume: 0.45 }); lockBeepT = 0.32 - lock * 0.22; }
     spatialT -= dtReal;
     if (spatialT <= 0) { spatialT = 0.5; audio.updateSpatial(city.sounds, camera.position); audio.sirens(0.12 + 0.1 * Math.sin(simTime * 0.05)); }
+    prof.mark('audio');
     // HUD
     const d = districtAt(playerPos.x, playerPos.z);
     if (d !== lastDistrict) { hud.setDistrict(d); if (lastDistrict && save.unlocked.includes(d)) audio.say(({ neon: 'brief_neon', backstreets: 'brief_back', downtown: 'brief_downtown', docks: 'brief_docks' } as const)[d]); lastDistrict = d; }
@@ -1310,6 +1344,7 @@ function frame(now: number) {
     if (bigMap) hud.drawBigMap(playerPos, yaw, obj.target, obj.route);
     hud.arrow(camera, obj.target, obj.kind === 'drop' ? '#ff2fb4' : '#21f3ff');
     hud.tick(dtReal);
+    prof.mark('hud');
     adaptiveQuality(dtReal);
     input.endFrame();
     } catch (e) { reportFrameError(e); input.endFrame(); }
@@ -1331,7 +1366,9 @@ function frame(now: number) {
     smoke.update(dtReal);
     sparks.update(dtReal);
     city.updateVisibility(camera.position, Q.viewDistance);
+    prof.mark('world');
     updateLightPools();
+    prof.mark('lightpools');
     const s = Math.min(1, vehicle.speedAbs / 60);
     (post.lens as any).set(simTime, Q.lensFx ? 0.55 * (1 - s * 0.6) : 0, (vehicle.boosting ? 0.6 : 0) * Math.min(1, vehicle.speedAbs / 30) + (s > 0.6 ? (s - 0.6) * 1.2 : 0));
     post.chroma.offset.set(0.0006 + (vehicle.boosting ? 0.0025 : 0), 0.0004 + (vehicle.boosting ? 0.0015 : 0));
@@ -1358,8 +1395,12 @@ function frame(now: number) {
   } else if (car && car.paintMat && cubeRT && car.paintMat.envMap === cubeRT.texture && qLevel === 'low') {
     car.paintMat.envMap = scene.environment; car.paintMat.needsUpdate = true;
   }
+  prof.mark('cubemap');
   reflector.update(renderer, scene, camera);
+  prof.mark('reflection');
   post.render(dtReal);
+  prof.mark('render');
+  prof.end();
 
   fpsN++;
   fpsT = (performance.now() - fpsReal) / 1000;
@@ -1450,6 +1491,26 @@ function debugApi() {
       };
     }),
     heroYaw: () => hero?.person.yaw ?? 0,
+    /** start/stop the frame profiler; stop returns per-section averages, max, and the 5 worst frames */
+    profile: (on: boolean) => {
+      if (on) { prof.frames = []; prof.compiled = []; prof.progs = (renderer.info.programs ?? []).length; prof.on = true; return true; }
+      prof.on = false;
+      const F = prof.frames, keys = [...new Set(F.flatMap((f) => Object.keys(f.s)))];
+      const avg = Object.fromEntries(keys.map((k) => [k, +(F.reduce((a, f) => a + (f.s[k] ?? 0), 0) / Math.max(1, F.length)).toFixed(2)]));
+      const max = Object.fromEntries(keys.map((k) => [k, +Math.max(...F.map((f) => f.s[k] ?? 0)).toFixed(1)]));
+      const worst = [...F].sort((a, b) => b.total - a.total).slice(0, 5).map((f) => ({ total: +f.total.toFixed(1), top: Object.entries(f.s).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, v]) => `${k} ${v.toFixed(1)}`).join(', ') }));
+      return { frames: F.length, avg, max, worst, compiledDuringPlay: prof.compiled };
+    },
+    /** time UI actions that run inside tap/click handlers */
+    timeActions: () => {
+      const t = (f: () => void) => { const a = performance.now(); f(); return +(performance.now() - a).toFixed(1); };
+      return {
+        applyCustomization: t(() => applyCustomization()),
+        applyCustomizationAgain: t(() => applyCustomization()),
+        spawnSameCar: t(() => spawnPlayerCar(carId, carPos.clone().setY(0.8), vehicle.yaw())),
+        storyMenu: t(() => { openStory(); show('story', false); }),
+      };
+    },
     rainInfo: () => {
       const u = rain.uniforms, g = rain.mesh.geometry as THREE.InstancedBufferGeometry;
       return { inScene: !!rain.mesh.parent, visible: rain.mesh.visible, layers: rain.mesh.layers.mask, camLayers: camera.layers.mask, instanceCount: g.instanceCount, index: g.index?.count,

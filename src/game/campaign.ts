@@ -228,7 +228,7 @@ export class Campaign {
   spawnDrones(n: number, around: THREE.Vector3) {
     for (let i = 0; i < n; i++) {
       const d = new Drone();
-      d.mesh.position.set(around.x + (Math.random() - 0.5) * 90, 28, around.z + (Math.random() - 0.5) * 90);
+      d.mesh.position.set(around.x + (Math.random() - 0.5) * 90, 26, around.z + (Math.random() - 0.5) * 90);
       this.drones.push(d);
       this.group.add(d.mesh);
     }
@@ -278,7 +278,7 @@ export class Campaign {
 
   stop() {
     for (const f of this.cleanup.splice(0)) f();
-    for (const d of this.drones) d.mesh.removeFromParent();
+    for (const d of this.drones) d.dispose();
     this.drones = [];
     this.updaters = [];
     this.impactHandlers = [];
@@ -364,13 +364,10 @@ export class Campaign {
     } else this.h.hud.setTimer(null);
     // drones
     for (const dr of this.drones) {
-      dr.update(f.dt, f.pos, f.vel, f.t);
-      if (dr.mesh.position.distanceTo(f.pos.clone().add(new THREE.Vector3(0, 1, 0))) < 2.6 && dr.cooldown <= 0) {
-        dr.cooldown = 3;
+      if (dr.update(f.dt, f.pos, f.vel, f.t)) {
         if (this.timer !== null) this.timer -= 4;
         this.drones_hits++;
         this.h.hud.toast('Drone strike  −4s');
-        dr.vel.multiplyScalar(-1.5).add(new THREE.Vector3(0, 12, 0));
         this.h.droneHit();
       }
     }
@@ -387,7 +384,7 @@ export class Campaign {
     const def = this.active!;
     this.state = 'results';
     const timeLeft = this.timer ?? 0;
-    for (const d of this.drones) d.mesh.removeFromParent();
+    for (const d of this.drones) d.dispose();
     this.drones = [];
     this.hideMarkers();
     this.route = [];

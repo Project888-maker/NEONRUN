@@ -79,6 +79,8 @@ export class SkyTraffic {
 }
 
 /** Hazard drone (mission enemy): procedural quadcopter that chases the player. */
+const _g = new THREE.Vector3(), _h = new THREE.Vector3();
+
 export class Drone {
   mesh = new THREE.Group();
   vel = new THREE.Vector3();
@@ -106,17 +108,93 @@ export class Drone {
     eye.position.set(0, 0, 0.46);
     this.mesh.add(eye);
   }
-  update(dt: number, target: THREE.Vector3, targetVel: THREE.Vector3, t: number) {
-    const aim = target.clone().addScaledVector(targetVel, 0.6).add(new THREE.Vector3(0, 2.4 + Math.sin(t * 2) * 0.4, 0));
-    const to = aim.sub(this.mesh.position);
-    const desired = to.clone().normalize().multiplyScalar(Math.min(44, to.length() * 1.6));
-    this.vel.lerp(desired, Math.min(1, dt * 1.6));
-    this.mesh.position.addScaledVector(this.vel, dt);
-    if (this.mesh.position.y < 1.2) this.mesh.position.y = 1.2;
-    this.mesh.lookAt(target.x, this.mesh.position.y, target.z);
-    this.mesh.rotateX(Math.min(0.4, this.vel.length() * 0.012));
-    for (const r of this.rotors) r.rotation.y += dt * 60;
-    (this.light.material as THREE.MeshBasicMaterial).color.setRGB(Math.sin(t * 12) > 0 ? 8 : 0.5, 0.2, 0.1);
+  /**
+   * Security drone behaviour. Patrols its post, chases a target it spots, but it is slower than a
+   * car at speed and gives up when outrun; it only strikes after holding a lock for a moment, then
+   * backs off. Returns true on the frame it strikes.
+   */
+  update(dt: number, target: THREE.Vector3, targetVel: THREE.Vector3, t: number): boolean {
+    const p = this.mesh.position;
+    if (!this.homeSet) { this.home.copy(p); this.homeSet = true; this.phase = Math.random() * 6.28; }
+    const flat = Math.hypot(target.x - p.x, target.z - p.z);
+    this.stateT += dt;
     this.cooldown -= dt;
+    let goal: THREE.Vector3, speed: number, struck = false;
+    switch (this.state) {
+      case 'patrol': {
+        const a = this.phase + t * 0.25;
+        goal = _g.set(this.home.x + Math.cos(a) * 22, this.home.y + Math.sin(t * 0.7) * 1.5, this.home.z + Math.sin(a) * 22);
+        speed = 8;
+        if (flat < Drone.SPOT && this.cooldown <= 0) this.set('chase');
+        break;
+      }
+      case 'chase': {
+        goal = _g.copy(target).addScaledVector(targetVel, 0.35); goal.y += 3.2 + Math.sin(t * 2) * 0.3;
+        speed = Drone.MAX_SPEED;
+        // lock-on builds only while the target stays close; moving fast keeps breaking it
+        const d = p.distanceTo(_h.copy(target).setY(target.y + 1));
+        this.lock = d < 8 ? this.lock + dt : Math.max(0, this.lock - dt * 2);
+        if (this.lock >= Drone.LOCK_TIME) { struck = true; this.lock = 0; this.set('retreat'); this.vel.multiplyScalar(-0.6).add(_h.set(0, 10, 0)); }
+        this.lost = flat > Drone.GIVE_UP ? this.lost + dt : 0;
+        if (this.lost > 3) { this.set('return'); this.cooldown = 5; }
+        break;
+      }
+      case 'retreat': {
+        // climb and drift away, then decide again
+        goal = _g.copy(p).sub(target).setY(0).normalize().multiplyScalar(30).add(p); goal.y = this.home.y;
+        speed = 12;
+        if (this.stateT > 6) this.set(flat < Drone.SPOT ? 'chase' : 'return');
+        break;
+      }
+      default: { // return to post
+        goal = _g.copy(this.home);
+        speed = 14;
+        if (p.distanceTo(this.home) < 6) this.set('patrol');
+        if (flat < Drone.SPOT * 0.6 && this.cooldown <= 0) this.set('chase');
+      }
+    }
+    const gd = goal.distanceTo(p);
+    const desired = _h.copy(goal).sub(p).normalize().multiplyScalar(Math.min(speed, gd * 1.4));
+    this.vel.lerp(desired, Math.min(1, dt * 1.4));
+    p.addScaledVector(this.vel, dt);
+    if (p.y < 2.2) p.y = 2.2;
+    if (this.state === 'chase') this.mesh.lookAt(target.x, p.y, target.z);
+    else if (this.vel.lengthSq() > 1) this.mesh.lookAt(p.x + this.vel.x, p.y, p.z + this.vel.z);
+    this.mesh.rotateX(Math.min(0.35, this.vel.length() * 0.015));
+    for (const r of this.rotors) r.rotation.y += dt * 60;
+    // red light: slow blink on patrol, fast while chasing, solid while locking on
+    const locking = this.state === 'chase' && this.lock > 0.05;
+    const blink = this.state === 'patrol' || this.state === 'return' ? Math.sin(t * 3) > 0.6 : locking || Math.sin(t * 12) > 0;
+    (this.light.material as THREE.MeshBasicMaterial).color.setRGB(blink ? 8 : 0.5, 0.2, 0.1);
+    // targeting laser while locking on, so the player can see the strike coming
+    this.beam.visible = locking;
+    if (locking) {
+      const end = _h.copy(target).setY(target.y + 0.8);
+      const len = p.distanceTo(end);
+      this.beam.position.copy(p).lerp(end, 0.5);
+      this.beam.lookAt(end);
+      this.beam.scale.set(1, 1, len);
+      (this.beam.material as THREE.MeshBasicMaterial).opacity = 0.25 + 0.6 * (this.lock / Drone.LOCK_TIME);
+      if (this.mesh.parent && this.beam.parent !== this.mesh.parent) this.mesh.parent.add(this.beam);
+    }
+    return struck;
   }
+  static SPOT = 60; // m: notices the target
+  static GIVE_UP = 110; // m: loses interest after 3 s this far behind
+  static MAX_SPEED = 19; // m/s (~68 km/h): a car at speed can outrun it, a runner cannot
+  static LOCK_TIME = 0.8; // s within 8 m before it strikes
+  state: 'patrol' | 'chase' | 'retreat' | 'return' = 'patrol';
+  home = new THREE.Vector3();
+  lock = 0;
+  private homeSet = false;
+  private phase = 0;
+  private stateT = 0;
+  private lost = 0;
+  private set(s: Drone['state']) { this.state = s; this.stateT = 0; this.lost = 0; if (s !== 'chase') this.lock = 0; }
+  beam = (() => {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.05, 1), new THREE.MeshBasicMaterial({ color: new THREE.Color(6, 0.3, 0.2), transparent: true, opacity: 0.5, depthWrite: false }));
+    m.visible = false;
+    return m;
+  })();
+  dispose() { this.mesh.removeFromParent(); this.beam.removeFromParent(); }
 }

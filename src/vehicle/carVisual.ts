@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { DecalGeometry } from 'three/examples/jsm/geometries/DecalGeometry.js';
+import type { DecalJob, DecalResult } from './decalWorker';
 import type { Vehicle } from './vehicle';
 import { kitParts } from '../core/assets';
 import { LAYER_NO_REFLECT } from '../render/reflector';
@@ -28,6 +28,59 @@ function radialTexture(inner = 'rgba(255,255,255,1)', outer = 'rgba(255,255,255,
   g.fillRect(0, 0, 128, 128);
   const t = new THREE.CanvasTexture(c);
   return t;
+}
+
+// shared livery decal data (see CarVisual.liveryGeometry)
+const liveryGeos = new Map<string, Promise<THREE.BufferGeometry[] | null>>();
+const liveryMats = new Map<THREE.Texture, THREE.MeshPhysicalMaterial>();
+/** One material per livery texture (all share a shader program, which warm-up pre-compiles). */
+export function liveryMaterial(tex: THREE.Texture) {
+  let mat = liveryMats.get(tex);
+  if (!mat) {
+    mat = new THREE.MeshPhysicalMaterial({ map: tex, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, roughness: 0.3, metalness: 0.2, clearcoat: 1, emissive: 0xffffff, emissiveMap: tex, emissiveIntensity: 0.25 });
+    liveryMats.set(tex, mat);
+  }
+  return mat;
+}
+let decalWorker: Worker | null = null;
+let decalJob = 0;
+const decalWaiting = new Map<number, (r: DecalResult | null) => void>();
+
+/** Run the projection in decalWorker.ts; attributes are de-quantised to plain floats for transfer. */
+function projectLivery(geo: THREE.BufferGeometry, local: THREE.Matrix4): Promise<THREE.BufferGeometry[] | null> {
+  const flat = (a: THREE.BufferAttribute | THREE.InterleavedBufferAttribute | undefined) => {
+    if (!a) return null;
+    const out = new Float32Array(a.count * 3);
+    for (let i = 0; i < a.count; i++) { out[i * 3] = a.getX(i); out[i * 3 + 1] = a.getY(i); out[i * 3 + 2] = a.getZ(i); }
+    return out;
+  };
+  const job: DecalJob = {
+    id: ++decalJob,
+    position: flat(geo.attributes.position)!,
+    normal: flat(geo.attributes.normal),
+    index: geo.index ? Uint32Array.from(geo.index.array as ArrayLike<number>) : null,
+    matrix: local.toArray(),
+  };
+  return new Promise<DecalResult | null>((resolve) => {
+    try {
+      if (!decalWorker) {
+        decalWorker = new Worker(new URL('./decalWorker.ts', import.meta.url), { type: 'module' });
+        decalWorker.onmessage = (e: MessageEvent<DecalResult>) => { decalWaiting.get(e.data.id)?.(e.data); decalWaiting.delete(e.data.id); };
+        decalWorker.onerror = () => { for (const r of decalWaiting.values()) r(null); decalWaiting.clear(); };
+      }
+      decalWaiting.set(job.id, resolve);
+      const tr: ArrayBuffer[] = [job.position.buffer as ArrayBuffer];
+      if (job.normal) tr.push(job.normal.buffer as ArrayBuffer);
+      if (job.index) tr.push(job.index.buffer as ArrayBuffer);
+      decalWorker.postMessage(job, tr);
+    } catch { resolve(null); }
+  }).then((r) => r && r.parts.map((part) => {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(part.position, 3));
+    g.setAttribute('uv', new THREE.BufferAttribute(part.uv, 2));
+    if (part.normal) g.setAttribute('normal', new THREE.BufferAttribute(part.normal, 3));
+    return g;
+  }));
 }
 
 export class CarVisual {
@@ -224,34 +277,40 @@ export class CarVisual {
     this.underLight.color.copy(this.underglowColor);
   }
 
-  /** Project a livery decal onto both flanks and the hood. */
+  /** Project a livery decal onto both flanks and the hood (geometry arrives from a worker). */
   setLivery(tex: THREE.Texture | null) {
-    // the decal is a group of projected meshes (sides + hood): dispose every child's geometry
-    if (this.decal) {
-      this.decal.removeFromParent();
-      this.decal.traverse((o) => { const m = o as THREE.Mesh; if (m.isMesh) m.geometry.dispose(); });
-      this.decal = undefined;
-    }
-    if (!tex || !this.bodyMesh) return;
+    if (this.liveryTex === tex) return;
+    // geometry is cached per body model and shared, so only the group is detached here
+    if (this.decal) { this.decal.removeFromParent(); this.decal = undefined; }
+    this.liveryTex = tex;
+    if (!tex) return;
+    void this.liveryGeometry().then((geos) => {
+      if (!geos || this.liveryTex !== tex) return; // changed again while projecting
+      const mat = liveryMaterial(tex);
+      const g = new THREE.Group();
+      for (const geo of geos) g.add(new THREE.Mesh(geo, mat));
+      this.decal = g;
+      this.root.add(g);
+    });
+  }
+  private liveryTex: THREE.Texture | null = null;
+
+  /**
+   * Decal geometry in car-local space, computed once per body model in a worker and shared by
+   * every instance of that model. Calling it early (warm-up, car streaming) hides the latency.
+   */
+  liveryGeometry(): Promise<THREE.BufferGeometry[] | null> {
     const mesh = this.bodyMesh;
-    mesh.updateMatrixWorld(true);
-    const mat = new THREE.MeshPhysicalMaterial({ map: tex, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, roughness: 0.3, metalness: 0.2, clearcoat: 1, emissive: 0xffffff, emissiveMap: tex, emissiveIntensity: 0.25 });
-    const geos: THREE.BufferGeometry[] = [];
-    const inv = new THREE.Matrix4().copy(this.root.matrixWorld).invert();
-    const place = (pos: THREE.Vector3, rot: THREE.Euler, size: THREE.Vector3) => {
-      const wp = pos.clone().applyMatrix4(this.root.matrixWorld);
-      const wr = new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromEuler(rot).premultiply(this.root.getWorldQuaternion(new THREE.Quaternion())));
-      const g = new DecalGeometry(mesh, wp, wr, size);
-      g.applyMatrix4(inv);
-      geos.push(g);
-    };
-    place(new THREE.Vector3(1.0, 0.75, 0), new THREE.Euler(0, Math.PI / 2, 0), new THREE.Vector3(4.2, 1.0, 1.2));
-    place(new THREE.Vector3(-1.0, 0.75, 0), new THREE.Euler(0, -Math.PI / 2, 0), new THREE.Vector3(4.2, 1.0, 1.2));
-    place(new THREE.Vector3(0, 1.1, 1.3), new THREE.Euler(-Math.PI / 2, 0, Math.PI / 2), new THREE.Vector3(1.6, 1.0, 1.2));
-    const g = new THREE.Group();
-    for (const geo of geos) g.add(new THREE.Mesh(geo, mat));
-    this.decal = g;
-    this.root.add(g);
+    if (!mesh) return Promise.resolve(null);
+    const key = mesh.geometry.uuid;
+    let p = liveryGeos.get(key);
+    if (!p) {
+      this.root.updateMatrixWorld(true);
+      const local = new THREE.Matrix4().copy(this.root.matrixWorld).invert().multiply(mesh.matrixWorld);
+      p = projectLivery(mesh.geometry, local);
+      liveryGeos.set(key, p);
+    }
+    return p;
   }
 
   private t = 0;

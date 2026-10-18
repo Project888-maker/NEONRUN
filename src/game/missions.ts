@@ -116,11 +116,13 @@ export class Missions {
     this.audio.play('mission_start', { volume: 0.7 });
     this.audio.say('pickup');
     this.audio.music_('drive');
-    // hazard drones once the player has a few deliveries done
-    const nd = this.save.deliveries < 2 ? 0 : Math.min(3, 1 + Math.floor(this.save.deliveries / 5)) * (districtAt(this.drop.x, this.drop.z) === 'neon' ? 0.5 : 1);
+    // hazard drones once the player has a few deliveries done: posted along the route, not on top of the player
+    const nd = this.save.deliveries < 4 ? 0 : Math.min(2, 1 + Math.floor((this.save.deliveries - 4) / 6)) * (districtAt(this.drop.x, this.drop.z) === 'neon' ? 0.5 : 1);
     for (let i = 0; i < Math.round(nd); i++) {
       const d = new Drone();
-      d.mesh.position.set(playerPos.x + (this.rng() - 0.5) * 120, 30, playerPos.z + (this.rng() - 0.5) * 120);
+      const k = 0.4 + 0.3 * this.rng();
+      const post = { x: playerPos.x + (this.drop.x - playerPos.x) * k, z: playerPos.z + (this.drop.z - playerPos.z) * k };
+      d.mesh.position.set(post.x + (this.rng() - 0.5) * 50, 26, post.z + (this.rng() - 0.5) * 50);
       this.drones.push(d);
       this.group.add(d.mesh);
     }
@@ -128,7 +130,7 @@ export class Missions {
   }
 
   private clearDrones() {
-    for (const d of this.drones) d.mesh.removeFromParent();
+    for (const d of this.drones) d.dispose();
     this.drones = [];
   }
 
@@ -224,13 +226,10 @@ export class Missions {
     }
     // drones
     for (const dr of this.drones) {
-      dr.update(dt, pos, vel, t);
-      if (dr.mesh.position.distanceTo(pos.clone().add(new THREE.Vector3(0, 1, 0))) < 2.6 && dr.cooldown <= 0) {
-        dr.cooldown = 3;
+      if (dr.update(dt, pos, vel, t)) {
         this.timer -= 4;
         this.hits++;
         this.hud.toast('Drone strike  −4s');
-        dr.vel.multiplyScalar(-1.5).add(new THREE.Vector3(0, 12, 0));
         onDroneHit();
       }
     }
