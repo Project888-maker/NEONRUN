@@ -5,6 +5,7 @@ import { buildUserMessage, sanitizeRequest, normalizeReply, WORLD_RULES, type Ta
 import { handleTalk, type StreamClient } from '../api/talk';
 import { Brain, partialLine, finishedLine } from '../src/npc/brain';
 import { handleVoice } from '../api/voice';
+import { handleStt } from '../api/stt';
 import { voiceFor } from '../src/npc/persona';
 import { ALL_VOICES } from '../src/npc/protocol';
 
@@ -132,5 +133,19 @@ const readAll = async (r: Response) => (await r.text()).trim().split('\n').map((
   ok((await handleVoice(get(`v=Jessica&t=${'x'.repeat(400)}`), 'k', fakeFetch)).status === 400, 'voice text too long');
   ok((await handleVoice(get('v=Jessica&t=hi', { 'sec-fetch-site': 'cross-site' }), 'k', fakeFetch)).status === 403, 'voice cross-site');
   console.log('voice endpoint: audio with CDN caching; no key 503, unknown voice / long text 400, cross-site 403');
+}
+// speech-to-text endpoint with a fake fal (no profanity masking on our side)
+{
+  let sent: any = null;
+  const fake = (async (_u: string, init?: RequestInit) => { sent = JSON.parse(String(init!.body)); return new Response(JSON.stringify({ text: ' Fuck off, I am working. ' }), { status: 200 }); }) as typeof fetch;
+  const req = (type: string, bytes = 2000, h: Record<string, string> = {}) => new Request('http://game.test/api/stt', { method: 'POST', headers: { 'content-type': type, host: 'game.test', 'x-forwarded-for': '8.8.8.8', ...h }, body: new Uint8Array(bytes) });
+  const r = await handleStt(req('audio/webm;codecs=opus'), 'k', fake);
+  const j = await r.json();
+  ok(r.status === 200 && j.text === 'Fuck off, I am working.' && sent.audio_url.startsWith('data:audio/webm;base64,') && sent.language_code === 'eng', 'stt ok path');
+  ok((await handleStt(req('audio/webm'), undefined, fake)).status === 503, 'stt no key');
+  ok((await handleStt(req('text/plain'), 'k', fake)).status === 400, 'stt bad type');
+  ok((await handleStt(req('audio/webm', 2_000_000), 'k', fake)).status === 400, 'stt too big');
+  ok((await handleStt(req('audio/webm', 2000, { origin: 'https://evil.example' }), 'k', fake)).status === 403, 'stt cross-site');
+  console.log('stt endpoint: transcript returned untouched; no key 503, wrong type / too long 400, cross-site 403');
 }
 console.log('PASS');

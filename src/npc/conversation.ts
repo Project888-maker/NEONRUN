@@ -425,30 +425,88 @@ export class Conversation {
     return true;
   }
 
-  /** Tap to talk: listens until you pause, then the courier says it. Tap again to stop early. */
+  /**
+   * Tap to talk: records until you pause (or tap again), then the courier says it. The recording is
+   * transcribed by /api/stt (no profanity masking); the browser's own recognizer is only a fallback.
+   */
   private setupMic() {
-    const SR = (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition;
     const btn = $('cv-mic');
     const input = $('cv-input') as HTMLInputElement;
-    if (!SR) { btn.classList.add('hidden'); return; }
-    const idle = () => { btn.classList.remove('on'); btn.textContent = 'Speak'; input.placeholder = 'Say something as the courier…'; };
+    const SR = (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition;
+    const canRecord = !!navigator.mediaDevices?.getUserMedia && typeof MediaRecorder !== 'undefined';
+    if (!canRecord && !SR) { btn.classList.add('hidden'); return; }
+    let sttDown = false; // server said it has no key: use the browser recognizer
+    const idle = (hint?: string) => { btn.classList.remove('on'); btn.textContent = 'Speak'; input.placeholder = hint ?? 'Say something as the courier…'; };
     idle();
-    btn.addEventListener('click', () => {
-      if (this.recog) { try { this.recog.stop(); } catch { /* */ } return; }
-      if (!this.active || this.closing) return;
+    const finish = (text: string) => {
+      text = text.trim();
+      if (!text) { idle("Didn't catch that: tap Speak and try again"); return; }
+      input.value = '';
+      $('cv-form').classList.add('collapsed');
+      this.say(text);
+    };
+    const browserRecognizer = () => {
       const r = new SR();
       r.lang = navigator.language?.startsWith('en') ? navigator.language : 'en-US';
       r.interimResults = true; r.continuous = false; r.maxAlternatives = 1;
       let text = '';
       r.onresult = (ev: any) => { text = Array.from(ev.results).map((x: any) => x[0].transcript).join(' '); input.value = text; };
-      r.onend = () => { this.recog = null; idle(); if (text.trim()) { input.value = ''; $('cv-form').classList.add('collapsed'); this.say(text); } };
-      r.onerror = (ev: any) => {
-        this.recog = null; idle();
-        if (ev?.error === 'not-allowed' || ev?.error === 'service-not-allowed') input.placeholder = 'Microphone blocked: allow it for this site, or type here';
-        else if (ev?.error === 'no-speech') input.placeholder = "Didn't catch that: tap Speak and try again";
+      r.onend = () => { this.recog = null; idle(); if (text.trim()) finish(text); };
+      r.onerror = (ev: any) => { this.recog = null; idle(ev?.error === 'not-allowed' ? 'Microphone blocked: allow it for this site, or type here' : undefined); };
+      $('cv-form').classList.remove('collapsed');
+      try { r.start(); this.recog = { stop: () => r.stop(), abort: () => r.abort() }; btn.classList.add('on'); btn.textContent = 'Listening…'; } catch { idle(); }
+    };
+    const record = async () => {
+      let stream: MediaStream;
+      try { stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }); }
+      catch { idle('Microphone blocked: allow it for this site, or type here'); return; }
+      const mime = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg'].find((m) => MediaRecorder.isTypeSupported?.(m)) ?? '';
+      const rec = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+      const chunks: Blob[] = [];
+      rec.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
+      // stop by itself after ~1.2 s of quiet once you've started talking (or 12 s at most)
+      const ctx = new AudioContext();
+      const an = ctx.createAnalyser(); an.fftSize = 1024;
+      ctx.createMediaStreamSource(stream).connect(an);
+      const buf = new Float32Array(an.fftSize);
+      let spoke = false, quietSince = performance.now();
+      const started = performance.now();
+      const watch = setInterval(() => {
+        an.getFloatTimeDomainData(buf);
+        let sum = 0; for (const v of buf) sum += v * v;
+        const loud = Math.sqrt(sum / buf.length) > 0.02;
+        const now = performance.now();
+        if (loud) { spoke = true; quietSince = now; }
+        if ((spoke && now - quietSince > 1200) || now - started > 12000 || (!spoke && now - started > 6000)) stop();
+      }, 100);
+      const stop = () => { if (rec.state !== 'inactive') rec.stop(); };
+      rec.onstop = async () => {
+        clearInterval(watch);
+        stream.getTracks().forEach((t) => t.stop());
+        void ctx.close();
+        this.recog = null;
+        if (!spoke || !chunks.length) { idle("Didn't catch that: tap Speak and try again"); return; }
+        btn.textContent = 'Hearing…';
+        input.placeholder = 'Working out what you said…';
+        const blob = new Blob(chunks, { type: (rec.mimeType || mime || 'audio/webm').split(';')[0] });
+        try {
+          const r = await fetch('/api/stt', { method: 'POST', headers: { 'content-type': blob.type }, body: blob });
+          if (r.status === 503) { sttDown = true; idle('Voice input needs the server key: tap Speak to use the browser instead'); return; }
+          const j = await r.json();
+          idle();
+          finish(j.text ?? '');
+        } catch { idle('Could not reach the server: try again or type'); }
       };
-      $('cv-form').classList.remove('collapsed'); // show what it hears
-      try { r.start(); this.recog = r; btn.classList.add('on'); btn.textContent = 'Listening…'; input.placeholder = 'Listening… speak now'; } catch { idle(); }
+      rec.start(250);
+      this.recog = { stop, abort: stop };
+      $('cv-form').classList.remove('collapsed');
+      btn.classList.add('on'); btn.textContent = 'Listening…'; input.placeholder = 'Listening… speak now';
+    };
+    btn.addEventListener('click', () => {
+      if (this.recog) { try { this.recog.stop(); } catch { /* */ } return; }
+      if (!this.active || this.closing) return;
+      if (canRecord && !sttDown) void record();
+      else if (SR) browserRecognizer();
     });
   }
 }

@@ -128,7 +128,7 @@ The plan is in `docs/npc-brain.md`. Phase A (talking to anyone) is built; phases
   - Music ducks while people talk. You can reply or interrupt while they are still speaking.
   - Without `FAL_KEY` people fall back to the device's best-sounding voice and the courier is silent. Settings → "People's voices" switches to subtitles only.
   - Cost is about $0.005 per spoken line (repeats are free), so roughly $0.01 per exchange.
-- Mic: **Speak** is tap-to-talk. It listens until you pause, then the courier says it; it shows a hint if the microphone is blocked.
+- Mic: **Speak** is tap-to-talk. It records until about 1.2 s of quiet (or a second tap), then `/api/stt` (`api/stt.ts`, ElevenLabs Scribe through fal, FAL_KEY) transcribes it, about 1.1 s, with no profanity masking. Chrome's built-in recognizer turned swearing into "f***", so it is now only a fallback when the server has no key.
 
 **Phase B** (`src/npc/regulars.ts`, `society.ts`, `barks.ts`)
 - **Places:** 12 named places, 3 per district (Noodle Row, the night market, Meridian Tower lobby, Pier 9…). Each is placed deterministically at a shopfront spread across its district (`locatePlaces`).

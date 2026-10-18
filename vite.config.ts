@@ -5,6 +5,7 @@ import path from 'node:path';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import talk from './api/talk';
 import voice from './api/voice';
+import stt from './api/stt';
 
 /**
  * Content fingerprints for everything in public/assets. Those files keep fixed names (people/hero.glb …),
@@ -52,6 +53,7 @@ function apiRoutes(): Plugin {
   const use = (m: { use: (path: string, fn: (req: IncomingMessage & { originalUrl?: string }, res: ServerResponse) => void) => unknown }) => {
     m.use('/api/talk', (req, res) => { void handle(talk, req, res); });
     m.use('/api/voice', (req, res) => { void handle(voice, req, res); });
+    m.use('/api/stt', (req, res) => { void handle(stt, req, res); });
   };
   return { name: 'neonrun-api', configureServer: (s) => { use(s.middlewares); }, configurePreviewServer: (s) => { use(s.middlewares); } };
 }
