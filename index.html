@@ -119,6 +119,16 @@
     </div>
   </div>
 
+  <!-- places you can walk into: pick one for directions -->
+  <div id="places" class="screen panel-screen hidden">
+    <div class="panel">
+      <h2>Places</h2>
+      <div class="hint">Shops you can walk into. Pick one for directions: the route shows on the minimap. Shops are the small warm squares on the map.</div>
+      <div id="places-list" class="places-list"></div>
+      <button data-act="back" class="back">Back</button>
+    </div>
+  </div>
+
   <!-- pause -->
   <div id="pause" class="screen panel-screen hidden">
     <div class="panel">
@@ -127,6 +137,7 @@
         <button data-act="resume" class="primary">Resume</button>
         <button data-act="m-restart" class="story-only">Restart mission</button>
         <button data-act="m-abandon" class="story-only">Abandon mission</button>
+        <button data-act="places">Places</button>
         <button data-act="garage">Garage</button>
         <button data-act="settings">Settings</button>
         <button data-act="quit">Quit to title</button>

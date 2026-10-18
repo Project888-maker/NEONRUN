@@ -457,6 +457,17 @@ if (want('interior')) {
   console.log('after exit', JSON.stringify({ indoors: await N('indoors'), mode: await N('mode') }));
   await shot('90_back_outside');
 }
+if (want('places')) {
+  // Pause > Places: the list of shops and directions to one on the minimap
+  await N('setInput', {});
+  await page.keyboard.press('Escape'); await realSleep(800);
+  await page.click('[data-act="places"]'); await realSleep(800);
+  await shot('70_places_list');
+  const first = await page.evaluate(() => document.querySelector('#places-list .pl-name')?.textContent);
+  await page.click('#places-list button[data-go]'); await sleep(2500);
+  console.log('directions to', first, JSON.stringify(await N('objectiveInfo')));
+  await shot('71_places_route');
+}
 if (want('cams')) {
   await N('camMode', 'hood');
   await sleep(1500);

@@ -441,9 +441,15 @@ export class Conversation {
     const finish = (text: string) => {
       text = text.trim();
       if (!text) { idle("Didn't catch that: tap Speak and try again"); return; }
-      input.value = '';
-      $('cv-form').classList.add('collapsed');
-      this.say(text);
+      // show exactly what was heard, then the courier says it
+      $('cv-form').classList.remove('collapsed');
+      input.value = text;
+      setTimeout(() => {
+        if (input.value !== text) return; // you started editing it: leave it to you
+        input.value = '';
+        $('cv-form').classList.add('collapsed');
+        this.say(text);
+      }, 700);
     };
     const browserRecognizer = () => {
       const r = new SR();
@@ -497,6 +503,20 @@ export class Conversation {
           finish(j.text ?? '');
         } catch { idle('Could not reach the server: try again or type'); }
       };
+      // live preview of your words while you talk (display only; the server's transcript is the one used)
+      let preview: any = null;
+      if (SR) {
+        try {
+          preview = new SR();
+          preview.lang = navigator.language?.startsWith('en') ? navigator.language : 'en-US';
+          preview.interimResults = true; preview.continuous = true;
+          preview.onresult = (ev: any) => { input.value = Array.from(ev.results).map((x: any) => x[0].transcript).join(' '); };
+          preview.onerror = () => { /* preview only */ };
+          preview.start();
+        } catch { preview = null; }
+      }
+      const stopPreview = () => { try { preview?.stop(); } catch { /* */ } };
+      rec.addEventListener('stop', stopPreview);
       rec.start(250);
       this.recog = { stop, abort: stop };
       $('cv-form').classList.remove('collapsed');

@@ -295,3 +295,10 @@ body.touch #cv-replies .cv-reply { font-size: 13px; padding: 7px 10px; }
 #fade { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; transition: opacity .25s ease; z-index: 30; }
 #fade.on { opacity: 1; }
 body.indoors #minimap { display: none; }
+.places-list { display: flex; flex-direction: column; gap: 6px; margin: 12px 0 16px; }
+.places-list .pl { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--line); background: rgba(5, 8, 20, 0.6); }
+.places-list .pl-txt { flex: 1; min-width: 0; }
+.places-list .pl-name { font-weight: 700; font-size: 15px; }
+.places-list .pl-sub { color: var(--muted); font-size: 12px; }
+.places-list .pl button { padding: 7px 12px; font-size: 10px; letter-spacing: 0.14em; }
+.places-list .pl.locked { opacity: 0.45; }

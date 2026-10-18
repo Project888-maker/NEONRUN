@@ -481,6 +481,35 @@ let society: Society;
 let barks: Barks;
 let interiors: Interiors;
 let shopMarkers: THREE.Vector3[] = [];
+/** directions to a place picked from the Places list */
+let waypoint: { pos: THREE.Vector3; name: string } | null = null;
+let waypointRoute: THREE.Vector3[] = [];
+let waypointT = 0;
+
+function openPlaces() {
+  show('pause', false);
+  show('places', true);
+  const here = streetPos();
+  const list = [...society.places.values()]
+    .map((ps) => ({ ps, d: ps.stand.distanceTo(here), open: save.unlocked.includes(ps.place.district) }))
+    .sort((a, b) => Number(b.open) - Number(a.open) || a.d - b.d);
+  $('places-list').innerHTML = list.map(({ ps, d, open }) => {
+    const reg = REGULARS.find((r) => r.home === ps.place.id);
+    const who = reg && (save.npc[regularId(reg)]?.met ?? 0) > 0 ? ` · ${reg.persona.name}` : '';
+    const dist = d > 1000 ? `${(d / 1000).toFixed(1)} km` : `${Math.round(d)} m`;
+    const name = ps.place.name.replace(/^the /, '');
+    return `<div class="pl ${open ? '' : 'locked'}"><div class="pl-txt"><div class="pl-name">${name[0].toUpperCase()}${name.slice(1)}</div><div class="pl-sub">${DISTRICTS[ps.place.district].name} · ${dist}${who}</div></div>${open ? `<button data-go="${ps.place.id}">Go</button>` : '<span class="pl-sub">Locked</span>'}</div>`;
+  }).join('');
+  $('places-list').querySelectorAll<HTMLButtonElement>('button[data-go]').forEach((b) => b.addEventListener('click', () => {
+    const ps = society.places.get(b.dataset.go!)!;
+    waypoint = { pos: ps.stand.clone(), name: ps.place.name };
+    waypointT = 0;
+    audio.play('ui_confirm', { volume: 0.6 });
+    show('places', false);
+    resume();
+    hud.toast(`Directions to ${ps.place.name}`, 3);
+  }));
+}
 /** outside things hidden while the courier is indoors (restored on leaving) */
 let hiddenOutside: THREE.Object3D[] = [];
 /** where the courier is on the street (the door of the place while indoors) */
@@ -605,8 +634,9 @@ document.querySelectorAll<HTMLButtonElement>('button[data-act]').forEach((b) => 
     if (act === 'm-abandon' && campaign.active) { resume(); campaign.stop(); missions.suspend(false, playerPos); }
     if (act === 'garage') openGarage();
     if (act === 'settings') openSettings();
+    if (act === 'places') openPlaces();
     if (act === 'controls') { show('title', false); show('controls', true); }
-    if (act === 'back') { ['garage', 'settings', 'controls', 'story'].forEach((s) => show(s, false)); show(menuReturn === 'pause' ? 'pause' : 'title', true); }
+    if (act === 'back') { ['garage', 'settings', 'controls', 'story', 'places'].forEach((s) => show(s, false)); show(menuReturn === 'pause' ? 'pause' : 'title', true); }
     if (act === 'resume') resume();
     if (act === 'quit') quitToTitle();
   });
@@ -798,7 +828,7 @@ function pause() {
 }
 function resume() {
   show('pause', false);
-  ['garage', 'settings', 'controls'].forEach((s) => show(s, false));
+  ['garage', 'settings', 'controls', 'places'].forEach((s) => show(s, false));
   state = 'playing';
   audio.ctx.resume();
 }
@@ -1364,6 +1394,7 @@ function resetCar() {
 /** The current objective: the story mission when one runs, otherwise the free-ride job. */
 function objective() {
   if (campaign?.active) return { target: campaign.target, route: campaign.route, kind: campaign.markerKind, drones: campaign.drones };
+  if (waypoint && !interiors?.active) return { target: waypoint.pos, route: waypointRoute, kind: 'drop' as const, drones: missions?.droneList ?? [] };
   return { target: missions?.target ?? null, route: missions?.route ?? [], kind: (missions?.state === 'toDrop' ? 'drop' : 'pickup') as 'drop' | 'pickup', drones: missions?.droneList ?? [] };
 }
 
@@ -1500,6 +1531,15 @@ function frame(now: number) {
     else crowd.update(dtReal, playerPos, driving ? { pos: carPos, vel: carVel, halfLen: car.dims.length / 2, halfWid: car.dims.width / 2, yaw: vehicle.yaw(), speed: vehicle.speedAbs } : null);
     if (conv.active) conv.update(dtReal, camera);
     society.update(dtReal);
+    if (waypoint) {
+      const from = mode === 'drive' ? carPos : streetPos();
+      if (from.distanceTo(waypoint.pos) < 7 || interiors.active) { hud.toast(`You're at ${waypoint.name}`, 2.5); waypoint = null; waypointRoute = []; }
+      else if ((waypointT -= dtReal) <= 0) {
+        waypointT = 1;
+        waypointRoute = graph.route(graph.nearestNode(from.x, from.z), graph.nearestNode(waypoint.pos.x, waypoint.pos.z)).map((i) => new THREE.Vector3(graph.nodes[i].x, 0, graph.nodes[i].z));
+        waypointRoute.push(waypoint.pos.clone());
+      }
+    }
     barks.update(dtReal, playerPos, mode === 'foot', playerVel.length(), police.heat > 0);
     if (save.deliveries !== lastDeliveries) { if (lastDeliveries >= 0 && save.deliveries > lastDeliveries) society.repEvent('delivery', playerPos); lastDeliveries = save.deliveries; }
     prof.mark('crowd');
@@ -1638,6 +1678,7 @@ function debugApi() {
     talk: () => talkTo(),
     conv: () => ({ active: !!conv.active, name: document.getElementById('cv-name')!.textContent, tag: document.getElementById('cv-tag')!.textContent, line: document.getElementById('cv-line')!.textContent, replies: [...document.querySelectorAll('#cv-replies .cv-reply')].map((b) => b.textContent), persona: conv.persona, heroBusy: hero?.busy ?? 0 }),
     convSay: (text: string) => conv.say(text),
+    objectiveInfo: () => { const o = objective(); return { target: o.target?.toArray().map((n) => Math.round(n)) ?? null, route: o.route.length, waypoint: waypoint?.name ?? null }; },
     heroToDoor: (id: string) => { const ps = society.places.get(id)!; hero?.place(ps.stand.clone().add(new THREE.Vector3(ps.spot.nx, 0, ps.spot.nz).multiplyScalar(0.8)).setY(0.2)); return ps.stand.toArray(); },
     enterPlace: (id: string) => enterPlace(id),
     exitPlace: () => exitPlace(),
