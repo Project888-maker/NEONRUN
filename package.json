@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/Project888-maker/NEONRUN#readme",
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.135.0",
     "@dimforge/rapier3d-compat": "^0.21.0",
     "howler": "^2.2.4",
     "n8ao": "^2.0.1",

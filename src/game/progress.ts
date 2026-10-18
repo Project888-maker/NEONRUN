@@ -14,7 +14,7 @@ export interface Save {
   ownedCars: string[];
   /** story campaign: completed mission ids and best times (s) */
   story: { done: string[]; best: Record<string, number> };
-  settings: { quality: QualityLevel | 'auto'; master: number; music: number; sfx: number; cam: 'chase' | 'far' | 'hood' };
+  settings: { quality: QualityLevel | 'auto'; master: number; music: number; sfx: number; cam: 'chase' | 'far' | 'hood'; voice?: 'on' | 'off' };
 }
 
 const KEY = 'neonrun.save.v1';

@@ -148,7 +148,7 @@ if (want('foot')) {
   // walk up to the nearest pedestrian and talk
   const pp = await N('nearestPed');
   console.log('peds', JSON.stringify(await N('peds')));
-  if (pp) { await N('heroTo', pp[0] + 1.4, pp[2] + 0.6); await sleep(400); await N('talk'); await sleep(2500); await shot('43_talk'); }
+  if (pp) { await N('heroTo', pp[0] + 1.4, pp[2] + 0.6); await sleep(400); await N('talk'); await sleep(2500); await shot('43_talk'); await N('convLeave'); }
   // steal a traffic car
   console.log('door', JSON.stringify(await N('toTrafficDoor')));
   await sleep(600);
@@ -291,6 +291,51 @@ if (want('story')) {
     const end = await S();
     console.log(id, 'end', JSON.stringify(end));
     await shot(`60_${id}_z`);
+  }
+}
+if (want('converse')) {
+  // NPC conversation with a stand-in for /api/talk (no API key needed): checks the two-shot camera,
+  // look-at, the panel, suggested replies, the 'end' action and the offline fallback.
+  let brainUp = true;
+  const seen = [];
+  await page.route('**/api/talk', async (route) => {
+    const body = JSON.parse(route.request().postData() || '{}');
+    seen.push(body);
+    if (!brainUp) return route.fulfill({ status: 503, contentType: 'application/x-ndjson', body: JSON.stringify({ t: 'error', code: 'no_key' }) + '\n' });
+    const bye = /bye/i.test(body.say || '');
+    const line = body.say ? (bye ? 'Yeah, yeah. Stay dry, courier.' : `Work? Ask Mara at the night market. Tell her ${body.persona.name.split(' ')[0]} sent you.`) : `Hm? You lost, courier? I am ${body.persona.name}.`;
+    const reply = { line, emotion: bye ? 'neutral' : 'wary', gesture: bye ? 'wave' : 'shrug', action: bye ? 'end' : 'none', replies: bye ? [] : ['Thanks, I owe you.', 'Where is the market?', 'Bye then.'], remember: 'asked about work' };
+    const text = JSON.stringify(reply);
+    const deltas = (text.match(/.{1,9}/gs) || []).map((c) => JSON.stringify({ t: 'delta', text: c })).join('\n');
+    await route.fulfill({ status: 200, contentType: 'application/x-ndjson', body: deltas + '\n' + JSON.stringify({ t: 'done', reply }) + '\n' });
+  });
+  await N('setInput', {});
+  await sleep(300);
+  if ((await N('mode')) === 'drive') { await N('exitCar'); await sleep(2200); }
+  const pp = await N('nearestPed');
+  if (!pp) console.log('converse: no pedestrian nearby');
+  else {
+    await N('heroTo', pp[0] + 1.3, pp[2] + 0.5); await sleep(400);
+    await N('talk'); await sleep(2500);
+    let c = await N('conv');
+    console.log('converse open', JSON.stringify({ active: c.active, name: c.name, tag: c.tag, line: c.line, replies: c.replies }));
+    console.log('persona', JSON.stringify(c.persona));
+    await shot('90_conv_open');
+    await N('convSay', 'Got any work for a courier?'); await sleep(2500);
+    c = await N('conv');
+    console.log('converse reply', JSON.stringify({ line: c.line, replies: c.replies }));
+    await shot('91_conv_reply');
+    const last = seen.at(-1);
+    console.log('request sent', JSON.stringify({ say: last.say, history: last.history.length, facts: last.facts }));
+    await N('convSay', 'Bye then.'); await sleep(5000);
+    c = await N('conv');
+    console.log('after bye: active', c.active, 'hero busy', c.heroBusy);
+    await shot('92_conv_end');
+    // offline: the server says it has no key -> recorded lines
+    brainUp = false;
+    const pp2 = await N('nearestPed');
+    if (pp2) { await N('heroTo', pp2[0] + 1.3, pp2[2] + 0.5); await sleep(400); await N('talk'); await sleep(2000); c = await N('conv'); console.log('offline', JSON.stringify({ active: c.active, name: c.name, tag: c.tag, line: c.line, replies: c.replies })); await shot('93_conv_offline'); await N('convLeave'); }
+    console.log('sample personas', JSON.stringify((await N('personaSample', 4)).map((p) => `${p.name}, ${p.age}, ${p.job}; ${p.mood}; ${p.speech}`)));
   }
 }
 if (want('cams')) {

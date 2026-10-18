@@ -18,6 +18,7 @@ import { CarVisual, PAINTS, UNDERGLOW, liveryMaterial } from './vehicle/carVisua
 import { CAR_DEFS, carDef } from './vehicle/carModels';
 import { HeroOnFoot, FootCam } from './game/onfoot';
 import { Crowd, Person, PED_TYPES, type PedType, lerpAngle } from './world/people';
+import { Conversation } from './npc/conversation';
 import { Police, carMesh } from './game/police';
 import { ChaseCam } from './vehicle/chaseCam';
 import { AudioSys } from './audio/audio';
@@ -222,6 +223,7 @@ function buildWorld() {
     audio.play('body_hit', { pos: p, volume: 1 });
     if (Math.random() < 0.6) audio.play('scream', { pos: p, volume: 0.9 });
     crowd.panic(p, 20);
+    if (mode === 'drive') noteEvent('the courier hit a pedestrian with their car', p);
     chase.impact(Math.min(0.5, spd / 40));
     if (hitCooldown <= 0) { police.add(1, 'pedestrian'); hitCooldown = 4; }
   };
@@ -234,6 +236,19 @@ function buildWorld() {
     scene.add(hero.person.root);
   }
   footCam = new FootCam(camera, phys);
+  conv = new Conversation({
+    heroPerson: () => hero!.person,
+    heroPos: () => hero!.pos,
+    setHeroBusy: (on) => { if (hero) hero.busy = on ? 1e6 : 0; },
+    district: (p) => districtAt(p.x, p.z),
+    facts: () => convFacts(),
+    alive: (t) => mode === 'foot' && state === 'playing' && crowd.peds.includes(t as any) && t.state === 'talk',
+    flee: (t) => crowd.flee(t as any, hero!.pos),
+    callPolice: (t) => { noteEvent('a bystander called the police on the courier', t.pos); setTimeout(() => police.add(1, 'reported'), 2500); },
+    voiceOn: () => (save.settings.voice ?? 'on') === 'on',
+    onOpen: () => { document.exitPointerLock?.(); },
+    onClose: () => { if (hero) footCam.yaw = hero.person.yaw; },
+  }, () => A.lines);
   police = new Police(phys, graph, A.carsLod.car_police ?? A.cars.car_police, env);
   police.onHeat = (h) => renderWanted(h);
   police.onSpawn = (p) => { audio.play('radio_squelch', { volume: 0.5 }); if (Math.random() < 0.7) audio.talk(`police_${Math.floor(Math.random() * 4)}`, p); };
@@ -387,6 +402,7 @@ function placePlayer(x: number, z: number, yaw: number) {
   mode = 'drive';
   seqDone = null;
   talking = 0;
+  conv?.leave();
   setContext(null);
   document.exitPointerLock?.();
   // clear the player's leftover cars, but keep cars the current mission just parked
@@ -411,6 +427,10 @@ let hero: HeroOnFoot | null = null;
 let footCam: FootCam;
 let crowd: Crowd;
 let police: Police;
+let conv: Conversation;
+/** things the courier did that bystanders may have seen (fed to the NPC brain) */
+const recentEvents: { t: number; pos: THREE.Vector3; text: string }[] = [];
+function noteEvent(text: string, pos: THREE.Vector3) { recentEvents.push({ t: simTime, pos: pos.clone(), text }); if (recentEvents.length > 12) recentEvents.shift(); }
 const parkedCars: { vehicle: Vehicle; car: CarVisual; id: string; keep?: boolean }[] = [];
 const PARK = { throttle: 0, brake: 0, steer: 0, handbrake: true, boost: false };
 let seqT = 0;
@@ -646,6 +666,7 @@ function openSettings() {
   const refresh = () => {
     segQ.querySelectorAll<HTMLButtonElement>('button').forEach((b) => b.classList.toggle('on', b.dataset.q === save.settings.quality));
     segC.querySelectorAll<HTMLButtonElement>('button').forEach((b) => b.classList.toggle('on', b.dataset.cam === save.settings.cam));
+    $('voice-seg').querySelectorAll<HTMLButtonElement>('button').forEach((b) => b.classList.toggle('on', b.dataset.voice === (save.settings.voice ?? 'on')));
   };
   segQ.querySelectorAll<HTMLButtonElement>('button').forEach((b) => (b.onclick = () => {
     save.settings.quality = b.dataset.q as any;
@@ -654,6 +675,7 @@ function openSettings() {
     refresh();
   }));
   segC.querySelectorAll<HTMLButtonElement>('button').forEach((b) => (b.onclick = () => { save.settings.cam = b.dataset.cam as any; chase.mode = save.settings.cam; writeSave(save); refresh(); }));
+  $('voice-seg').querySelectorAll<HTMLButtonElement>('button').forEach((b) => (b.onclick = () => { save.settings.voice = b.dataset.voice as 'on' | 'off'; writeSave(save); refresh(); }));
   for (const k of ['master', 'music', 'sfx'] as const) {
     const el = $(`v-${k}`) as HTMLInputElement;
     el.value = String(save.settings[k]);
@@ -719,6 +741,7 @@ function resume() {
   audio.ctx.resume();
 }
 function quitToTitle() {
+  conv?.leave();
   show('pause', false);
   if (campaign.active) campaign.stop();
   $('results').classList.add('hidden'); $('results').classList.remove('story'); $('r-actions').innerHTML = '';
@@ -1072,6 +1095,7 @@ function startEnter() {
       const vi = Math.floor(Math.random() * 4);
       audio.talk(`victim_${vi}`, out).then((dur) => subtitle('Driver', A.lines.victim?.[vi] ?? '', dur + 0.5));
       crowd.panic(tgt.door, 25);
+      noteEvent('the courier dragged a driver out of their car and stole it', tgt.door);
       const near = police.units.some((u) => u.pos.distanceTo(tgt.door) < 80);
       police.add(near ? 2 : 1, 'carjack');
     }, delay * 400);
@@ -1117,28 +1141,26 @@ function startEnter() {
 }
 
 function talkTo() {
-  if (!hero || talking > 0) return;
+  if (!hero || conv.active) return;
   const ped = crowd.nearest(hero.pos, 2.8);
   if (!ped) return;
-  const lines = A.lines;
-  const hi = Math.floor(Math.random() * (lines.hero?.length ?? 1));
-  const ri = Math.floor(Math.random() * (lines[ped.type]?.length ?? 1));
-  hero.person.yaw = Math.atan2(ped.pos.x - hero.pos.x, ped.pos.z - hero.pos.z);
-  hero.person.play('talk', { fade: 0.25 });
-  hero.busy = 7;
-  crowd.talk(ped, hero.pos, 8);
-  talking = 8;
-  const names: Record<string, string> = { ped_suit: 'Executive', ped_vendor: 'Vendor', ped_punk: 'Punk', ped_worker: 'Dock worker', ped_student: 'Student', ped_elder: 'Old lady', ped_techwear: 'Netrunner', ped_nurse: 'Nurse', ped_rider: 'Rider' };
-  audio.talk(`hero_${hi}`).then((d1) => {
-    subtitle('You', lines.hero?.[hi] ?? '', d1 + 0.2);
-    setTimeout(() => {
-      ped.p.play(Math.random() < 0.3 ? 'shrug' : 'talk', { fade: 0.2 });
-      audio.talk(`${ped.type}_${ri}`, ped.pos).then((d2) => {
-        subtitle(names[ped.type] ?? 'Stranger', lines[ped.type]?.[ri] ?? '', d2 + 0.4);
-        setTimeout(() => { if (hero) hero.busy = 0; talking = 0; }, d2 * 1000 + 400);
-      });
-    }, d1 * 1000 + 250);
-  });
+  crowd.talk(ped, hero.pos, 999);
+  conv.start(ped);
+}
+
+/** What a bystander knows about this moment (fed to the NPC brain with every line). */
+function convFacts(): string[] {
+  const d = districtAt(playerPos.x, playerPos.z);
+  const f = [`Place: ${DISTRICTS[d].name}, on a wet sidewalk`, 'Time: the middle of the night, steady rain, neon reflecting in puddles'];
+  if (police.heat > 0) f.push(`The courier is wanted by the police right now (${police.heat} of 5 stars); sirens in the area`);
+  for (const e of recentEvents) {
+    const ago = simTime - e.t;
+    if (ago < 120 && e.pos.distanceTo(playerPos) < 70) f.push(`About ${Math.max(5, Math.round(ago / 5) * 5)} seconds ago, close by: ${e.text}`);
+  }
+  if (carPos.distanceTo(playerPos) < 14) f.push(`The courier's car (${carDef(carId)?.name ?? 'a car'}) is parked a few metres away`);
+  if (campaign.active) f.push('The courier seems to be in the middle of a job, checking their phone for directions');
+  else if (missions?.state === 'toDrop') f.push('The courier is carrying a parcel for a delivery');
+  return f;
 }
 
 function handleInteractions() {
@@ -1148,12 +1170,14 @@ function handleInteractions() {
     if (e && hero) startExit();
     setContext(null);
     setTouchCtx(hero && vehicle.speedAbs < 7 ? 'EXIT' : null, null);
+  } else if (conv.active) {
+    setContext(null); setTouchCtx(null, null);
   } else if (mode === 'foot' && hero) {
     const story = campaign.interaction && campaign.interaction.at.distanceTo(hero.pos.setY(campaign.interaction.at.y)) < 2.8 ? campaign.interaction : null;
     if (e) startEnter();
     if (t) { if (story) story.run(); else talkTo(); }
     const tgt = enterTarget();
-    const ped = talking > 0 || story ? null : crowd.nearest(hero.pos, 2.8);
+    const ped = story ? null : crowd.nearest(hero.pos, 2.8);
     setContext(story ? `<b>T</b> · ${story.label}` : tgt ? `<b>E</b> · ${tgt.kind === 'traffic' ? 'Steal car' : 'Get in'}` : ped ? '<b>T</b> · Talk' : null);
     setTouchCtx(tgt ? (tgt.kind === 'traffic' ? 'STEAL' : 'GET IN') : null, story ? 'GIVE' : ped ? 'TALK' : null);
   } else { setContext(null); setTouchCtx(null, null); }
@@ -1243,6 +1267,10 @@ function frame(now: number) {
   if (state === 'playing') {
     try {
     if (campaign.state === 'results') { for (const k of ['Enter', 'KeyF']) if (input.consume(k) && campaign.resultsKey(k)) break; }
+    if (conv.active) {
+      if (input.consume('Escape')) conv.leave();
+      for (const k of ['Digit1', 'Digit2', 'Digit3', 'Numpad1', 'Numpad2', 'Numpad3']) if (input.consume(k)) conv.key(k);
+    }
     if (input.consume('Escape') || input.consume('KeyP')) { pause(); input.endFrame(); }
     if (input.consume('KeyC')) { chase.mode = chase.mode === 'chase' ? 'far' : chase.mode === 'far' ? 'hood' : 'chase'; save.settings.cam = chase.mode; writeSave(save); }
     if (input.consume('KeyR') && mode === 'drive') resetCar();
@@ -1302,6 +1330,7 @@ function frame(now: number) {
     prof.mark('hero+cam');
     probeHook?.(dtReal);
     crowd.update(dtReal, playerPos, driving ? { pos: carPos, vel: carVel, halfLen: car.dims.length / 2, halfWid: car.dims.width / 2, yaw: vehicle.yaw(), speed: vehicle.speedAbs } : null);
+    if (conv.active) conv.update(dtReal, camera);
     prof.mark('crowd');
     const pol = police.update(dtReal, simTime, playerPos, playerVel, !driving);
     prof.mark('police');
@@ -1434,6 +1463,10 @@ function debugApi() {
     exitCar: () => startExit(),
     enterCar: () => startEnter(),
     talk: () => talkTo(),
+    conv: () => ({ active: !!conv.active, name: document.getElementById('cv-name')!.textContent, tag: document.getElementById('cv-tag')!.textContent, line: document.getElementById('cv-line')!.textContent, replies: [...document.querySelectorAll('#cv-replies .cv-reply')].map((b) => b.textContent), persona: conv.persona, heroBusy: hero?.busy ?? 0 }),
+    convSay: (text: string) => conv.say(text),
+    convLeave: () => conv.leave(),
+    personaSample: (n: number) => crowd.peds.slice(0, n).map((p) => conv.personaOf(p)),
     heat: (n: number) => police.add(n, 'debug'),
     peds: () => crowd.peds.map((p) => ({ type: p.type, state: p.state, d: +p.pos.distanceTo(playerPos).toFixed(1) })).sort((a, b) => a.d - b.d).slice(0, 6),
     heroTo: (x: number, z: number) => hero?.place(new THREE.Vector3(x, 0.2, z)),

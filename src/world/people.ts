@@ -166,6 +166,9 @@ function gaitSpeeds(gltf: GLTF) {
   return g;
 }
 
+const _up = new THREE.Vector3(0, 1, 0), _lookAxis = new THREE.Vector3();
+const _qW = new THREE.Quaternion(), _qP = new THREE.Quaternion(), _qParent = new THREE.Quaternion();
+
 const UNGROUNDED = new Set(['jump', 'fall', 'enter_car', 'exit_car', 'push']);
 
 /** A rigged, animated human (pedestrian or the hero). */
@@ -185,6 +188,16 @@ export class Person {
   private grounding = true;
   private shadow: THREE.Mesh;
   private tmp = new THREE.Vector3();
+  private neck?: THREE.Object3D;
+  private head?: THREE.Object3D;
+  /** world point to turn the head toward (eye level of whoever they are talking to), or null */
+  look: THREE.Vector3 | null = null;
+  /** 0..1 how animated the head is while speaking (nods, small sways) */
+  speak = 0;
+  private lookW = 0;
+  private lookYaw = 0;
+  private lookPitch = 0;
+  private speakT = Math.random() * 10;
 
   constructor(gltf: GLTF, public type: string) {
     this.root = cloneSkinned(gltf.scene);
@@ -195,6 +208,8 @@ export class Person {
         patchPersonMaterial(m.material as THREE.MeshStandardMaterial);
       }
       if (/(left|right)foot$/i.test(o.name)) this.feet.push(o);
+      if (/^neck$/i.test(o.name)) this.neck = o;
+      if (/^head$/i.test(o.name)) this.head = o;
     });
     // ankle height in the bind pose = where the foot bones sit when standing on the ground
     this.root.updateMatrixWorld(true);
@@ -258,6 +273,41 @@ export class Person {
     } else this.footOff *= Math.max(0, 1 - dt * 4);
     this.root.position.y = this.baseY + this.footOff;
     this.shadow.position.y = -this.footOff + 0.03;
+    this.applyLook(dt);
+  }
+
+  /** Head / neck look-at layered on top of the animation (the mixer resets the bones every frame). */
+  private applyLook(dt: number) {
+    const want = this.look && this.head ? 1 : 0;
+    this.lookW += (want - this.lookW) * Math.min(1, dt * 4);
+    if (this.lookW < 0.01 || !this.head) return;
+    this.root.updateMatrixWorld(true);
+    if (this.look) {
+      const hp = this.head.getWorldPosition(this.tmp);
+      const dx = this.look.x - hp.x, dy = this.look.y - hp.y, dz = this.look.z - hp.z;
+      let yaw = Math.atan2(dx, dz) - this.root.rotation.y;
+      yaw = Math.atan2(Math.sin(yaw), Math.cos(yaw));
+      const pitch = Math.atan2(dy, Math.hypot(dx, dz));
+      // ease toward the target; a person only turns their head so far before turning the body
+      this.lookYaw += (THREE.MathUtils.clamp(yaw, -1.1, 1.1) - this.lookYaw) * Math.min(1, dt * 6);
+      this.lookPitch += (THREE.MathUtils.clamp(pitch, -0.45, 0.4) - this.lookPitch) * Math.min(1, dt * 6);
+    }
+    this.speakT += dt;
+    const k = this.speak;
+    const nod = k * (Math.sin(this.speakT * 7.3) * 0.05 + Math.sin(this.speakT * 2.9) * 0.04);
+    const sway = k * Math.sin(this.speakT * 1.7) * 0.06;
+    const yaw = this.lookYaw * this.lookW + sway, pitch = this.lookPitch * this.lookW + nod;
+    const by = this.root.rotation.y;
+    const right = _lookAxis.set(-Math.cos(by), 0, Math.sin(by)); // forward x up: positive angle looks up
+    // neck takes 40 % of the turn, the head the rest
+    for (const [bone, share] of [[this.neck, 0.4], [this.head, this.neck ? 0.6 : 1]] as const) {
+      if (!bone || !bone.parent) continue;
+      _qW.setFromAxisAngle(_up, yaw * share).multiply(_qP.setFromAxisAngle(right, pitch * share));
+      bone.parent.getWorldQuaternion(_qParent);
+      // local' = parent^-1 * delta(world) * parent * local
+      bone.quaternion.premultiply(_qParent).premultiply(_qW).premultiply(_qParent.invert());
+      bone.updateMatrixWorld(true);
+    }
   }
 
   place(x: number, y: number, z: number, yaw: number) {
@@ -370,7 +420,7 @@ export class Crowd {
   panic(at: THREE.Vector3, radius: number) {
     for (const p of this.peds) if (p.state !== 'down' && p.pos.distanceTo(at) < radius) this.flee(p, at);
   }
-  private flee(p: Ped, from: THREE.Vector3) {
+  flee(p: Ped, from: THREE.Vector3) {
     if (p.state === 'flee') { p.t = Math.max(p.t, 3); return; }
     p.state = 'flee';
     p.t = this.rng.range(4, 7);

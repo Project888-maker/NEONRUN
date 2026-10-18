@@ -252,3 +252,27 @@ body.touch #fps { display: none; }
 /* while a story result is on screen, keep the dispatcher's subtitle clear of the card */
 body.touch:has(#results.story:not(.hidden)) #subtitle { top: auto; bottom: 24%; }
 @media (max-height: 560px) { body:has(#results.story:not(.hidden)) #subtitle { top: auto; bottom: 22%; } }
+
+/* ---- conversation panel ---- */
+#conv { position: absolute; left: 50%; bottom: max(16px, env(safe-area-inset-bottom)); transform: translateX(-50%); width: min(760px, calc(100vw - 32px)); display: flex; flex-direction: column; gap: 10px; padding: 14px 16px 16px; background: linear-gradient(180deg, rgba(6, 8, 18, 0.72), rgba(6, 8, 18, 0.9)); border: 1px solid var(--line); border-left: 3px solid var(--amber); pointer-events: auto; z-index: 12; -webkit-user-select: text; user-select: text; touch-action: manipulation; }
+#conv .cv-head { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+#cv-name { font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--amber); white-space: nowrap; }
+#cv-tag { flex: 1; min-width: 0; color: var(--muted); font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#cv-leave { padding: 6px 12px; font-size: 10px; letter-spacing: 0.14em; }
+#cv-leave kbd { font-family: 'JetBrains Mono', monospace; color: var(--muted); margin-left: 4px; }
+#cv-you { color: var(--cyan); font-size: 15px; opacity: 0.85; }
+#cv-you::before { content: 'You: '; color: var(--muted); }
+#cv-line { font-size: 21px; line-height: 1.35; min-height: 1.35em; text-wrap: pretty; }
+#conv.waiting #cv-line:empty::after, #conv.waiting #cv-line { opacity: 0.85; }
+#cv-replies { display: flex; flex-wrap: wrap; gap: 8px; }
+#cv-replies .cv-reply { font-family: 'Rajdhani', system-ui, sans-serif; font-weight: 600; font-size: 15px; letter-spacing: 0.02em; text-transform: none; padding: 8px 14px; clip-path: none; border-radius: 3px; text-align: left; max-width: 100%; }
+#cv-replies .cv-reply::before { content: attr(data-k); font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); margin-right: 8px; }
+#cv-form { display: flex; gap: 8px; }
+#cv-input { flex: 1; min-width: 0; font: 600 16px 'Rajdhani', system-ui, sans-serif; color: var(--text); background: rgba(255, 255, 255, 0.06); border: 1px solid var(--line); padding: 10px 12px; outline: none; }
+#cv-input:focus { border-color: var(--cyan); background: rgba(33, 243, 255, 0.08); }
+#cv-form button { padding: 10px 14px; font-size: 11px; letter-spacing: 0.14em; }
+#cv-mic.on { background: var(--magenta); color: #fff; border-color: var(--magenta); }
+body.conversing #touch, body.conversing #subtitle, body.conversing #h-prompt { display: none !important; }
+body.touch #conv { width: min(720px, calc(100vw - 24px)); padding: 10px 12px 12px; gap: 8px; }
+body.touch #cv-line { font-size: 17px; }
+@media (max-height: 480px) { #cv-line { font-size: 16px; } #cv-replies .cv-reply { font-size: 13px; padding: 6px 10px; } #conv { gap: 6px; } }

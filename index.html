@@ -84,6 +84,9 @@
       <label>Camera
         <div class="seg" id="cam-seg"><button data-cam="chase">Chase</button><button data-cam="far">Far</button><button data-cam="hood">Hood</button></div>
       </label>
+      <label>People's voices
+        <div class="seg" id="voice-seg"><button data-voice="on">Spoken</button><button data-voice="off">Subtitles only</button></div>
+      </label>
       <div class="hint">Quality changes apply after restart of the drive (Esc → Quit).</div>
       <button data-act="back" class="back">Back</button>
     </div>
@@ -152,6 +155,18 @@
     <div id="fps"></div>
     <div id="context" class="hidden"></div>
     <div id="subtitle" class="hidden"></div>
+    <!-- talking to a person: you speak as the courier -->
+    <div id="conv" class="hidden">
+      <div class="cv-head"><span id="cv-name"></span><span id="cv-tag"></span><button id="cv-leave" type="button">Leave <kbd>Esc</kbd></button></div>
+      <div id="cv-you" class="hidden"></div>
+      <div id="cv-line"></div>
+      <div id="cv-replies"></div>
+      <form id="cv-form" autocomplete="off">
+        <input id="cv-input" maxlength="200" placeholder="Say something as the courier…" enterkeyhint="send" />
+        <button type="button" id="cv-mic" title="Hold to speak">Hold to talk</button>
+        <button type="submit" id="cv-send" class="primary">Say</button>
+      </form>
+    </div>
     <div id="busted" class="hidden">BUSTED</div>
   </div>
 
