@@ -3,10 +3,7 @@ import type { Assets } from '../core/assets';
 import { kitParts } from '../core/assets';
 import type { Physics } from '../core/physics';
 import { RAPIER, GROUP_GATE, groups, GROUP_CAR } from '../core/physics';
-import {
-  GRID, PITCH, HALF, ROAD_W, SIDEWALK, CURB_H, ALLEY_W, RAIL_Z, DISTRICTS, DistrictId,
-  lineCoord, blockCenter, districtOfBlock, districtGates, DISTRICT_ORDER,
-} from './layout';
+import { GRID, PITCH, HALF, ROAD_W, SIDEWALK, CURB_H, ALLEY_W, RAIL_Z, DISTRICTS, DistrictId, lineCoord, blockCenter, districtOfBlock, districtGates, DISTRICT_ORDER, plinthRects } from './layout';
 import { createBuildingMaterial, FACADES, unitBox } from '../render/buildingMaterial';
 import { createGroundMaterial } from '../render/groundMaterial';
 import { createAtlasMaterial, createConeMaterial, createTrafficLampMaterial } from '../render/specialMaterials';
@@ -205,18 +202,10 @@ export class City {
     road.receiveShadow = true;
     this.root.add(road);
     // sidewalk plinths
-    const plinth = HALF * 0 + PITCH - ROAD_W;
-    for (let i = 0; i < GRID; i++) for (let j = 0; j < GRID; j++) {
-      const cx = blockCenter(i), cz = blockCenter(j);
-      const d = districtOfBlock(i, j);
-      const parts: [number, number, number, number][] = d === 'backstreets'
-        ? [[cx, cz - (plinth / 4 + ALLEY_W / 4), plinth, plinth / 2 - ALLEY_W / 2], [cx, cz + (plinth / 4 + ALLEY_W / 4), plinth, plinth / 2 - ALLEY_W / 2]]
-        : [[cx, cz, plinth, plinth]];
-      for (const [x, z, w, dd] of parts) {
-        this.walkRects.push({ x, z, hw: w / 2 - 1.4, hd: dd / 2 - 1.4, district: d });
-        this.b.add('plinth', chunkOf(x, z), this.geo.box, walkMat, mtx(x, 0, z, 0, w, CURB_H, dd), undefined, LAYER_NO_REFLECT);
-        this.phys.box(x, CURB_H / 2, z, w / 2, CURB_H / 2, dd / 2, 0, 0.9);
-      }
+    for (const { x, z, hw, hd, district } of plinthRects()) {
+      this.walkRects.push({ x, z, hw: hw - 1.4, hd: hd - 1.4, district });
+      this.b.add('plinth', chunkOf(x, z), this.geo.box, walkMat, mtx(x, 0, z, 0, hw * 2, CURB_H, hd * 2), undefined, LAYER_NO_REFLECT);
+      this.phys.box(x, CURB_H / 2, z, hw, CURB_H / 2, hd, 0, 0.9);
     }
     // dark water beyond the docks edge
     const water = new THREE.Mesh(new THREE.PlaneGeometry(1400, 1400).rotateX(-Math.PI / 2), createGroundMaterial({ albedo: t.asphalt_albedo, normal: t.glass_grime_normal, rough: t.glass_grime_rough, tile: 30, markings: false, reflector: r, reflectStrength: 1.4, puddles: 0, color: new THREE.Color(0.02, 0.03, 0.04) }));

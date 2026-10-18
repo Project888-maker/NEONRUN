@@ -146,6 +146,27 @@ export function buildRoadGraph(): RoadGraph {
   return g;
 }
 
+export interface BlockRect { x: number; z: number; hw: number; hd: number; district: DistrictId }
+let plinthCache: BlockRect[] | null = null;
+/**
+ * The raised sidewalk + building area of every block (half extents). Everything outside them is road
+ * or alley. Backstreet blocks are split in two by an alley.
+ */
+export function plinthRects(): BlockRect[] {
+  if (plinthCache) return plinthCache;
+  const plinth = PITCH - ROAD_W;
+  const out: BlockRect[] = [];
+  for (let i = 0; i < GRID; i++) for (let j = 0; j < GRID; j++) {
+    const cx = blockCenter(i), cz = blockCenter(j);
+    const d = districtOfBlock(i, j);
+    const parts: [number, number, number, number][] = d === 'backstreets'
+      ? [[cx, cz - (plinth / 4 + ALLEY_W / 4), plinth, plinth / 2 - ALLEY_W / 2], [cx, cz + (plinth / 4 + ALLEY_W / 4), plinth, plinth / 2 - ALLEY_W / 2]]
+      : [[cx, cz, plinth, plinth]];
+    for (const [x, z, w, dd] of parts) out.push({ x, z, hw: w / 2, hd: dd / 2, district: d });
+  }
+  return (plinthCache = out);
+}
+
 /** Barrier positions blocking entry into a locked district. Each: x,z,rotY(along road) */
 export function districtGates(d: DistrictId): { x: number; z: number; rot: number }[] {
   const out: { x: number; z: number; rot: number }[] = [];

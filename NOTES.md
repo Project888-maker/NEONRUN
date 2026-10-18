@@ -88,9 +88,10 @@ node scripts/story_json.mjs                 # campaign subtitles
 ## Testing
 - `npx tsx tests/physics.test.ts` — driving model telemetry
 - `npx tsx tests/rollover.test.ts` — hard knocks must end on the wheels (fails without the anti-rollover assist)
-- `npx tsx tests/police.test.ts` — pursuit closes in, boxes the player, never touches the car
+- `npx tsx tests/police.test.ts` — pursuit closes in, boxes the player, never touches the car, and never drives onto a block or into a building (even with the player on a sidewalk)
 - `npx tsx tests/drones.test.ts` — drones can be outrun by car, warn before striking, back off after a hit
 - `npx tsx tests/npc.test.ts` — NPC personas, the /api/talk function and the client stream
+- `npx tsx tests/crowd_walls.test.ts` — people fleeing or knocked over stop at building facades
 - `node scripts/shots.mjs <url> <dir> stride` — prints both hero feet per frame while walking and running; a planted foot must hold its position for several frames
 - `node scripts/shots.mjs <url> <dir> gait` / `police` — get in/out frames; police pressure (closest cruiser distance, car stays upright)
 - `npx vite preview` then `node scripts/shots.mjs "http://localhost:4173/?debug&q=high&fixed" screenshots [scenarios]` — headless Chromium screenshots + console errors. Scenarios include `drive`, `cars`, `foot` (exit, walk, talk, carjack) and `story` (teleports through every mission; `STORY=m1,m4` limits it). `?fixed` makes the sim advance 1/30 s per frame so software rendering still produces representative sim time.

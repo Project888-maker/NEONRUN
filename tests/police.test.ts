@@ -2,7 +2,8 @@
 import * as THREE from 'three';
 import { Physics } from '../src/core/physics';
 import { buildRoadGraph, lineCoord } from '../src/world/layout';
-import { Police } from '../src/game/police';
+import { Police, offRoad } from '../src/game/police';
+import { blockCenter, PITCH, ROAD_W } from '../src/world/layout';
 const g = globalThis as any;
 g.document ??= { createElement: () => ({ getContext: () => ({ createRadialGradient: () => ({ addColorStop() {} }), fillRect() {}, set fillStyle(_v: unknown) {} }), width: 0, height: 0 }) };
 const phys = await Physics.init();
@@ -44,4 +45,27 @@ for (let i = 0; i < 60 * 25; i++) {
 }
 const ok2 = closestMoving > 5.5 && followers > 0;
 console.log(ok2 ? 'PASS' : 'FAIL', `moving player: closest cruiser ${closestMoving.toFixed(1)} m (never < 5.5 m), ${followers} still within 60 m after 25 s`);
-process.exit(ok1 && ok2 ? 0 : 1);
+// phase 3: the player is on foot on a sidewalk, tucked against buildings mid-block (the slot behind them
+// would be inside the block). Cruisers must come as close as the road allows, never onto the block.
+const blockEdge = blockCenter(4) + (PITCH - ROAD_W) / 2; // east edge of the block
+const spots = [new THREE.Vector3(blockEdge - 1.5, 0, blockCenter(2)), new THREE.Vector3(blockCenter(6), 0, blockCenter(3) - (PITCH - ROAD_W) / 2 + 1.5)];
+let offRoadFrames = 0, ok3 = true;
+for (const spot of spots) {
+  player.copy(spot); vel.set(0, 0, 0);
+  police.clear(); police.add(3, 'test');
+  let near = Infinity;
+  for (let i = 0; i < 60 * 30; i++) {
+    const dt = 1 / 60;
+    t += dt;
+    const r = police.update(dt, t, player, vel, true);
+    phys.world.step();
+    for (const u of police.units) if (offRoad(u.pos.x, u.pos.z, 0.2)) offRoadFrames++;
+    if (i > 60 * 5) near = Math.min(near, r.nearest);
+  }
+  const ok = near < 25;
+  ok3 &&= ok;
+  console.log(ok ? 'PASS' : 'FAIL', `player on a sidewalk at ${spot.x.toFixed(0)},${spot.z.toFixed(0)}: closest cruiser ${near.toFixed(1)} m (must reach < 25 m)`);
+}
+const ok4 = offRoadFrames === 0;
+console.log(ok4 ? 'PASS' : 'FAIL', `cruiser frames on a block / in a building: ${offRoadFrames} (must be 0)`);
+process.exit(ok1 && ok2 && ok3 && ok4 ? 0 : 1);

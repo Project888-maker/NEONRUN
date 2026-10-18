@@ -1,7 +1,35 @@
 import * as THREE from 'three';
 import type { Physics } from '../core/physics';
 import { RAPIER, groups, GROUP_TRAFFIC, GROUP_CAR, GROUP_WORLD } from '../core/physics';
-import type { RoadGraph } from '../world/layout';
+import { plinthRects, type RoadGraph } from '../world/layout';
+
+const BLOCKS = plinthRects();
+const CAR_MARGIN = 1.4; // half a cruiser's width plus a little: keep the body off the curb
+/** Is this point on a block (sidewalk / buildings) rather than road, for a car centred there? */
+export function offRoad(x: number, z: number, m = CAR_MARGIN) {
+  for (const r of BLOCKS) if (Math.abs(x - r.x) < r.hw + m && Math.abs(z - r.z) < r.hd + m) return true;
+  return false;
+}
+/** Can a car drive straight from a to b without crossing a block? */
+export function roadClear(a: THREE.Vector3, b: THREE.Vector3) {
+  const d = Math.hypot(b.x - a.x, b.z - a.z);
+  const n = Math.max(1, Math.ceil(d / 3));
+  for (let i = 1; i <= n; i++) { const k = i / n; if (offRoad(a.x + (b.x - a.x) * k, a.z + (b.z - a.z) * k)) return false; }
+  return true;
+}
+/** Nearest point on the road to p (p itself if it is already on the road). */
+export function toRoad(p: THREE.Vector3, out = new THREE.Vector3()) {
+  out.copy(p).setY(0);
+  for (let pass = 0; pass < 3; pass++) {
+    const r = BLOCKS.find((b) => Math.abs(out.x - b.x) < b.hw + CAR_MARGIN && Math.abs(out.z - b.z) < b.hd + CAR_MARGIN);
+    if (!r) break;
+    // push out through the nearest edge of the block
+    const ex = r.hw + CAR_MARGIN + 0.4 - Math.abs(out.x - r.x), ez = r.hd + CAR_MARGIN + 0.4 - Math.abs(out.z - r.z);
+    if (ex < ez) out.x = r.x + Math.sign(out.x - r.x || 1) * (r.hw + CAR_MARGIN + 0.4);
+    else out.z = r.z + Math.sign(out.z - r.z || 1) * (r.hd + CAR_MARGIN + 0.4);
+  }
+  return out;
+}
 import type { CarAsset } from '../vehicle/carModels';
 import { carPaint, patchCarLights } from '../vehicle/carModels';
 import { LAYER_NO_REFLECT } from '../render/reflector';
@@ -183,10 +211,13 @@ export class Police {
       const pv = playerVel.clone().setY(0);
       const back = pv.lengthSq() > 4 ? pv.clone().normalize().multiplyScalar(-1) : player.clone().sub(u.pos).setY(0).normalize().multiplyScalar(-1);
       const side = new THREE.Vector3(-back.z, 0, back.x).multiplyScalar(((this.units.indexOf(u) % 3) - 1) * 3.2);
-      let target = player.clone().addScaledVector(back, 9).add(side);
-      if (d > 38) {
+      // the slot is snapped onto the road (behind a player on a sidewalk it could be inside a building)
+      let target = toRoad(player.clone().addScaledVector(back, 9).add(side));
+      // head straight for it only when close and the road between is clear; otherwise drive the streets
+      if (d > 38 || !roadClear(u.pos, target)) {
         while (u.route.length && u.route[0].distanceTo(u.pos) < 12) u.route.shift();
         if (u.route.length) target = u.route[0];
+        else { const r = toRoad(player); if (roadClear(u.pos, r)) target = r; }
       }
       const to = target.clone().sub(u.pos).setY(0);
       const dist = to.length();
@@ -204,7 +235,12 @@ export class Police {
       const next = u.pos.clone().add(step);
       const blocked = next.distanceTo(player) < 6.2 && next.distanceTo(player) < u.pos.distanceTo(player)
         || this.units.some((o) => o !== u && next.distanceTo(o.pos) < 5.5 && next.distanceTo(o.pos) < u.pos.distanceTo(o.pos));
-      if (blocked) u.speed = 0; else u.pos.copy(next);
+      if (blocked) u.speed = 0;
+      else if (!offRoad(next.x, next.z) || offRoad(u.pos.x, u.pos.z)) u.pos.copy(next);
+      // never onto a block: slide along the curb instead (roads are axis-aligned)
+      else if (!offRoad(next.x, u.pos.z)) u.pos.x = next.x;
+      else if (!offRoad(u.pos.x, next.z)) u.pos.z = next.z;
+      else u.speed *= 0.5;
       u.body.setNextKinematicTranslation({ x: u.pos.x, y: 0, z: u.pos.z });
       u.body.setNextKinematicRotation({ x: 0, y: Math.sin(u.yaw / 2), z: 0, w: Math.cos(u.yaw / 2) });
       u.root.position.copy(u.pos);

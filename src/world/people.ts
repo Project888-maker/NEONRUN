@@ -479,6 +479,7 @@ export class Crowd {
           break;
         case 'flee': {
           p.pos.addScaledVector(p.vel, dt);
+          this.keepOutOfBuildings(p);
           p.p.yaw = lerpAngle(p.p.yaw, Math.atan2(p.vel.x, p.vel.z), Math.min(1, dt * 10));
           if (p.t <= 0) {
             // walk on from the nearest point of the home loop
@@ -493,6 +494,7 @@ export class Crowd {
         }
         case 'down':
           p.pos.addScaledVector(p.vel, dt);
+          this.keepOutOfBuildings(p);
           p.vel.multiplyScalar(Math.max(0, 1 - dt * 3));
           break;
       }
@@ -505,6 +507,25 @@ export class Crowd {
     this.frame++;
   }
   private frame = 0;
+
+  /**
+   * Buildings fill each block inside its sidewalk loop. Someone running off in a straight line (fleeing,
+   * knocked down) is stopped at the facade and turned to run along it instead of into the wall.
+   */
+  private keepOutOfBuildings(p: Ped) {
+    const M = 0.9; // the loop is 1.4 m in from the curb; facades start ~1.6 m further in
+    for (const r of this.city.walkRects) {
+      const dx = p.pos.x - r.x, dz = p.pos.z - r.z;
+      const ix = r.hw - M - Math.abs(dx), iz = r.hd - M - Math.abs(dz);
+      if (ix <= 0 || iz <= 0) continue;
+      if (ix < iz) { p.pos.x = r.x + Math.sign(dx || 1) * (r.hw - M); if (p.vel.x * Math.sign(dx || 1) < 0) p.vel.x = 0; }
+      else { p.pos.z = r.z + Math.sign(dz || 1) * (r.hd - M); if (p.vel.z * Math.sign(dz || 1) < 0) p.vel.z = 0; }
+      // keep running along the wall at the same pace
+      const sp = Math.hypot(p.vel.x, p.vel.z);
+      if (p.state === 'flee' && sp < 1) { if (ix < iz) p.vel.z = (Math.sign(p.vel.z) || 1) * 3.4; else p.vel.x = (Math.sign(p.vel.x) || 1) * 3.4; }
+      return;
+    }
+  }
 
   private onSidewalk(pos: THREE.Vector3) {
     for (const r of this.city.walkRects) if (Math.abs(pos.x - r.x) < r.hw + 1.45 && Math.abs(pos.z - r.z) < r.hd + 1.45) return true;
