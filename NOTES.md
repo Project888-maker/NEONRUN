@@ -236,3 +236,10 @@ Requests that failed or were replaced:
 - The courier is in his own collision group (`GROUP_HERO`) and is blocked by every car (his own and parked ones included), benches, traffic lights and bollards. The foot camera stops at cars too.
 - Sidewalk crowds keep to the right, step around people standing or coming the other way (and the courier), slow down behind slower walkers, and overlapping people are pushed apart.
 
+**Cars and motion capture** (Oct 18)
+- The courier's car is a generated model (`car_courier`: gpt-image-2 concept, Tripo H3.1, `blender/process_car.py --length 4.85`) used for the `hero` slot (`HERO_MODEL`). The old hero car (a rough half-shell) and the decal liveries (they smeared across the bumpy generated bodies) are retired; paint and underglow still apply to the courier's car.
+- Doors (`src/vehicle/door.ts`): triangles are split exactly on the door box (front wheel arch, B-pillar, sill, under the roof), so the door and opening have straight edges. The inside of the shell is drawn dark from behind (back faces only), which reads as a cabin through the opening without poking out anywhere.
+- `/tests/cars/` (with `npx vite`): every car from the driver's side (door shut and open), three-quarter front and rear.
+- People's walk, run, flee, idle, talk, wave and shrug are real motion capture from the CMU database (`assets/mocap/*.bvh`, fetched from the GitHub mirror una-dinosauria/cmu-mocap). `blender/build_people.py --mocap` picks the best-matching loop inside a window (pose distance over the main joints), turns the motion onto the skeleton's rest heading (a yaw on every bone's world rotation; turning the source object does nothing, since motion is copied relative to rest), and transfers it like the other clips. Hands and toes are not copied (the capture skeleton's hand and toe bones point differently); they follow the forearm and foot. The elder walks with the old-man take (137_33). Jump, car, phone, push and fall stay generated (no captures for them).
+- `/tests/motion/?type=hero&clips=walk,run` renders each clip at evenly spaced moments. `MOCAP_TRY=idle2:77_02 ... --mocap` builds extra candidate clips for comparison.
+

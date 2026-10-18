@@ -1,6 +1,6 @@
 """Build game-ready animated people from Meshy rigs + Hunyuan text-to-motion clips.
 
-Usage: /opt/bpyenv/bin/python blender/build_people.py <id> [<id> ...] [--check]
+Usage: /opt/bpyenv/bin/python blender/build_people.py <id> [<id> ...] [--check] [--mocap]
 Inputs:  assets/generated/rig/<id>.glb (+ _basic_animations_walking/running_armature_glb.glb)
          assets/generated/motion/*.fbx (SMPL-H skeleton)
 Output:  assets/build/people/<id>.glb  with actions: walk, run, idle, jump, enter_car, exit_car,
@@ -40,6 +40,116 @@ SEGMENTS = {
 # keep root motion (vertical only) for these clips; everything is in place horizontally
 MOTIONS = ['idle', 'jump', 'enter_car', 'exit_car', 'talk', 'wave', 'flee', 'phone', 'shrug', 'push', 'fall']
 
+# Real motion capture (CMU Graphics Lab database, BVH conversion by B. Hahne; free for any use, see
+# assets/mocap/READMEFIRST.txt) replaces the generated clips wherever the database has the action.
+# clip -> (file, search window in seconds, loop length range in seconds or None = play the window once)
+MOCAP_DIR = os.path.join(ROOT, 'assets', 'mocap')
+CMU_MAP = {
+    'Hips': 'Hips', 'LowerBack': 'Spine02', 'Spine': 'Spine01', 'Spine1': 'Spine', 'Neck': 'neck', 'Head': 'Head',
+    'LeftShoulder': 'LeftShoulder', 'LeftArm': 'LeftArm', 'LeftForeArm': 'LeftForeArm',
+    'RightShoulder': 'RightShoulder', 'RightArm': 'RightArm', 'RightForeArm': 'RightForeArm',
+    'LeftUpLeg': 'LeftUpLeg', 'LeftLeg': 'LeftLeg', 'LeftFoot': 'LeftFoot',
+    'RightUpLeg': 'RightUpLeg', 'RightLeg': 'RightLeg', 'RightFoot': 'RightFoot',
+}
+# hands and toes are left out on purpose: the capture skeleton's hand and toe bones point differently
+# from the generated rigs, and copying them bent wrists sideways; they now follow the forearm / foot
+MOCAP = {
+    'walk': ('141_25', (1.0, 4.5), (0.95, 1.35)),
+    'run': ('141_34', (0.6, 2.4), (0.55, 0.85)),
+    'flee': ('141_34', (0.6, 2.4), (0.55, 0.85)),
+    'idle': ('77_02', (1.0, 7.5), (3.5, 5.5)),  # relaxed standing; the 'waiting' takes fidgeted
+    'talk': ('18_08', (1.0, 16.0), (5.0, 8.0)),
+    'wave': ('141_16', (0.2, 2.4), None),
+    'shrug': ('141_21', (0.2, 2.2), None),
+}
+if os.environ.get('MOCAP_TRY'):  # preview alternatives: MOCAP_TRY=idle2:140_06,idle3:77_02
+    for item in os.environ['MOCAP_TRY'].split(','):
+        n, f = item.split(':')
+        MOCAP[n] = (f, (1.0, 25.0), (3.5, 5.5))
+# per character: an old man walks and waits like one
+MOCAP_OVERRIDE = {
+    'ped_elder': {'walk': ('07_04', (0.8, 6.0), (1.1, 1.6))},  # a real slow walk (the acted 'old man' take was a caricature)
+}
+LOOP_BONES = ['LeftUpLeg', 'LeftLeg', 'RightUpLeg', 'RightLeg', 'LeftArm', 'LeftForeArm', 'RightArm', 'RightForeArm', 'Spine', 'LowerBack', 'Head']
+
+
+def import_bvh(name):
+    before = set(o.name for o in bpy.context.scene.objects)
+    bpy.ops.import_anim.bvh(filepath=os.path.join(MOCAP_DIR, f'{name}.bvh'), global_scale=0.056, frame_start=1,
+                            use_fps_scale=True, update_scene_fps=False, update_scene_duration=False, rotate_mode='NATIVE',
+                            axis_forward='-Z', axis_up='Y')
+    return next(o for o in bpy.context.scene.objects if o.name not in before and o.type == 'ARMATURE')
+
+
+def pose_features(src, f):
+    bpy.context.scene.frame_set(f)
+    out = []
+    for b in LOOP_BONES:
+        q = src.pose.bones[b].matrix_basis.to_quaternion()
+        out.append(q)
+    hp = src.pose.bones['Hips'].matrix_basis.to_quaternion()
+    return out, hp
+
+
+def pick_loop(src, window, loop):
+    """Frames (a, b) inside the window where the pose at b best matches the pose at a, b - a within the loop range."""
+    fps = bpy.context.scene.render.fps
+    lo, hi = int(window[0] * fps) + 1, int(window[1] * fps)
+    if loop is None:
+        return lo, hi
+    feats = {f: pose_features(src, f)[0] for f in range(lo, hi + 1)}
+    best, pair = 1e9, (lo, hi)
+    for a in range(lo, hi + 1):
+        for b in range(a + int(loop[0] * fps), min(hi, a + int(loop[1] * fps)) + 1):
+            d = sum(qa.rotation_difference(qb).angle for qa, qb in zip(feats[a], feats[b]))
+            if d < best:
+                best, pair = d, (a, b)
+    print('  loop', pair, 'pose error', round(best, 3))
+    return pair
+
+
+def face_forward(src, a, b, moving):
+    """Yaw that turns the motion's heading onto the source skeleton's rest heading.
+
+    Motion is transferred relative to the rest pose, so the clip has to face the way its own rest
+    skeleton faces (turning the whole source object changes nothing). The heading is the travel
+    direction for locomotion, the pelvis facing otherwise.
+    """
+    def pelvis_facing(get):
+        l = get('LeftUpLeg') - get('RightUpLeg')
+        return l.cross(Vector((0, 0, 1)))
+    rest = pelvis_facing(lambda n: src.matrix_world @ src.data.bones[n].head_local)
+    if moving:
+        def hip(f):
+            bpy.context.scene.frame_set(f)
+            return src.matrix_world @ src.pose.bones['Hips'].head
+        d = hip(b) - hip(a)
+    else:
+        d = Vector()
+        for f in range(a, b + 1, 3):
+            bpy.context.scene.frame_set(f)
+            d += pelvis_facing(lambda n: src.matrix_world @ src.pose.bones[n].head)
+    d.z = rest.z = 0
+    if d.length < 1e-4 or rest.length < 1e-4:
+        return Quaternion()
+    ang = math.atan2(d.x, d.y) - math.atan2(rest.x, rest.y)
+    return Quaternion(Vector((0, 0, 1)), ang)
+
+
+def mocap_clip(arm, name, spec):
+    file, window, loop = spec
+    src = import_bvh(file)
+    src.animation_data.action.name = f'src_{name}'
+    a, b = pick_loop(src, window, loop)
+    yaw = face_forward(src, a, b, name in ('walk', 'run', 'flee'))
+    act = retarget(src, arm, name, (a, b), CMU_MAP, yaw)
+    act.use_fake_user = True
+    arm.animation_data.action = None
+    bpy.data.actions.remove(src.animation_data.action)
+    bpy.data.objects.remove(src, do_unlink=True)
+    push_nla(arm, act)
+    print('  mocap', name, 'from', file, 'frames', a, '-', b)
+
 
 def objects_of(kind, before):
     return [o for o in bpy.context.scene.objects if o.type == kind and o.name not in before]
@@ -59,7 +169,7 @@ def world_rot(arm, pb_or_bone, rest=False):
     return m.to_quaternion().normalized(), m.to_translation()
 
 
-def retarget(src, dst, action_name, frame_range, mapping=None):
+def retarget(src, dst, action_name, frame_range, mapping=None, yaw=None):
     """Bake src animation onto dst armature as a new action (mapping: src bone -> dst bone)."""
     MAP = mapping or globals()['MAP']
     hip_s = next(k for k, v in MAP.items() if v == 'Hips')
@@ -82,6 +192,10 @@ def retarget(src, dst, action_name, frame_range, mapping=None):
     align = {}
     for t, c in SEGMENTS.items():
         sname, cname = inv.get(t), inv.get(c)
+        if cname is None and c in src.data.bones:
+            cname = c  # unmapped end bone (hands, toes) that still exists in the source: use it for the direction
+        if not sname or not cname:
+            continue
         if t in dst.data.bones and c in dst.data.bones and sname in src.data.bones and cname in src.data.bones:
             dd = rest_head(dst, c) - rest_head(dst, t)
             sd = rest_head(src, cname) - rest_head(src, sname)
@@ -104,6 +218,8 @@ def retarget(src, dst, action_name, frame_range, mapping=None):
             if not s or s not in src.pose.bones:
                 continue
             sq, sp = world_rot(src, src.pose.bones[s])
+            if yaw is not None:
+                sq = yaw @ sq  # turn the whole motion (mocap facing correction)
             delta = sq @ src_rest[s].inverted()
             want = (delta @ align.get(t, Quaternion()) @ dst_rest[t]).normalized()
             pb = dst.pose.bones[t]
@@ -147,8 +263,13 @@ def build(cid, check=False):
     arm.animation_data_create()
     for a in list(bpy.data.actions):
         bpy.data.actions.remove(a)  # drop the 1-frame bind clip
+    mocap = {**MOCAP, **MOCAP_OVERRIDE.get(cid, {})} if '--mocap' in sys.argv else {}
+    for name, spec in mocap.items():
+        mocap_clip(arm, name, spec)
     # Meshy basic clips: same skeleton, copy actions directly
     for clip in ('walking', 'running'):
+        if ('walk' if clip == 'walking' else 'run') in mocap:
+            continue
         p = os.path.join(GEN, 'rig', f'{cid}_basic_animations_{clip}_armature_glb.glb')
         if not os.path.exists(p):
             continue
@@ -166,6 +287,8 @@ def build(cid, check=False):
         push_nla(arm, act)
     # text-to-motion clips
     for name in MOTIONS:
+        if name in mocap:
+            continue
         fbx = os.path.join(GEN, 'motion', f'{name}.fbx')
         calm = os.path.join(GEN, 'motion', f'{name}_calm.fbx')
         if os.path.exists(calm):
@@ -176,7 +299,7 @@ def build(cid, check=False):
         bpy.ops.import_scene.fbx(filepath=fbx)
         objs = [o for o in scene.objects if o.name not in before]
         src = next(o for o in objs if o.type == 'ARMATURE')
-        rng = src.animation_data.action.frame_range
+        rng = tuple(src.animation_data.action.frame_range)
         src_act = src.animation_data.action
         act = retarget(src, arm, name, rng)
         act.use_fake_user = True

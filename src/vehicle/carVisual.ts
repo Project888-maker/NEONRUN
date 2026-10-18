@@ -112,9 +112,9 @@ export class CarVisual {
   dims = { length: 4.8, width: 2.06, height: 1.3 };
   readonly isHero: boolean;
 
-  constructor(car: GLTF | null, kit: GLTF, envMap: THREE.Texture | null, asset?: CarAsset) {
+  constructor(car: GLTF | null, kit: GLTF, envMap: THREE.Texture | null, asset?: CarAsset, own = !asset) {
     this.root.add(this.body);
-    this.isHero = !asset;
+    this.isHero = own;
     if (asset) {
       // generated car: body with texture-driven lights + its own baked wheels
       const sp = asset.spec;
@@ -322,9 +322,8 @@ export class CarVisual {
     pivot.add(door);
     this.body.add(pivot);
     this.door = pivot;
-    const cabin = new THREE.Mesh(new THREE.BoxGeometry(cut.cabin.size.x, cut.cabin.size.y, cut.cabin.size.z), cabinMaterial());
-    cabin.position.copy(cut.cabin.center);
-    this.body.add(cabin);
+    // the inside of the shell, seen through the opening
+    this.body.add(new THREE.Mesh(cut.rest, cabinMaterial()));
   }
 
   /**

@@ -1,6 +1,6 @@
 {
   "budget_usd": 25,
-  "spent_usd_est": 42.5556,
+  "spent_usd_est": 43.2556,
   "assets": {
     "_tests/probe": {
       "files": [],
@@ -6714,6 +6714,42 @@
       "cost_usd_est": 0.045,
       "created": "2026-10-18T19:01:51.132Z",
       "seconds": 12
+    },
+    "concept/car_courier": {
+      "files": [
+        "assets/generated/concept/car_courier.png"
+      ],
+      "model": "fal-ai/gpt-image-2",
+      "prompt": "modern four door sports sedan, original design not resembling any real production car or brand, low and wide, dark graphite metallic paint, dark tinted windows, slim LED headlights, black multi-spoke wheels with low profile tires, clean and realistic. single car, three quarter front view from slightly above, the whole car fully visible and centered with margin, all four wheels clearly visible, pure white seamless studio background, soft even studio lighting, realistic proportions, photorealistic product photograph, no text, no logos, no badges, no license plate",
+      "input": {
+        "prompt": "modern four door sports sedan, original design not resembling any real production car or brand, low and wide, dark graphite metallic paint, dark tinted windows, slim LED headlights, black multi-spoke wheels with low profile tires, clean and realistic. single car, three quarter front view from slightly above, the whole car fully visible and centered with margin, all four wheels clearly visible, pure white seamless studio background, soft even studio lighting, realistic proportions, photorealistic product photograph, no text, no logos, no badges, no license plate",
+        "image_size": "landscape_4_3",
+        "quality": "high"
+      },
+      "seed": null,
+      "cost_usd_est": 0.1,
+      "created": "2026-10-18T21:40:26.396Z",
+      "seconds": 68
+    },
+    "model3d/car_courier": {
+      "files": [
+        "assets/generated/model3d/car_courier.glb",
+        "assets/generated/model3d/car_courier_rendered_image.png"
+      ],
+      "model": "tripo3d/h3.1/image-to-3d",
+      "prompt": null,
+      "input": {
+        "image_url": "@file:assets/generated/concept/car_courier.png",
+        "texture": true,
+        "pbr": true,
+        "texture_quality": "detailed",
+        "geometry_quality": "detailed",
+        "face_limit": 40000
+      },
+      "seed": null,
+      "cost_usd_est": 0.6,
+      "created": "2026-10-18T21:42:41.236Z",
+      "seconds": 130
     }
   }
 }

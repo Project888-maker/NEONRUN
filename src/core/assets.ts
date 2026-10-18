@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
-import { CAR_DEFS, bakeCar, type CarAsset, type CarSpec } from '../vehicle/carModels';
+import { CAR_DEFS, bakeCar, type CarAsset, type CarSpec, HERO_MODEL } from '../vehicle/carModels';
 
 import { av } from './version';
 
@@ -98,7 +98,7 @@ export class Loader {
     const signs: Assets['signs'] = [];
     const ads: Assets['ads'] = [];
     const liveries: Record<string, THREE.Texture> = {};
-    for (const l of ['liv_stripes', 'liv_tiger', 'liv_circuit', 'liv_kanji', 'liv_flames', 'liv_geo']) jobs.push(this.tex(`livery/${l}.png`).then((t) => (liveries[l] = t)));
+    // decal liveries were retired (they smeared across the generated car bodies)
     let kit: GLTF | null = null, car: GLTF | null = null;
     jobs.push(this.gltf('models/citykit.glb').then((g) => (kit = g)));
     jobs.push(this.gltf('models/hero_car.glb').then((g) => (car = g)));
@@ -107,11 +107,11 @@ export class Loader {
     const cars: Record<string, CarAsset> = {};
     const carsLod: Record<string, CarAsset> = {};
     // boot needs only the light traffic versions; full-detail cars stream in after the title (loadFullCars)
-    for (const d of CAR_DEFS) {
-      jobs.push(Promise.all([this.json<CarSpec>(`cars/${d.id}.json`), this.gltf(`cars/${d.id}_lod.glb`)]).then(([spec, gl]) => {
-        this.specs[d.id] = spec;
-        if (gl) carsLod[d.id] = bakeCar(gl, spec);
-      }).catch((e) => console.warn('car load failed', d.id, e)));
+    for (const id of [...CAR_DEFS.map((d) => d.id), HERO_MODEL]) {
+      jobs.push(Promise.all([this.json<CarSpec>(`cars/${id}.json`), this.gltf(`cars/${id}_lod.glb`)]).then(([spec, gl]) => {
+        this.specs[id] = spec;
+        if (gl) carsLod[id] = bakeCar(gl, spec);
+      }).catch((e) => console.warn('car load failed', id, e)));
     }
     const people: Record<string, GLTF> = {};
     for (const id of ['hero', 'ped_suit', 'ped_vendor', 'ped_punk', 'ped_worker', 'ped_student', 'ped_elder', 'ped_techwear', 'ped_nurse', 'ped_rider']) {
@@ -127,7 +127,7 @@ export class Loader {
 
   /** Full-detail drivable cars, loaded in the background one at a time once the game is up. */
   async loadFullCars(into: Record<string, CarAsset>, onCar: (id: string) => void, first?: string) {
-    const ids = CAR_DEFS.map((d) => d.id).sort((a, b) => (a === first ? -1 : b === first ? 1 : 0));
+    const ids = [HERO_MODEL, ...CAR_DEFS.map((d) => d.id)].sort((a, b) => (a === first ? -1 : b === first ? 1 : 0));
     for (const id of ids) {
       const spec = this.specs[id];
       if (!spec || into[id]) continue;

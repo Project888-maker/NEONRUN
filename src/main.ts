@@ -14,8 +14,8 @@ import { Rain, Splashes, Particles, FogLayers } from './world/weather';
 import { Traffic } from './world/traffic';
 import { Train, SkyTraffic, Drone } from './world/ambient';
 import { Vehicle } from './vehicle/vehicle';
-import { CarVisual, PAINTS, UNDERGLOW, liveryMaterial } from './vehicle/carVisual';
-import { CAR_DEFS, carDef } from './vehicle/carModels';
+import { CarVisual, PAINTS, UNDERGLOW } from './vehicle/carVisual';
+import { CAR_DEFS, carDef, HERO_MODEL } from './vehicle/carModels';
 import { HeroOnFoot, FootCam } from './game/onfoot';
 import { Crowd, Person, PED_TYPES, type PedType, lerpAngle } from './world/people';
 import { Conversation } from './npc/conversation';
@@ -134,9 +134,9 @@ async function boot() {
   (window as any).__neon = debugApi();
   // stream the full-detail drivable cars in the background; swap the one being driven when it arrives
   loader.loadFullCars(A.cars, (id) => {
-    if (id === carId && mode === 'drive' && state !== 'loading') spawnPlayerCar(id, carPos.clone().setY(carPos.y + 0.05), vehicle.yaw(), carVel.clone());
+    if ((id === carId || (id === HERO_MODEL && carId === 'hero')) && mode === 'drive' && state !== 'loading') spawnPlayerCar(carId, carPos.clone().setY(carPos.y + 0.05), vehicle.yaw(), carVel.clone());
     void warmCompile([carMesh(A.cars[id], envTex).root]);
-  }, save.car);
+  }, save.car === 'hero' ? HERO_MODEL : save.car);
 }
 
 /**
@@ -149,8 +149,6 @@ async function warmUp(progress: (p: number) => void) {
   for (const g of Object.values(A.people)) if (g) extras.push(new Person(g, 'warm').root);
   // meshes only: extra lights here would change the light count that every shader is compiled for
   for (const a of Object.values(A.carsLod)) extras.push(carMesh(a, envTex).root);
-  const liv = Object.values(A.liveries).find(Boolean);
-  if (liv) extras.push(new THREE.Mesh(new THREE.PlaneGeometry(1, 1), liveryMaterial(liv)));
   const dr = new Drone(); dr.beam.visible = true; extras.push(dr.mesh, dr.beam);
   extras.push(...interiors.warmMeshes());
   progress(0.2);
@@ -395,7 +393,7 @@ function buildWorld() {
 let atlasJson: { signs: any; ads: any; shops: any };
 let envTex: THREE.Texture;
 
-export const HERO_DEF = { id: 'hero', name: 'Night Courier', price: 0, desc: 'Your own muscle coupe. Paint, glow and liveries apply here.', mass: 1450, power: 1, topSpeed: 56, grip: 1, traffic: 0 };
+export const HERO_DEF = { id: 'hero', name: 'Night Courier', price: 0, desc: 'Your own sports sedan. Paint and underglow apply here.', mass: 1450, power: 1, topSpeed: 56, grip: 1, traffic: 0 };
 
 /** Replace the player's car (visual + physics), keeping position/heading/velocity. Used by the garage and car theft. */
 function spawnPlayerCar(id: string, pos: THREE.Vector3, yaw: number, vel?: THREE.Vector3, keepOld = false) {
@@ -418,9 +416,10 @@ let carId = 'hero';
 /** Build a car (visual + physics) without making it the player's. */
 function makeCar(id: string, pos: THREE.Vector3, yaw: number) {
   // full-detail model once it has streamed in, the traffic version until then
-  const asset = id === 'hero' ? undefined : A.cars[id] ?? A.carsLod[id];
+  const model = id === 'hero' ? HERO_MODEL : id;
+  const asset = A.cars[model] ?? A.carsLod[model];
   const def = id === 'hero' ? HERO_DEF : carDef(id)!;
-  const c = new CarVisual(asset ? null : A.car, A.kit, envTex, asset);
+  const c = new CarVisual(asset ? null : A.car, A.kit, envTex, asset, id === 'hero');
   const wp = Object.fromEntries(Object.entries(c.wheelLocal).map(([k, v]) => [k, v.clone()]));
   const v = new Vehicle(phys, pos, yaw, Object.keys(wp).length === 4 ? wp : undefined, {
     mass: def.mass, power: def.power, topSpeed: def.topSpeed, grip: def.grip,
@@ -713,8 +712,6 @@ function renderGarage() {
   }));
   $('paints').innerHTML = PAINTS.map((p) => `<div class="swatch ${save.paint === p.id ? 'on' : ''}" data-paint="${p.id}" title="${p.name}" style="background:rgb(${p.color.map((c) => Math.min(255, c * 55)).join(',')})"></div>`).join('');
   $('glows').innerHTML = UNDERGLOW.map((c) => `<div class="swatch ${save.underglow === c ? 'on' : ''}" data-glow="${c}" style="background:${c};box-shadow:0 0 14px ${c}"></div>`).join('');
-  $('liveries').innerHTML = `<div class="swatch ${!save.livery ? 'on' : ''}" data-liv="" style="display:flex;align-items:center;justify-content:center;font-size:11px;color:#8c9bb8">NONE</div>` +
-    Object.keys(A.liveries).map((l) => `<div class="swatch ${save.livery === l ? 'on' : ''}" data-liv="${l}" style="background-image:url(${av(`./assets/livery/${l}.png`)})"></div>`).join('');
   const bar = (v: number, max: number) => `<div class="pips">${[0, 1, 2, 3, 4].map((i) => `<i class="${i < Math.round((v / max) * 5) ? 'on' : ''}"></i>`).join('')}</div>`;
   $('cars').innerHTML = [HERO_DEF, ...CAR_DEFS.filter((d) => A.carsLod[d.id])].map((d) => {
     const owned = save.ownedCars.includes(d.id), current = save.car === d.id;
@@ -746,14 +743,12 @@ function renderGarage() {
   const bind = (sel: string, fn: (el: HTMLElement) => void) => document.querySelectorAll<HTMLElement>(sel).forEach((el) => el.addEventListener('click', () => { fn(el); writeSave(save); applyCustomization(); audio.play('ui_click', { volume: 0.5 }); renderGarage(); }));
   bind('[data-paint]', (el) => (save.paint = el.dataset.paint!));
   bind('[data-glow]', (el) => (save.underglow = el.dataset.glow!));
-  bind('[data-liv]', (el) => (save.livery = el.dataset.liv || null));
 }
 
 function applyCustomization() {
   car.setPaint(save.paint);
   car.setUnderglow(save.underglow);
   vehicle.upgrades = { ...save.upgrades };
-  car.setLivery(save.livery ? A.liveries[save.livery] : null);
 }
 
 function openSettings() {

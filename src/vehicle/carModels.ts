@@ -18,6 +18,8 @@ export const CAR_DEFS: CarDef[] = [
   { id: 'car_super', name: 'Violet Hyper', price: 12000, desc: 'The fastest thing in the city.', mass: 1400, power: 1.45, topSpeed: 70, grip: 1.15, traffic: 0.5 },
 ];
 export const carDef = (id: string) => CAR_DEFS.find((d) => d.id === id);
+/** the model the courier's own car ('hero') is built from */
+export const HERO_MODEL = 'car_courier';
 
 export interface CarSpec {
   id: string; length: number; width: number; height: number; wheelRadius: number;

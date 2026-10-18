@@ -457,3 +457,7 @@ const fronts = {
   fish_market: 'an indoor fish market entrance: a wide open roller door in the centre, blue white fluorescent light inside, ice displays of fish and crabs on both sides, hoses, wet tiled floor, hanging scales',
 };
 for (const [k, p] of Object.entries(fronts)) add('storefront', k, 'fal-ai/flux-2-pro', { prompt: `${p}. ${FRONT}`, image_size: { width: 1536, height: 912 }, output_format: 'jpeg', seed: 101 });
+
+// ================= Oct 18: the courier's own car, realistic (the old hero car was a rough half-shell) =================
+add('concept', 'car_courier', 'fal-ai/gpt-image-2', { prompt: `modern four door sports sedan, original design not resembling any real production car or brand, low and wide, dark graphite metallic paint, dark tinted windows, slim LED headlights, black multi-spoke wheels with low profile tires, clean and realistic. ${CAR}`, image_size: 'landscape_4_3', quality: 'high' });
+add('model3d', 'car_courier', 'tripo3d/h3.1/image-to-3d', { image_url: '@file:assets/generated/concept/car_courier.png', texture: true, pbr: true, texture_quality: 'detailed', geometry_quality: 'detailed', face_limit: 40000 });
