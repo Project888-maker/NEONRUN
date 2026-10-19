@@ -126,5 +126,61 @@ let rnd = 0.99; const realRandom = Math.random; Math.random = () => rnd;
   else { ok(fight.weapon === it, 'pipe lost after one hit'); fight.toggleItem(); ok(!fight.weapon, 'could not drop'); }
   console.log(`picked up a ${kind}, hit for ${100 - (v.hp ?? 100)}`);
 }
+// 6) the punch chain is jab, cross, hook, right hook; kicks are front, roundhouse, low; a press made while a
+// strike is still out is thrown as soon as it is back; a pause starts the chain over
+{
+  Math.random = () => 0.99;
+  crowd.peds.length = 0;
+  hero.busy = 0; step(2);
+  const thrown: string[] = [];
+  for (let i = 0; i < 4; i++) { while (hero.busy > 0) step(1 / 30); ok(fight.attack('punch'), `punch ${i} refused`); thrown.push(fight.last!); }
+  step(2);
+  fight.attack('punch'); step(0.2);
+  ok(fight.attack('punch') && fight.last === 'jab', 'press during the jab was not held');
+  step(0.5);
+  ok(fight.last === 'cross', `buffered press threw ${fight.last}`);
+  ok(thrown.join(',') === 'jab,cross,hook,hook_r', `punch chain was ${thrown.join(',')}`);
+  step(2);
+  const kicks: string[] = [];
+  for (let i = 0; i < 3; i++) { while (hero.busy > 0) step(1 / 30); fight.attack('kick'); kicks.push(fight.last!); }
+  ok(kicks.join(',') === 'kick,roundhouse,low_kick', `kick chain was ${kicks.join(',')}`);
+  step(2);
+  fight.attack('punch');
+  ok(fight.last === 'jab', 'chain did not start over after a pause');
+  step(2);
+  console.log(`combos: ${thrown.join(',')} / ${kicks.join(',')}`);
+}
+// 7) block takes most of a blow from in front; a dodge takes all of it
+{
+  const front = hero.pos.clone().add(new THREE.Vector3(Math.sin(hero.person.yaw), 0, Math.cos(hero.person.yaw)));
+  fight.heroHp = 100; hero.busy = 0;
+  (fight as any).heroHit(12, front, true);
+  const open = 100 - fight.heroHp;
+  fight.heroHp = 100; hero.busy = 0;
+  fight.block(true);
+  ok(fight.blocking && hero.person.currentName === 'block', 'no block');
+  (fight as any).heroHit(12, front, true);
+  const covered = 100 - fight.heroHp;
+  fight.block(false);
+  ok(covered < open * 0.3, `block did not help (${covered} vs ${open})`);
+  fight.heroHp = 100; hero.busy = 0;
+  ok(fight.dodge(), 'no dodge');
+  (fight as any).heroHit(12, front, true);
+  ok(fight.heroHp === 100, 'hit through a dodge');
+  step(2);
+  console.log(`a 12 blow: ${open} open, ${covered.toFixed(1)} blocked, 0 dodged`);
+}
+// 8) a brawler covers up or slips some of the courier's strikes
+{
+  hero.pos.copy(home);
+  const t = ped('ped_techwear', 0, 1.0);
+  t.state = 'fight'; t.hp = 100; t.swingCd = 99;
+  hero.person.yaw = 0;
+  let defended = 0;
+  for (let i = 0; i < 12; i++) { Math.random = () => (i % 3 === 0 ? 0.97 : 0.3); hero.busy = 0; fight.attack('punch'); if (t.defend) defended++; step(1.2); t.swingCd = 99; t.pos.set(home.x, 0, home.z + 1.0); if (t.state !== 'fight') break; }
+  ok(defended > 0, 'brawler never defended');
+  console.log(`techwear defended ${defended} strikes`);
+  crowd.peds.length = 0;
+}
 Math.random = realRandom;
 console.log('PASS');

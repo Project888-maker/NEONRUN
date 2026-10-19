@@ -1,6 +1,6 @@
 {
   "budget_usd": 25,
-  "spent_usd_est": 44.4656,
+  "spent_usd_est": 47.4656,
   "assets": {
     "_tests/probe": {
       "files": [],
@@ -6956,6 +6956,246 @@
       "cost_usd_est": 0.2,
       "created": "2026-10-19T05:03:11.045Z",
       "seconds": 16
+    },
+    "motion/low_kick": {
+      "files": [
+        "assets/generated/motion/low_kick.fbx"
+      ],
+      "model": "fal-ai/hunyuan-motion",
+      "prompt": "a fighter in a stance throws one right low kick, swinging the right shin around into the outside of the opponent's thigh at knee height, then puts the foot back down and returns to stance",
+      "input": {
+        "prompt": "a fighter in a stance throws one right low kick, swinging the right shin around into the outside of the opponent's thigh at knee height, then puts the foot back down and returns to stance",
+        "duration": 2,
+        "output_format": "fbx"
+      },
+      "seed": 496931127,
+      "cost_usd_est": 0.2,
+      "created": "2026-10-19T17:34:27.441Z",
+      "seconds": 8
+    },
+    "motion/hook": {
+      "files": [
+        "assets/generated/motion/hook.fbx"
+      ],
+      "model": "fal-ai/hunyuan-motion",
+      "prompt": "a boxer in a fighting stance throws one left hook, the left elbow bent at ninety degrees and raised to shoulder height, swinging the left fist around horizontally from the side across to the front at head height while pivoting the left foot, then returns to guard",
+      "input": {
+        "prompt": "a boxer in a fighting stance throws one left hook, the left elbow bent at ninety degrees and raised to shoulder height, swinging the left fist around horizontally from the side across to the front at head height while pivoting the left foot, then returns to guard",
+        "duration": 2,
+        "output_format": "fbx"
+      },
+      "seed": 216011553,
+      "cost_usd_est": 0.2,
+      "created": "2026-10-19T17:34:29.150Z",
+      "seconds": 10
+    },
+    "motion/cross": {
+      "files": [
+        "assets/generated/motion/cross.fbx"
+      ],
+      "model": "fal-ai/hunyuan-motion",
+      "prompt": "a boxer in a fighting stance throws one fast straight right punch, turning the right hip and shoulder forward and extending the right arm fully straight out in front at chin height, then snaps it back to the guard, feet stay planted",
+      "input": {
+        "prompt": "a boxer in a fighting stance throws one fast straight right punch, turning the right hip and shoulder forward and extending the right arm fully straight out in front at chin height, then snaps it back to the guard, feet stay planted",
+        "duration": 2,
+        "output_format": "fbx"
+      },
+      "seed": 230879488,
+      "cost_usd_est": 0.2,
+      "created": "2026-10-19T17:34:30.017Z",
+      "seconds": 11
+    },
+    "motion/roundhouse": {
+      "files": [
+        "assets/generated/motion/roundhouse.fbx"
+      ],
+      "model": "fal-ai/hunyuan-motion",
+      "prompt": "a martial artist in a fighting stance does one right roundhouse kick, pivoting on the left foot and swinging the right leg around horizontally at waist height in front, then puts the right foot back down behind and returns to stance",
+      "input": {
+        "prompt": "a martial artist in a fighting stance does one right roundhouse kick, pivoting on the left foot and swinging the right leg around horizontally at waist height in front, then puts the right foot back down behind and returns to stance",
+        "duration": 2,
+        "output_format": "fbx"
+      },
+      "seed": 1744150946,
+      "cost_usd_est": 0.2,
+      "created": "2026-10-19T17:34:31.203Z",
+      "seconds": 12
+    },
+    "motion/uppercut": {
+      "files": [
+        "assets/generated/motion/uppercut.fbx"
+      ],
+      "model": "fal-ai/hunyuan-motion",
+      "prompt": "a boxer in a fighting stance dips the knees slightly and throws one right uppercut, driving the right fist upward from the waist to chin height in front of the body with the elbow bent, then returns to guard, feet stay planted",
+      "input": {
+        "prompt": "a boxer in a fighting stance dips the knees slightly and throws one right uppercut, driving the right fist upward from the waist to chin height in front of the body with the elbow bent, then returns to guard, feet stay planted",
+        "duration": 2,
+        "output_format": "fbx"
+      },
+      "seed": 452671323,
+      "cost_usd_est": 0.2,
+      "created": "2026-10-19T17:34:32.861Z",
+      "seconds": 14
+    },
+    "motion/block": {
+      "files": [
+        "assets/generated/motion/block.fbx"
+      ],
+      "model": "fal-ai/hunyuan-motion",
+      "prompt": "a boxer raises both forearms tight in front of the face to block, elbows in, chin tucked, holding the high guard firmly in place",
+      "input": {
+        "prompt": "a boxer raises both forearms tight in front of the face to block, elbows in, chin tucked, holding the high guard firmly in place",
+        "duration": 3,
+        "output_format": "fbx"
+      },
+      "seed": 2052307290,
+      "cost_usd_est": 0.2,
+      "created": "2026-10-19T17:34:35.372Z",
+      "seconds": 8
+    },
+    "motion/dodge": {
+      "files": [
+        "assets/generated/motion/dodge.fbx"
+      ],
+      "model": "fal-ai/hunyuan-motion",
+      "prompt": "a boxer quickly leans and steps back to dodge a punch, ducking the head down and to the side, then comes back up into a fighting stance",
+      "input": {
+        "prompt": "a boxer quickly leans and steps back to dodge a punch, ducking the head down and to the side, then comes back up into a fighting stance",
+        "duration": 2,
+        "output_format": "fbx"
+      },
+      "seed": 1357405570,
+      "cost_usd_est": 0.2,
+      "created": "2026-10-19T17:34:38.087Z",
+      "seconds": 9
+    },
+    "motion/hit_head": {
+      "files": [
+        "assets/generated/motion/hit_head.fbx"
+      ],
+      "model": "fal-ai/hunyuan-motion",
+      "prompt": "a person standing gets punched in the face, the head snaps back and to the side, they stumble one step backward and recover their balance",
+      "input": {
+        "prompt": "a person standing gets punched in the face, the head snaps back and to the side, they stumble one step backward and recover their balance",
+        "duration": 2,
+        "output_format": "fbx"
+      },
+      "seed": 1326988377,
+      "cost_usd_est": 0.2,
+      "created": "2026-10-19T17:34:38.374Z",
+      "seconds": 8
+    },
+    "motion/hit_body": {
+      "files": [
+        "assets/generated/motion/hit_body.fbx"
+      ],
+      "model": "fal-ai/hunyuan-motion",
+      "prompt": "a person standing gets punched in the stomach, doubles over forward holding the belly, then straightens back up",
+      "input": {
+        "prompt": "a person standing gets punched in the stomach, doubles over forward holding the belly, then straightens back up",
+        "duration": 2,
+        "output_format": "fbx"
+      },
+      "seed": 1682421615,
+      "cost_usd_est": 0.2,
+      "created": "2026-10-19T17:34:41.407Z",
+      "seconds": 10
+    },
+    "motion/uppercut_c": {
+      "files": [
+        "assets/generated/motion/uppercut_c.fbx"
+      ],
+      "model": "fal-ai/hunyuan-motion",
+      "prompt": "a person punches upward with the right fist into the chin of someone standing close in front of them, an uppercut with the elbow bent, the left hand stays at the face, feet in place",
+      "input": {
+        "prompt": "a person punches upward with the right fist into the chin of someone standing close in front of them, an uppercut with the elbow bent, the left hand stays at the face, feet in place",
+        "duration": 2,
+        "output_format": "fbx"
+      },
+      "seed": 212507978,
+      "cost_usd_est": 0.2,
+      "created": "2026-10-19T17:39:12.293Z",
+      "seconds": 8
+    },
+    "motion/hook_b": {
+      "files": [
+        "assets/generated/motion/hook_b.fbx"
+      ],
+      "model": "fal-ai/hunyuan-motion",
+      "prompt": "a boxer throws a left hook punch: the left arm stays bent like a hook at shoulder height and swings in a short horizontal arc from the left side to in front of the face, the torso twists slightly to the right, feet stay planted, the right hand stays at the chin, then returns to guard",
+      "input": {
+        "prompt": "a boxer throws a left hook punch: the left arm stays bent like a hook at shoulder height and swings in a short horizontal arc from the left side to in front of the face, the torso twists slightly to the right, feet stay planted, the right hand stays at the chin, then returns to guard",
+        "duration": 2,
+        "output_format": "fbx"
+      },
+      "seed": 1760268074,
+      "cost_usd_est": 0.2,
+      "created": "2026-10-19T17:39:17.041Z",
+      "seconds": 13
+    },
+    "motion/cross_b": {
+      "files": [
+        "assets/generated/motion/cross_b.fbx"
+      ],
+      "model": "fal-ai/hunyuan-motion",
+      "prompt": "a person punches straight forward with the right fist into the face of someone standing in front of them, the right arm extends fully straight forward at shoulder height, the left hand stays up by the chin, then pulls back, feet stay in place",
+      "input": {
+        "prompt": "a person punches straight forward with the right fist into the face of someone standing in front of them, the right arm extends fully straight forward at shoulder height, the left hand stays up by the chin, then pulls back, feet stay in place",
+        "duration": 2,
+        "output_format": "fbx"
+      },
+      "seed": 247816596,
+      "cost_usd_est": 0.2,
+      "created": "2026-10-19T17:39:23.372Z",
+      "seconds": 19
+    },
+    "motion/uppercut_b": {
+      "files": [
+        "assets/generated/motion/uppercut_b.fbx"
+      ],
+      "model": "fal-ai/hunyuan-motion",
+      "prompt": "a boxer throws a short right uppercut: the right fist dips to the waist then drives straight up in front of the chest to chin height with the elbow bent, the left hand stays up guarding the face, feet stay planted",
+      "input": {
+        "prompt": "a boxer throws a short right uppercut: the right fist dips to the waist then drives straight up in front of the chest to chin height with the elbow bent, the left hand stays up guarding the face, feet stay planted",
+        "duration": 2,
+        "output_format": "fbx"
+      },
+      "seed": 558375677,
+      "cost_usd_est": 0.2,
+      "created": "2026-10-19T17:39:27.339Z",
+      "seconds": 23
+    },
+    "motion/hook_c": {
+      "files": [
+        "assets/generated/motion/hook_c.fbx"
+      ],
+      "model": "fal-ai/hunyuan-motion",
+      "prompt": "a person punches with a short sideways left hook to the jaw of someone standing in front of them, the left arm bent, the body turning a little, feet in place",
+      "input": {
+        "prompt": "a person punches with a short sideways left hook to the jaw of someone standing in front of them, the left arm bent, the body turning a little, feet in place",
+        "duration": 2,
+        "output_format": "fbx"
+      },
+      "seed": 558667408,
+      "cost_usd_est": 0.2,
+      "created": "2026-10-19T17:39:32.692Z",
+      "seconds": 28
+    },
+    "motion/low_kick_b": {
+      "files": [
+        "assets/generated/motion/low_kick_b.fbx"
+      ],
+      "model": "fal-ai/hunyuan-motion",
+      "prompt": "a fighter kicks low with the right leg, swinging the right shin sideways into the knee of someone standing in front, the kick stays below the waist, then steps back into a fighting stance",
+      "input": {
+        "prompt": "a fighter kicks low with the right leg, swinging the right shin sideways into the knee of someone standing in front, the kick stays below the waist, then steps back into a fighting stance",
+        "duration": 2,
+        "output_format": "fbx"
+      },
+      "seed": 735512367,
+      "cost_usd_est": 0.2,
+      "created": "2026-10-19T17:39:40.183Z",
+      "seconds": 28
     }
   }
 }

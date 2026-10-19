@@ -501,6 +501,28 @@ if (want('fight')) {
   await N('fightSetup', 'ped_worker'); await sleep(300); await N('fightAttack', 'punch'); await sleep(350); await shot('86_fight_pipe_hit');
   await sleep(3000); console.log('end', JSON.stringify(await N('fightInfo'))); await shot('87_fight_end');
 }
+if (want('combo')) {
+  // the move set from the side, each caught at its moment of impact
+  await N('setInput', {});
+  if ((await N('mode')) === 'drive') { await N('exitCar'); for (let k = 0; k < 20 && (await N('mode')) !== 'foot'; k++) await sleep(500); await sleep(800); }
+  await N('heroToDoor', 'noodle_row'); await sleep(800);
+  const side = async () => { const w = await N('weaponInfo'); const h = w.hero; const c = await N('camInfo'); const y = c?.heroYaw ?? 0;
+    await N('camAt', [h[0] + Math.cos(y) * 3.2 + Math.sin(y) * 0.6, h[1] + 1.4, h[2] - Math.sin(y) * 3.2 + Math.cos(y) * 0.6], [h[0] + Math.sin(y) * 0.6, h[1] + 1.05, h[2] + Math.cos(y) * 0.6]); };
+  console.log('setup', await N('fightSetup', 'ped_worker'));
+  await sleep(500); await side();
+  const IMP = { jab: 0.35, cross: 0.34, hook: 0.26, hook_r: 0.26, kick: 0.26, roundhouse: 0.33, low_kick: 0.2 };
+  for (const kind of ['punch', 'punch', 'punch', 'punch', 'kick', 'kick', 'kick']) {
+    const s = await N('fightAttack', kind);
+    await sleep((IMP[s] ?? 0.3) * 1000); await shot(`91_combo_${s}`);
+    await sleep(250);
+  }
+  console.log('after combo', JSON.stringify(await N('fightInfo')));
+  await N('fightSetup', 'ped_punk'); await sleep(400);
+  await N('fightBlock', true); await sleep(500); await shot('92_block'); await N('fightBlock', false); await sleep(300);
+  await N('fightDodge'); await sleep(250); await shot('93_dodge');
+  await sleep(2500); await shot('94_brawl'); console.log('brawl', JSON.stringify(await N('fightInfo')));
+  await N('camAt', null);
+}
 if (want('weapon')) {
   await N('setInput', {});
   if ((await N('mode')) === 'drive') { await N('exitCar'); for (let k = 0; k < 20 && (await N('mode')) !== 'foot'; k++) await sleep(500); await sleep(800); }

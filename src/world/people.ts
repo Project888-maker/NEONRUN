@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import type { Strike } from '../game/fight';
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import type { City } from './city';
@@ -8,7 +9,8 @@ import { poolUniforms, MAX_POOLS } from '../render/groundMaterial';
 
 /** Animation names baked by blender/build_people.py */
 export type Anim = 'walk' | 'run' | 'idle' | 'jump' | 'enter_car' | 'exit_car' | 'talk' | 'wave' | 'flee' | 'phone' | 'shrug' | 'push' | 'fall'
-  | 'fight_idle' | 'punch' | 'jab' | 'kick' | 'get_up';
+  | 'fight_idle' | 'punch' | 'jab' | 'kick' | 'get_up'
+  | 'cross' | 'hook' | 'hook_r' | 'roundhouse' | 'low_kick' | 'block' | 'dodge' | 'hit_head' | 'hit_body';
 
 export const PED_TYPES = ['ped_suit', 'ped_vendor', 'ped_punk', 'ped_worker', 'ped_student', 'ped_elder', 'ped_techwear', 'ped_nurse', 'ped_rider'] as const;
 export type PedType = typeof PED_TYPES[number];
@@ -463,7 +465,9 @@ export interface Ped {
   /** sideways step off the loop line (m, + = walker's right): keeping to their side and going around people */
   off?: number;
   /** fighting (game/fight.ts): health, knocked out, next swing, a swing in progress */
-  hp?: number; ko?: boolean; swingCd?: number; swing?: { t: number; hit: number; done: boolean; kind: 'punch' | 'jab' };
+  hp?: number; ko?: boolean; swingCd?: number; swing?: { t: number; done: boolean; kind: Strike; dmg: number };
+  /** reeling from a blow (s left); covering up or slipping one the courier threw */
+  stagger?: number; defend?: { kind: 'block' | 'dodge'; t: number };
 }
 const BODY_R = 0.32; // how close two people's centres may get before they push apart (m)
 

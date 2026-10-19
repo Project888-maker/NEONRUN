@@ -939,6 +939,8 @@ function setupTouch() {
   tap('t-talk', 'KeyT');
   tap('t-punch', 'KeyJ');
   tap('t-kick', 'KeyK');
+  tap('t-dodge', 'KeyX');
+  hold('t-block', () => (input.touch.block = true), () => (input.touch.block = false));
   tap('t-grab', 'KeyG');
   $('t-pause').addEventListener('click', pause);
 }
@@ -1387,6 +1389,8 @@ function convFacts(): string[] {
   return f;
 }
 
+/** debug: hold block (screenshots) */
+let debugBlock = false;
 function handleInteractions() {
   const e = input.consume('KeyE') || input.consume('KeyF');
   const t = input.consume('KeyT');
@@ -1397,9 +1401,13 @@ function handleInteractions() {
   } else if (conv.active) {
     setContext(null); setTouchCtx(null, null);
   } else if (mode === 'foot' && hero) {
-    // fighting: left click / J punches (combo), right click / K kicks, G picks up or drops a bottle or pipe
+    // fighting: left click / J punches (jab, cross, hook, hook), right click / K kicks (front, roundhouse, low),
+    // hold L or the middle button to block, X dodges back, G picks up or drops a bottle or pipe
     const punch = input.consume('KeyJ') || input.consume('Mouse0'), kick = input.consume('KeyK') || input.consume('Mouse2'), grab = input.consume('KeyG');
+    const dodge = input.consume('KeyX'), block = input.keys.has('KeyL') || input.keys.has('Mouse1') || input.touch.block || debugBlock;
     if (!interiors.active) {
+      fight.block(block);
+      if (dodge) fight.dodge();
       if (punch) fight.attack('punch');
       if (kick) fight.attack('kick');
       if (grab) fight.toggleItem();
@@ -1786,7 +1794,9 @@ function debugApi() {
       if (p && brawl) { p.state = 'fight'; p.swingCd = 1.5; p.p.play('idle', { fade: 0 }); }
       return p ? p.id : null;
     },
-    fightAttack: (kind: 'punch' | 'kick') => fight.attack(kind),
+    fightAttack: (kind: 'punch' | 'kick') => { const ok = fight.attack(kind); return ok ? fight.last : null; },
+    fightBlock: (on: boolean) => { debugBlock = on; },
+    fightDodge: () => fight.dodge(),
     fightItem: (kind: 'bottle' | 'pipe') => { if (hero) { fight.dropItemAt(kind, hero.pos.clone().setY(0.15)); fight.toggleItem(); } return fight.weapon?.kind ?? null; },
     /** debug: pin the camera at a point looking at another (null clears) */
     camAt: (p: number[] | null, at?: number[]) => { debugCam = p ? { pos: new THREE.Vector3(...p), at: new THREE.Vector3(...at!) } : null; },
@@ -1794,7 +1804,7 @@ function debugApi() {
     fightInfo: () => ({ heroHp: Math.round(fight.heroHp), weapon: fight.weapon?.kind ?? null, items: fight.items.length, near: crowd.peds.filter((p) => hero && p.pos.distanceTo(hero.pos) < 6).map((p) => ({ type: p.type, state: p.state, hp: p.hp ?? null })) }),
     /** debug: hide parts of the player's car (door/cabin investigation) */
     carParts: (door: boolean, cabin: boolean, hero_: boolean) => { if (car.door) car.door.visible = door; car.body.traverse((o) => { if ((o as THREE.Mesh).isMesh && ((o as THREE.Mesh).material as THREE.Material).side === THREE.BackSide) o.visible = cabin; }); if (hero) hero.person.root.visible = hero_; },
-    camInfo: () => ({ cam: camera.position.toArray().map((n) => +n.toFixed(2)), dir: camera.getWorldDirection(new THREE.Vector3()).toArray().map((n) => +n.toFixed(2)), hero: hero?.pos.toArray().map((n) => +n.toFixed(2)), car: carPos.toArray().map((n) => +n.toFixed(2)), mode, yaw: +footCam.yaw.toFixed(2) }),
+    camInfo: () => ({ cam: camera.position.toArray().map((n) => +n.toFixed(2)), dir: camera.getWorldDirection(new THREE.Vector3()).toArray().map((n) => +n.toFixed(2)), hero: hero?.pos.toArray().map((n) => +n.toFixed(2)), car: carPos.toArray().map((n) => +n.toFixed(2)), mode, yaw: +footCam.yaw.toFixed(2), heroYaw: hero ? +hero.person.yaw.toFixed(3) : null }),
     viewFront: (id: string) => { const ps = society.places.get(id)!; if (hero) { hero.place(new THREE.Vector3(ps.spot.x + ps.spot.nx * 1.5, 0.2, ps.spot.z + ps.spot.nz * 1.5)); hero.person.yaw = Math.atan2(-ps.spot.nx, -ps.spot.nz); footCam.reset(hero.person.yaw); footCam.pitch = 0.08; } return id; },
     enterPlace: (id: string) => enterPlace(id),
     exitPlace: () => exitPlace(),

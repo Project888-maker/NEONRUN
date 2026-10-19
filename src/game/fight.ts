@@ -1,28 +1,48 @@
-// Street fighting on foot: the courier punches, jabs and kicks (motion-captured clips), can pick up a
-// bottle or a pipe lying on the sidewalk, and people react: they recoil, go down, get back up and run,
-// or (the tougher ones) square up and swing back. The courier has health that comes back out of combat;
-// losing it all is a knockout.
+// Street fighting on foot: a four-punch combo (left jab, right cross, left hook, right hook) and three kicks
+// (front kick, roundhouse, low kick), a held block and a backstep dodge. The courier can pick up a bottle or a
+// pipe lying on the sidewalk. People react: they get rocked by blows, go down, get back up and run, or (the
+// tougher ones) square up, throw their own punches and kicks, and block or slip the courier's. The courier has
+// health that comes back out of combat; losing it all is a knockout.
 import * as THREE from 'three';
 import type { Crowd, Ped } from '../world/people';
 import type { HeroOnFoot } from './onfoot';
 
-export type Strike = 'punch' | 'jab' | 'kick';
+export type Strike = 'jab' | 'cross' | 'hook' | 'hook_r' | 'kick' | 'roundhouse' | 'low_kick';
 type ItemKind = 'bottle' | 'pipe';
 interface Item { kind: ItemKind; mesh: THREE.Mesh; held: boolean; uses: number }
 
-/** moment of impact inside each clip (s at normal speed), where the hand / foot is furthest out, and where
- * the strike starts playing (the generated clips open with a slow wind-up) */
-const IMPACT: Record<Strike, number> = { punch: 0.567, jab: 0.567, kick: 0.567 };
-const FROM: Record<Strike, number> = { punch: 0.2, jab: 0.25, kick: 0.2 };
-/** clip played for each strike: the generated straight punch never extends cleanly, the jab clip does */
-const CLIP: Record<Strike, 'jab' | 'kick'> = { punch: 'jab', jab: 'jab', kick: 'kick' };
+/**
+ * Each strike (blender/build_people.py bakes one clip per strike; the right hook is the left one mirrored):
+ * `from` skips the generated wind-up, `impact` is when the fist or foot is furthest out (s, at normal speed),
+ * `reach` how far in front it lands, `dmg` what it does, `head` whether it lands high (the victim's head snaps
+ * back) or low (they fold over).
+ */
+const MOVES: Record<Strike, { from: number; impact: number; reach: number; dmg: number; head: boolean }> = {
+  jab: { from: 0.5, impact: 0.9, reach: 1.3, dmg: 15, head: true },
+  cross: { from: 0.45, impact: 0.833, reach: 1.4, dmg: 20, head: true },
+  hook: { from: 0.4, impact: 0.7, reach: 1.15, dmg: 24, head: true },
+  hook_r: { from: 0.4, impact: 0.7, reach: 1.15, dmg: 30, head: true },
+  kick: { from: 0.2, impact: 0.5, reach: 1.55, dmg: 26, head: false },
+  roundhouse: { from: 0.45, impact: 0.833, reach: 1.6, dmg: 34, head: true },
+  low_kick: { from: 0.1, impact: 0.333, reach: 1.5, dmg: 20, head: false },
+};
+/** pressing punch (or kick) again within the window continues the chain; the last of each is the finisher */
+const PUNCHES: Strike[] = ['jab', 'cross', 'hook', 'hook_r'];
+const KICKS: Strike[] = ['kick', 'roundhouse', 'low_kick'];
+/** with a bottle or pipe in the right hand, punches become right-handed swings */
+const ARMED: Strike[] = ['cross', 'hook_r'];
+const SPEED = 1.15; // strikes play a touch faster than generated: snappier to control
+/** after the impact, this long before the next strike can start (a press during a strike is buffered) */
+const RECOVER = 0.16;
+const COMBO_WINDOW = 0.75;
 /** between swings people simply stand their ground (the generated boxing guard hunched over with open hands) */
 const GUARD = 'idle';
-const REACH: Record<Strike, number> = { punch: 1.35, jab: 1.3, kick: 1.55 };
-const DAMAGE: Record<Strike, number> = { punch: 22, jab: 14, kick: 32 };
-const SPEED = 1.15; // strikes play a touch faster than captured: snappier to control
 /** who squares up when hit (the rest run); per type, chance to fight back */
 const FIGHT_BACK: Record<string, number> = { ped_punk: 0.85, ped_worker: 0.7, ped_rider: 0.6, ped_techwear: 0.55, ped_vendor: 0.3, ped_suit: 0.15, ped_student: 0.15, ped_nurse: 0.1, ped_elder: 0 };
+/** how good a brawler is at covering up or slipping a blow they see coming */
+const DEFENCE: Record<string, number> = { ped_punk: 0.3, ped_worker: 0.25, ped_rider: 0.35, ped_techwear: 0.4 };
+/** what a brawler throws (weights) and what it does to the courier */
+const BRAWL: [Strike, number, number][] = [['jab', 3, 8], ['cross', 3, 12], ['hook', 2, 13], ['kick', 1.5, 14]];
 const FEMALE = new Set(['ped_punk', 'ped_student', 'ped_nurse', 'ped_elder']);
 const maxHp = (type: string) => (type === 'ped_elder' ? 45 : 100);
 
@@ -48,9 +68,16 @@ export class Fight {
   heroHp = 100;
   /** seconds since the courier last took a hit (health comes back after a while) */
   private calm = 99;
-  /** the combo alternates punch and jab; a third quick press throws a cross again */
-  private combo = 0;
-  private comboT = 0;
+  /** where in the punch / kick chain the next press goes, and how long the chain stays open */
+  private chain = { kind: 'punch' as 'punch' | 'kick', i: 0, t: 0 };
+  /** a press made while a strike is still out: thrown as soon as it is back */
+  private queued: { kind: 'punch' | 'kick'; t: number } | null = null;
+  /** holding block (the forearms up in front of the face) */
+  blocking = false;
+  /** the dodge's no-hit window */
+  private dodgeT = 0;
+  /** the strike thrown last (tests, debug) */
+  last: Strike | null = null;
   weapon: Item | null = null;
   items: Item[] = [];
   private spawnT = 0;
@@ -62,24 +89,66 @@ export class Fight {
 
   get knockedOut() { return this.koT > 0; }
 
-  /** The courier throws a strike (a weapon turns punches into swings with it). */
+  private ready(hero: HeroOnFoot | null): hero is HeroOnFoot {
+    return !!hero && hero.active && !hero.frozen && hero.grounded && this.koT <= 0;
+  }
+
+  /** Punch or kick: each press throws the next strike of the chain (a weapon turns punches into swings). */
   attack(kind: 'punch' | 'kick') {
     const hero = this.h.hero();
-    if (!hero || !hero.active || hero.frozen || hero.busy > 0 || !hero.grounded || this.koT > 0) return false;
-    let strike: Strike = kind;
-    if (kind === 'punch') {
-      strike = this.weapon ? 'punch' : this.comboT > 0 && this.combo % 2 === 1 ? 'jab' : 'punch';
-      this.combo = this.comboT > 0 ? this.combo + 1 : 1;
-      this.comboT = 0.9;
+    if (!this.ready(hero)) return false;
+    if (hero.busy > 0) {
+      // still in the last strike: remember the press and throw it the moment that one is back
+      if (this.last && hero.busy < 0.6) { this.queued = { kind, t: 0.6 }; return true; }
+      return false;
     }
+    this.blocking = false;
+    const list = kind === 'kick' ? KICKS : this.weapon ? ARMED : PUNCHES;
+    const i = this.chain.kind === kind && this.chain.t > 0 ? (this.chain.i + 1) % list.length : 0;
+    const strike = list[i];
+    const m = MOVES[strike];
     // turn toward whoever is close in front (light aim assist, so swings land where you meant)
     const target = this.targetFor(hero, 2.6, 1.25);
-    if (target) hero.person.yaw = Math.atan2(target.pos.x - hero.pos.x, target.pos.z - hero.pos.z);
-    const d = hero.person.play(CLIP[strike], { loop: false, fade: 0.08, speed: SPEED, restart: true, from: FROM[strike] });
-    hero.busy = ((d - FROM[strike]) / SPEED) * 0.75;
+    if (target) {
+      hero.person.yaw = Math.atan2(target.pos.x - hero.pos.x, target.pos.z - hero.pos.z);
+      this.react(target);
+    }
+    hero.person.play(strike, { loop: false, fade: 0.08, speed: SPEED, restart: true, from: m.from });
+    const toImpact = (m.impact - m.from) / SPEED;
+    hero.busy = toImpact + RECOVER;
     hero.guard = 4;
+    this.chain = { kind, i, t: hero.busy + COMBO_WINDOW };
+    this.last = strike;
     this.h.sound('whoosh', hero.pos, 0.5);
-    this.h.later((IMPACT[strike] - FROM[strike]) / SPEED, () => this.land(strike));
+    this.h.later(toImpact, () => this.land(strike));
+    return true;
+  }
+
+  /** Hold to keep the guard up: blows from in front do a fraction of their damage. */
+  block(held: boolean) {
+    const hero = this.h.hero();
+    if (!held || !this.ready(hero) || (hero.busy > 0 && !this.blocking)) {
+      if (this.blocking && hero) { this.blocking = false; hero.busy = 0; }
+      return;
+    }
+    if (!this.blocking) hero.person.play('block', { fade: 0.12, speed: 1, restart: true, from: 0.3 });
+    this.blocking = true;
+    hero.busy = 0.12; // stands still while covering up
+    hero.guard = 4;
+  }
+
+  /** A quick step back with the head down: nothing lands for a moment. */
+  dodge() {
+    const hero = this.h.hero();
+    if (!this.ready(hero) || (hero.busy > 0 && !this.blocking)) return false;
+    this.blocking = false;
+    this.queued = null;
+    hero.person.play('dodge', { loop: false, fade: 0.08, speed: 1.35, restart: true, from: 0.15 });
+    hero.busy = 0.8;
+    hero.guard = 4;
+    this.dodgeT = 0.55;
+    hero.slide?.set(-Math.sin(hero.person.yaw), 0, -Math.cos(hero.person.yaw)).multiplyScalar(3.2);
+    this.h.sound('whoosh', hero.pos, 0.35);
     return true;
   }
 
@@ -126,15 +195,30 @@ export class Fight {
     return best;
   }
 
+  /** a brawler who sees the strike coming covers up or slips it (not while throwing or reeling) */
+  private react(p: Ped) {
+    if (p.state !== 'fight' || p.swing || (p.stagger ?? 0) > 0) return;
+    const skill = DEFENCE[p.type] ?? 0.15;
+    const r = Math.random();
+    if (r > 1 - skill * 0.35) {
+      p.defend = { kind: 'dodge', t: 0.9 };
+      p.p.play('dodge', { loop: false, fade: 0.08, speed: 1.35, restart: true, from: 0.15 });
+    } else if (r > 1 - skill) {
+      p.defend = { kind: 'block', t: 1.0 };
+      p.p.play('block', { fade: 0.1, restart: true, from: 0.3 });
+    }
+  }
+
   /** the strike reaches out: hit whoever is there */
   private land(strike: Strike) {
     const hero = this.h.hero();
     if (!hero || !hero.active) return;
     const w = this.weapon;
-    const p = this.targetFor(hero, REACH[strike] + (w ? 0.3 : 0), 0.95);
+    const p = this.targetFor(hero, MOVES[strike].reach + (w ? 0.3 : 0), 0.95);
     if (!p) return;
-    let dmg = DAMAGE[strike];
-    let sound = strike === 'kick' ? 'kick_hit' : 'punch_hit';
+    if (p.defend?.kind === 'dodge') return; // slipped it
+    let dmg = MOVES[strike].dmg;
+    let sound = KICKS.includes(strike) ? 'kick_hit' : 'punch_hit';
     if (w) {
       dmg = w.kind === 'pipe' ? 42 : 38;
       sound = w.kind === 'pipe' ? 'pipe_hit' : 'bottle_smash';
@@ -147,11 +231,18 @@ export class Fight {
         this.weapon = null;
       }
     }
-    this.hit(p, dmg, hero.pos, sound);
+    if (p.defend?.kind === 'block' && !w) {
+      // caught on the forearms
+      p.hp = (p.hp ?? maxHp(p.type)) - dmg * 0.25;
+      p.p.hitReact(0.15);
+      this.h.sound(sound, p.pos.clone().setY(1.4), 0.45);
+      return;
+    }
+    this.hit(p, dmg, hero.pos, sound, MOVES[strike].head, strike === 'hook_r' || strike === 'roundhouse');
   }
 
-  /** someone takes a blow from the courier */
-  hit(p: Ped, dmg: number, from: THREE.Vector3, sound = 'punch_hit') {
+  /** someone takes a blow from the courier (`heavy`: a combo finisher, sends them reeling further) */
+  hit(p: Ped, dmg: number, from: THREE.Vector3, sound = 'punch_hit', head = true, heavy = false) {
     const first = p.hp === undefined;
     p.hp = (p.hp ?? maxHp(p.type)) - dmg;
     p.p.hitReact(Math.min(1, dmg / 30));
@@ -163,16 +254,21 @@ export class Fight {
     if (p.hp <= 0) {
       p.ko = true;
       p.swing = undefined;
+      p.defend = undefined;
       p.state = 'down';
       p.t = 5 + Math.random() * 2;
-      p.vel.copy(away).multiplyScalar(1.6);
+      p.vel.copy(away).multiplyScalar(heavy ? 2.4 : 1.6);
       p.p.play('fall', { loop: false, fade: 0.08 });
       this.h.onAssault(p, true);
       return;
     }
-    p.pos.addScaledVector(away, 0.22); // staggers back
+    p.pos.addScaledVector(away, heavy ? 0.45 : 0.22); // staggers back
     if (first) this.h.onAssault(p, false);
     if (p.state === 'fight') {
+      // rocked: the head snaps back or they fold over, and the swing they were throwing is gone
+      p.swing = undefined;
+      p.stagger = heavy ? 0.9 : 0.55;
+      p.p.play(head ? 'hit_head' : 'hit_body', { loop: false, fade: 0.06, speed: 1.3, restart: true, from: 0.1 });
       if (p.hp < 30) this.giveUp(p, from);
       return;
     }
@@ -186,34 +282,53 @@ export class Fight {
 
   private giveUp(p: Ped, from: THREE.Vector3) {
     p.swing = undefined;
+    p.defend = undefined;
+    p.stagger = 0;
     p.state = 'idle';
     this.h.say(p, 'beg');
     this.h.crowd.flee(p, from);
   }
 
   /** the courier takes a blow */
-  private heroHit(dmg: number, from: THREE.Vector3) {
+  private heroHit(dmg: number, from: THREE.Vector3, head: boolean) {
     const hero = this.h.hero();
     if (!hero || !hero.active || hero.frozen || this.koT > 0) return;
-    this.heroHp -= dmg;
-    this.calm = 0;
+    if (this.dodgeT > 0) return; // stepped out of it
     const fx = Math.sin(hero.person.yaw), fz = Math.cos(hero.person.yaw);
     const front = (from.x - hero.pos.x) * fx + (from.z - hero.pos.z) * fz > 0;
+    if (this.blocking && front) {
+      this.heroHp -= dmg * 0.2;
+      this.calm = 0;
+      hero.person.hitReact(0.12, true);
+      this.h.sound('punch_hit', hero.pos.clone().setY(1.4), 0.45);
+      return;
+    }
+    this.heroHp -= dmg;
+    this.calm = 0;
     hero.person.hitReact(Math.min(1, dmg / 25), front);
     this.h.sound('punch_hit', hero.pos.clone().setY(1.4), 1);
     this.h.sound('grunt_m', hero.pos.clone().setY(1.6), 0.7);
-    if (this.heroHp <= 0) this.knockout(hero);
+    if (this.heroHp <= 0) { this.knockout(hero); return; }
+    if (dmg >= 10) {
+      // rocked: loses the strike being thrown (and anything queued) for a moment
+      this.blocking = false;
+      this.queued = null;
+      hero.person.play(head ? 'hit_head' : 'hit_body', { loop: false, fade: 0.06, speed: 1.4, restart: true, from: 0.1 });
+      hero.busy = Math.max(hero.busy, 0.45);
+    }
   }
 
   private knockout(hero: HeroOnFoot) {
     this.heroHp = 0;
     this.koT = 5;
+    this.blocking = false;
+    this.queued = null;
     hero.busy = 5;
     hero.guard = 0;
     hero.person.play('fall', { loop: false, fade: 0.1, restart: true });
     if (this.weapon) this.toggleItem();
     // everyone who was fighting walks off
-    for (const p of this.h.crowd.peds) if (p.state === 'fight') { p.state = 'idle'; p.t = 2; p.swing = undefined; p.p.play('idle', { fade: 0.4 }); }
+    for (const p of this.h.crowd.peds) if (p.state === 'fight') { p.state = 'idle'; p.t = 2; p.swing = undefined; p.defend = undefined; p.p.play('idle', { fade: 0.4 }); }
     this.h.later(2.2, () => this.h.onKnockout());
     this.h.later(2.6, () => {
       const hr = this.h.hero();
@@ -226,10 +341,13 @@ export class Fight {
 
   update(dt: number) {
     const hero = this.h.hero();
-    this.comboT = Math.max(0, this.comboT - dt);
+    this.chain.t = Math.max(0, this.chain.t - dt);
     this.koT = Math.max(0, this.koT - dt);
+    this.dodgeT = Math.max(0, this.dodgeT - dt);
     this.calm += dt;
     if (this.calm > 5 && this.heroHp < 100) this.heroHp = Math.min(100, this.heroHp + 9 * dt);
+    if (this.queued && (this.queued.t -= dt) <= 0) this.queued = null;
+    if (this.queued && hero && hero.busy <= 0) { const q = this.queued.kind; this.queued = null; this.attack(q); }
     const onFoot = !!hero && hero.active;
     // people who were fighting, knocked down, or getting up
     for (const p of this.h.crowd.peds) {
@@ -246,23 +364,33 @@ export class Fight {
     this.updateItems(dt, hero);
   }
 
-  /** a pedestrian squaring up: close in, keep guard, swing every second or two */
+  /** a pedestrian squaring up: close in, keep guard, mix up punches and kicks every second or two */
   private brawler(p: Ped, dt: number, hero: HeroOnFoot | null) {
-    const done = () => { p.state = 'idle'; p.t = 2 + Math.random() * 2; p.swing = undefined; p.p.play('idle', { fade: 0.4 }); };
+    const done = () => { p.state = 'idle'; p.t = 2 + Math.random() * 2; p.swing = undefined; p.defend = undefined; p.p.play('idle', { fade: 0.4 }); };
     if (!hero || this.koT > 0) { done(); return; }
     const dx = hero.pos.x - p.pos.x, dz = hero.pos.z - p.pos.z, d = Math.hypot(dx, dz);
     if (d > 14) { done(); return; }
     p.p.yaw = Math.atan2(dx, dz);
+    // reeling from a blow, or covering up / slipping one
+    if ((p.stagger ?? 0) > 0) {
+      p.stagger! -= dt;
+      if (p.stagger! <= 0) p.p.play(GUARD, { fade: 0.25 });
+      return;
+    }
+    if (p.defend) {
+      if ((p.defend.t -= dt) <= 0) { p.defend = undefined; p.p.play(GUARD, { fade: 0.2 }); }
+      return;
+    }
     if (p.swing) {
+      const m = MOVES[p.swing.kind];
       p.swing.t += dt * SPEED;
-      if (!p.swing.done && p.swing.t >= p.swing.hit) {
+      if (!p.swing.done && p.swing.t >= m.impact) {
         p.swing.done = true;
         this.h.sound('whoosh', p.pos, 0.4);
-        if (d < 1.5) this.heroHit(p.swing.kind === 'punch' ? 13 : 9, p.pos);
+        if (d < m.reach + 0.15) this.heroHit(p.swing.dmg, p.pos, m.head);
         if (!p.swing) return; // that blow knocked the courier out: everyone stood down
       }
-      const dur = p.p.clipDuration(CLIP[p.swing.kind]);
-      if (p.swing.t >= Math.max(IMPACT[p.swing.kind] + 0.3, Math.min(dur * 0.95, IMPACT[p.swing.kind] + 0.6))) { p.swing = undefined; p.p.play(GUARD, { fade: 0.2 }); }
+      if (p.swing.t >= m.impact + 0.45) { p.swing = undefined; p.p.play(GUARD, { fade: 0.2 }); }
       return;
     }
     if (d > 1.15) {
@@ -275,10 +403,11 @@ export class Fight {
     if (p.p.currentName !== GUARD) p.p.play(GUARD, { fade: 0.2 });
     p.swingCd = (p.swingCd ?? 1) - dt;
     if (p.swingCd <= 0) {
-      const kind = Math.random() < 0.55 ? 'punch' : 'jab';
-      p.p.play(CLIP[kind], { loop: false, fade: 0.1, speed: SPEED, restart: true, from: FROM[kind] });
-      p.swing = { t: FROM[kind], hit: IMPACT[kind], done: false, kind };
-      p.swingCd = 1.1 + Math.random() * 0.9;
+      let r = Math.random() * BRAWL.reduce((a, b) => a + b[1], 0);
+      const [kind, , dmg] = BRAWL.find((b) => (r -= b[1]) <= 0) ?? BRAWL[0];
+      p.p.play(kind, { loop: false, fade: 0.1, speed: SPEED, restart: true, from: MOVES[kind].from });
+      p.swing = { t: MOVES[kind].from, done: false, kind, dmg };
+      p.swingCd = 1.0 + Math.random() * 0.9;
     }
   }
 

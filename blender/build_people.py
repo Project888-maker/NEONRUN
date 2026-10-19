@@ -12,6 +12,7 @@ Hips height follows the source, scaled by leg length; horizontal root motion is 
 """
 import glob
 import math
+import re
 import os
 import sys
 
@@ -39,7 +40,19 @@ SEGMENTS = {
 }
 # keep root motion (vertical only) for these clips; everything is in place horizontally
 MOTIONS = ['idle', 'jump', 'enter_car', 'exit_car', 'talk', 'wave', 'flee', 'phone', 'shrug', 'push', 'fall',
-           'fight_idle', 'punch', 'jab', 'kick', 'get_up']
+           'fight_idle', 'punch', 'jab', 'kick', 'get_up',
+           'cross', 'hook', 'roundhouse', 'low_kick', 'block', 'dodge', 'hit_head', 'hit_body']
+
+# straight and swinging strikes keep the forearms level (the generator tends to cock the fists up into an
+# open-hand "hands up"); the uppercut and the block raise them on purpose
+FOREARM_LEVEL = ('fight_idle', 'punch', 'jab', 'kick', 'cross', 'hook', 'roundhouse', 'low_kick', 'dodge')
+# the right hook is the left hook played mirrored (no generated right hook stayed at head height)
+MIRRORED = {'hook_r': 'hook'}
+# strikes: the end bone that hits (source skeleton names) and how the moment of impact shows
+AIM = {'jab': ('L_Wrist', 'reach'), 'punch': ('R_Wrist', 'reach'), 'hook': ('L_Wrist', 'reach'),
+       'cross': ('R_Wrist', 'reach'), 'kick': ('R_Ankle', 'reach'), 'roundhouse': ('R_Ankle', 'reach'), 'low_kick': ('R_Ankle', 'reach')}
+# which generated take each move uses (assets/generated/motion/<take>.fbx), where a retake came out better
+MOTION_TAKE = {'cross': 'cross_b', 'low_kick': 'low_kick_b'}
 
 # Real motion capture (CMU Graphics Lab database, BVH conversion by B. Hahne; free for any use, see
 # assets/mocap/READMEFIRST.txt) replaces the generated clips wherever the database has the action.
@@ -190,8 +203,12 @@ def world_rot(arm, pb_or_bone, rest=False):
     return m.to_quaternion().normalized(), m.to_translation()
 
 
-def retarget(src, dst, action_name, frame_range, mapping=None, yaw=None, ground_from_end=False, forearm_max_z=None):
-    """Bake src animation onto dst armature as a new action (mapping: src bone -> dst bone)."""
+def retarget(src, dst, action_name, frame_range, mapping=None, yaw=None, ground_from_end=False, forearm_max_z=None, mirror=False, aim=None):
+    """Bake src animation onto dst armature as a new action (mapping: src bone -> dst bone).
+    mirror: play the motion mirrored left to right (a left jab becomes a right cross).
+    aim: (source end bone, 'reach' | 'high') for strikes: the generator spins the whole body far round on
+    a punch (a jab turned the chest 120 degrees), so half of that turn is taken out frame by frame, plus a
+    small turn that peaks at the impact so the fist or foot lands straight ahead of the character."""
     MAP = mapping or globals()['MAP']
     hip_s = next(k for k, v in MAP.items() if v == 'Hips')
     lhip_s = next(k for k, v in MAP.items() if v == 'LeftUpLeg')
@@ -235,12 +252,47 @@ def retarget(src, dst, action_name, frame_range, mapping=None, yaw=None, ground_
     f0, f1 = frame_range
     start_pose_xz = None
     base_z = None
+    yaws = {}
+    if aim:
+        eff, mode = aim
+        def head(b):
+            return src.matrix_world @ src.pose.bones[b].head
+        def heading(v):  # 0 = facing -y (the characters' forward), positive toward +x
+            return math.atan2(v.x, -v.y)
+        chest, best = {}, None
+        for f in range(int(frame_range[0]), int(frame_range[1]) + 1):
+            scene.frame_set(f)
+            sh = head('L_Shoulder') - head('R_Shoulder')
+            chest[f] = heading(Vector((sh.y, -sh.x, 0)))
+            e = head(eff) - head('Pelvis')
+            score = e.z if mode == 'high' else Vector((e.x, e.y, 0)).length
+            if best is None or score > best[0]:
+                best = (score, f, heading(Vector((e.x, e.y, 0))))
+        # unwrap the chest heading so a turn past 180 degrees stays continuous
+        prev = None
+        for f in sorted(chest):
+            if prev is not None:
+                while chest[f] - prev > math.pi: chest[f] -= 2 * math.pi
+                while chest[f] - prev < -math.pi: chest[f] += 2 * math.pi
+            prev = chest[f]
+        _, fi, hit_dir = best
+        damp = 0.5
+        fix = damp * chest[fi] - hit_dir if mode == 'reach' else 0.0  # what still points the strike off-centre
+        def smooth(x):
+            x = min(1.0, max(0.0, x))
+            return x * x * (3 - 2 * x)
+        fa, fb = frame_range
+        for f in chest:
+            bump = smooth((f - fa) / max(1, fi - fa)) if f <= fi else 1 - smooth((f - fi) / max(1, fb - fi))
+            yaws[f] = Quaternion((0, 0, 1), -damp * chest[f] + fix * bump)
+        print(action_name, 'aim: impact frame', fi - fa + 1, 'chest %.0f deg, strike %.0f deg, aim fix %.0f deg' % (math.degrees(chest[fi]), math.degrees(hit_dir), math.degrees(fix)))
     if ground_from_end:
         # clips that start on the ground (getting up): the standing end is the height baseline
         scene.frame_set(int(frame_range[1]))
         base_z = world_rot(src, src.pose.bones[hip_s])[1].z
     for f in range(int(f0), int(f1) + 1):
         scene.frame_set(f)
+        wants = {}
         for t in order:
             s = next((a for a, b in MAP.items() if b == t), None)
             if not s or s not in src.pose.bones:
@@ -248,6 +300,8 @@ def retarget(src, dst, action_name, frame_range, mapping=None, yaw=None, ground_
             sq, sp = world_rot(src, src.pose.bones[s])
             if yaw is not None:
                 sq = yaw @ sq  # turn the whole motion (mocap facing correction)
+            if f in yaws:
+                sq = yaws[f] @ sq
             delta = sq @ src_rest[s].inverted()
             want = (delta @ align.get(t, Quaternion()) @ dst_rest[t]).normalized()
             if forearm_max_z is not None and t in fore_dir:
@@ -265,6 +319,20 @@ def retarget(src, dst, action_name, frame_range, mapping=None, yaw=None, ground_
                 fore_fix['Left' if t.startswith('Left') else 'Right'] = fix
             if forearm_max_z is not None and t in ('LeftHand', 'RightHand'):
                 want = (fore_fix.get('Left' if t.startswith('Left') else 'Right', Quaternion()) @ want).normalized()
+            wants[t] = (want, sp)
+        if mirror:
+            # each bone takes its opposite's turn away from rest, reflected through the body's centre plane
+            # (world x = 0: the characters face -y), so the rig's own rest pose and bone rolls are kept
+            def opp(n):
+                return 'Right' + n[4:] if n.startswith('Left') else 'Left' + n[5:] if n.startswith('Right') else n
+            def flip(q):
+                return Quaternion((q.w, q.x, -q.y, -q.z))
+            wants = {t: ((flip(wants[opp(t)][0] @ dst_rest[opp(t)].inverted()) @ dst_rest[t]).normalized(), wants[t][1])
+                     for t in wants if opp(t) in wants}
+        for t in order:
+            if t not in wants:
+                continue
+            want, sp = wants[t]
             pb = dst.pose.bones[t]
             # world -> armature space rotation, keep current head position
             cur = dst.matrix_world @ pb.matrix
@@ -329,10 +397,14 @@ def build(cid, check=False):
             bpy.data.objects.remove(o, do_unlink=True)
         push_nla(arm, act)
     # text-to-motion clips
-    for name in MOTIONS:
+    clips = MOTIONS + list(MIRRORED)
+    if os.environ.get('CLIPS'):  # quick preview of some clips / takes: CLIPS=hook_b,hook_c
+        clips = os.environ['CLIPS'].split(',')
+    for name in clips:
         if name in mocap:
             continue
-        fbx = os.path.join(GEN, 'motion', f'{name}.fbx')
+        take = MIRRORED.get(name, MOTION_TAKE.get(name, name))
+        fbx = os.path.join(GEN, 'motion', f'{take}.fbx')
         calm = os.path.join(GEN, 'motion', f'{name}_calm.fbx')
         if os.path.exists(calm):
             fbx = calm  # regenerated, steadier version (the first idle swayed side to side)
@@ -344,8 +416,8 @@ def build(cid, check=False):
         src = next(o for o in objs if o.type == 'ARMATURE')
         rng = tuple(src.animation_data.action.frame_range)
         src_act = src.animation_data.action
-        act = retarget(src, arm, name, rng, ground_from_end=name == 'get_up',
-                       forearm_max_z=0.2 if name in ('fight_idle', 'punch', 'jab', 'kick') else None)
+        act = retarget(src, arm, name, rng, ground_from_end=name == 'get_up', mirror=name in MIRRORED, aim=AIM.get(re.sub(r'_[b-z]$', '', name)),
+                       forearm_max_z=0.2 if re.sub(r'_[b-z]$', '', name) in FOREARM_LEVEL else None)
         act.use_fake_user = True
         arm.animation_data.action = None
         bpy.data.actions.remove(src_act)

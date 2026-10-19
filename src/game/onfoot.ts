@@ -21,6 +21,8 @@ export class HeroOnFoot {
   busy = 0; // seconds of a scripted animation (enter car, talk) during which input is ignored
   /** seconds left in a fighting stance (after throwing or taking punches): standing still means guard up */
   guard = 0;
+  /** a push the courier rides for a moment (the dodge's step back), m/s; dies away quickly */
+  slide = new THREE.Vector3();
   active = false;
   private stepT = 0;
   onStep: () => void = () => {};
@@ -92,7 +94,8 @@ export class HeroOnFoot {
     // gravity + jump
     if (this.grounded && inp.jump && !busy) { this.vy = 5.2; this.grounded = false; this.person.play('jump', { loop: false, fade: 0.1, speed: 1.4 }); this.onJump(); }
     this.vy -= 18 * dt;
-    const desired = dir.multiplyScalar(this.speed * dt).add(new THREE.Vector3(0, this.vy * dt, 0));
+    const desired = dir.multiplyScalar(this.speed * dt).add(new THREE.Vector3(0, this.vy * dt, 0)).addScaledVector(this.slide, dt);
+    this.slide.multiplyScalar(Math.max(0, 1 - dt * 7));
     this.kcc.computeColliderMovement(this.collider, desired, RAPIER.QueryFilterFlags.EXCLUDE_SENSORS, groups(GROUP_HERO, GROUP_WORLD | GROUP_TRAFFIC | GROUP_CAR | GROUP_GATE));
     const m = this.kcc.computedMovement();
     const wasGrounded = this.grounded;

@@ -484,3 +484,27 @@ const FIGHT_MOTIONS = {
   get_up: 'a person lying face down on the ground pushes up with both hands, gets onto one knee and stands up, ending standing upright',
 };
 for (const [k, p] of Object.entries(FIGHT_MOTIONS)) add('motion', k, 'fal-ai/hunyuan-motion', { prompt: p, duration: k === 'get_up' ? 4 : k === 'fight_idle' ? 3 : 2, output_format: 'fbx' });
+// the full move set: a four-punch combo (jab, cross, hook, uppercut), three kicks, block, dodge, and being hit
+const FIGHT_MOVES = {
+  cross: 'a boxer in a fighting stance throws one fast straight right punch, turning the right hip and shoulder forward and extending the right arm fully straight out in front at chin height, then snaps it back to the guard, feet stay planted',
+  hook: 'a boxer in a fighting stance throws one left hook, the left elbow bent at ninety degrees and raised to shoulder height, swinging the left fist around horizontally from the side across to the front at head height while pivoting the left foot, then returns to guard',
+  uppercut: 'a boxer in a fighting stance dips the knees slightly and throws one right uppercut, driving the right fist upward from the waist to chin height in front of the body with the elbow bent, then returns to guard, feet stay planted',
+  roundhouse: 'a martial artist in a fighting stance does one right roundhouse kick, pivoting on the left foot and swinging the right leg around horizontally at waist height in front, then puts the right foot back down behind and returns to stance',
+  low_kick: 'a fighter in a stance throws one right low kick, swinging the right shin around into the outside of the opponent\'s thigh at knee height, then puts the foot back down and returns to stance',
+  block: 'a boxer raises both forearms tight in front of the face to block, elbows in, chin tucked, holding the high guard firmly in place',
+  dodge: 'a boxer quickly leans and steps back to dodge a punch, ducking the head down and to the side, then comes back up into a fighting stance',
+  hit_head: 'a person standing gets punched in the face, the head snaps back and to the side, they stumble one step backward and recover their balance',
+  hit_body: 'a person standing gets punched in the stomach, doubles over forward holding the belly, then straightens back up',
+};
+for (const [k, p] of Object.entries(FIGHT_MOVES)) add('motion', k, 'fal-ai/hunyuan-motion', { prompt: p, duration: k === 'block' ? 3 : 2, output_format: 'fbx' });
+// second takes where the first came out wrong (the cross went overhead, the hook spun all the way round,
+// the uppercut raised both arms); build_people.py picks the take per move (MOTION_TAKE)
+const FIGHT_RETAKES = {
+  cross_b: 'a person punches straight forward with the right fist into the face of someone standing in front of them, the right arm extends fully straight forward at shoulder height, the left hand stays up by the chin, then pulls back, feet stay in place',
+  hook_b: 'a boxer throws a left hook punch: the left arm stays bent like a hook at shoulder height and swings in a short horizontal arc from the left side to in front of the face, the torso twists slightly to the right, feet stay planted, the right hand stays at the chin, then returns to guard',
+  hook_c: 'a person punches with a short sideways left hook to the jaw of someone standing in front of them, the left arm bent, the body turning a little, feet in place',
+  uppercut_b: 'a boxer throws a short right uppercut: the right fist dips to the waist then drives straight up in front of the chest to chin height with the elbow bent, the left hand stays up guarding the face, feet stay planted',
+  uppercut_c: 'a person punches upward with the right fist into the chin of someone standing close in front of them, an uppercut with the elbow bent, the left hand stays at the face, feet in place',
+  low_kick_b: 'a fighter kicks low with the right leg, swinging the right shin sideways into the knee of someone standing in front, the kick stays below the waist, then steps back into a fighting stance',
+};
+for (const [k, p] of Object.entries(FIGHT_RETAKES)) add('motion', k, 'fal-ai/hunyuan-motion', { prompt: p, duration: 2, output_format: 'fbx' });

@@ -3,7 +3,7 @@ import type { VehicleInput } from '../vehicle/vehicle';
 /** Keyboard + gamepad + touch input merged into one VehicleInput. */
 export class Input {
   keys = new Set<string>();
-  touch = { steer: 0, throttle: 0, brake: 0, handbrake: false, boost: false, moveY: 0, run: false, lookX: 0, lookY: 0 };
+  touch = { steer: 0, throttle: 0, brake: 0, handbrake: false, boost: false, moveY: 0, run: false, lookX: 0, lookY: 0, block: false };
   pressed = new Set<string>(); // edge-triggered this frame
   private steerSmooth = 0;
   scripted: Partial<VehicleInput> | null = null; // for automated tests / screenshots
@@ -17,7 +17,8 @@ export class Input {
     });
     addEventListener('keyup', (e) => this.keys.delete(e.code));
     // with the mouse captured (playing on foot): left button punches, right button kicks
-    addEventListener('mousedown', (e) => { if (document.pointerLockElement) this.pressed.add(`Mouse${e.button}`); });
+    addEventListener('mousedown', (e) => { if (document.pointerLockElement) { this.pressed.add(`Mouse${e.button}`); this.keys.add(`Mouse${e.button}`); } });
+    addEventListener('mouseup', (e) => this.keys.delete(`Mouse${e.button}`));
     addEventListener('contextmenu', (e) => { if (document.pointerLockElement) e.preventDefault(); });
     addEventListener('blur', () => this.keys.clear());
   }
