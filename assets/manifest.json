@@ -1,6 +1,6 @@
 {
   "budget_usd": 25,
-  "spent_usd_est": 43.4656,
+  "spent_usd_est": 44.4656,
   "assets": {
     "_tests/probe": {
       "files": [],
@@ -6876,6 +6876,86 @@
       "cost_usd_est": 0.03,
       "created": "2026-10-18T22:51:26.946Z",
       "seconds": 3
+    },
+    "motion/get_up": {
+      "files": [
+        "assets/generated/motion/get_up.fbx"
+      ],
+      "model": "fal-ai/hunyuan-motion",
+      "prompt": "a person lying face down on the ground pushes up with both hands, gets onto one knee and stands up, ending standing upright",
+      "input": {
+        "prompt": "a person lying face down on the ground pushes up with both hands, gets onto one knee and stands up, ending standing upright",
+        "duration": 4,
+        "output_format": "fbx"
+      },
+      "seed": 1276134691,
+      "cost_usd_est": 0.2,
+      "created": "2026-10-19T00:43:10.712Z",
+      "seconds": 16
+    },
+    "motion/kick": {
+      "files": [
+        "assets/generated/motion/kick.fbx"
+      ],
+      "model": "fal-ai/hunyuan-motion",
+      "prompt": "a person lifts the right knee and does one front push kick forward at waist height, then puts the foot back down and returns to a fighting stance",
+      "input": {
+        "prompt": "a person lifts the right knee and does one front push kick forward at waist height, then puts the foot back down and returns to a fighting stance",
+        "duration": 2,
+        "output_format": "fbx"
+      },
+      "seed": 892314734,
+      "cost_usd_est": 0.2,
+      "created": "2026-10-19T00:43:23.260Z",
+      "seconds": 28
+    },
+    "motion/fight_idle": {
+      "files": [
+        "assets/generated/motion/fight_idle.fbx"
+      ],
+      "model": "fal-ai/hunyuan-motion",
+      "prompt": "a street fighter standing ready, fists clenched and held low in front of the chest, elbows bent down at the sides, knees slightly bent, shifting weight gently from foot to foot in place, facing forward",
+      "input": {
+        "prompt": "a street fighter standing ready, fists clenched and held low in front of the chest, elbows bent down at the sides, knees slightly bent, shifting weight gently from foot to foot in place, facing forward",
+        "duration": 3,
+        "output_format": "fbx"
+      },
+      "seed": 306862482,
+      "cost_usd_est": 0.2,
+      "created": "2026-10-19T05:03:04.956Z",
+      "seconds": 10
+    },
+    "motion/jab": {
+      "files": [
+        "assets/generated/motion/jab.fbx"
+      ],
+      "model": "fal-ai/hunyuan-motion",
+      "prompt": "a person with fists held low at the chest throws one quick left punch straight forward at chest height, extending the left arm horizontally, then pulls it back, feet stay in place",
+      "input": {
+        "prompt": "a person with fists held low at the chest throws one quick left punch straight forward at chest height, extending the left arm horizontally, then pulls it back, feet stay in place",
+        "duration": 2,
+        "output_format": "fbx"
+      },
+      "seed": 857845675,
+      "cost_usd_est": 0.2,
+      "created": "2026-10-19T05:03:09.024Z",
+      "seconds": 14
+    },
+    "motion/punch": {
+      "files": [
+        "assets/generated/motion/punch.fbx"
+      ],
+      "model": "fal-ai/hunyuan-motion",
+      "prompt": "a person with fists held low at the chest throws one straight right punch forward at chest height, fully extending the right arm horizontally, then pulls it back to the chest, feet stay in place",
+      "input": {
+        "prompt": "a person with fists held low at the chest throws one straight right punch forward at chest height, fully extending the right arm horizontally, then pulls it back to the chest, feet stay in place",
+        "duration": 2,
+        "output_format": "fbx"
+      },
+      "seed": 938914369,
+      "cost_usd_est": 0.2,
+      "created": "2026-10-19T05:03:11.045Z",
+      "seconds": 16
     }
   }
 }

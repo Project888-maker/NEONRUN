@@ -252,3 +252,7 @@ Requests that failed or were replaced:
 - The courier's health shows under the stars while fighting or hurt and comes back after 5 s out of combat. At zero: knocked out, fade, 10 % of credits gone, back up with 55.
 - Bottles (break on the first hit) and pipes (8 hits) lie on the sidewalks near the courier; a held item is placed in the right fist each frame from the hand and forearm bones.
 
+**People's motion: back to the native and generated clips** (Oct 19)
+- The CMU motion capture (`--mocap`) made people look wrong on these rigs: transferred onto the generated bodies (different proportions, hip width), walks crossed the legs, idles hunched, arms hung out. The shipped characters are built without it again: walk / run are the rigging service's own clips (made for each rig), the rest are the generated text-to-motion clips. `--mocap` and `assets/mocap/` stay for reference.
+- Fighting uses generated clips too (`FIGHT_MOTIONS` in `scripts/assets.mjs`): `jab` for every punch (the generated straight punch never extends cleanly), `kick`, and `get_up` (grounded from its standing end). The rigs have no finger bones, so a raised open hand reads as "hands up": in fight clips the forearm is kept at most slightly raised (`forearm_max_z`) and the hand turns with it. Between swings people stand in their normal idle instead of a boxing guard.
+

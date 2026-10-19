@@ -10,8 +10,14 @@ export type Strike = 'punch' | 'jab' | 'kick';
 type ItemKind = 'bottle' | 'pipe';
 interface Item { kind: ItemKind; mesh: THREE.Mesh; held: boolean; uses: number }
 
-/** moment of impact inside each clip (s at normal speed), from where the hand / foot is furthest out */
-const IMPACT: Record<Strike, number> = { punch: 0.4, jab: 0.233, kick: 0.433 };
+/** moment of impact inside each clip (s at normal speed), where the hand / foot is furthest out, and where
+ * the strike starts playing (the generated clips open with a slow wind-up) */
+const IMPACT: Record<Strike, number> = { punch: 0.567, jab: 0.567, kick: 0.567 };
+const FROM: Record<Strike, number> = { punch: 0.2, jab: 0.25, kick: 0.2 };
+/** clip played for each strike: the generated straight punch never extends cleanly, the jab clip does */
+const CLIP: Record<Strike, 'jab' | 'kick'> = { punch: 'jab', jab: 'jab', kick: 'kick' };
+/** between swings people simply stand their ground (the generated boxing guard hunched over with open hands) */
+const GUARD = 'idle';
 const REACH: Record<Strike, number> = { punch: 1.35, jab: 1.3, kick: 1.55 };
 const DAMAGE: Record<Strike, number> = { punch: 22, jab: 14, kick: 32 };
 const SPEED = 1.15; // strikes play a touch faster than captured: snappier to control
@@ -69,11 +75,11 @@ export class Fight {
     // turn toward whoever is close in front (light aim assist, so swings land where you meant)
     const target = this.targetFor(hero, 2.6, 1.25);
     if (target) hero.person.yaw = Math.atan2(target.pos.x - hero.pos.x, target.pos.z - hero.pos.z);
-    const d = hero.person.play(strike, { loop: false, fade: 0.08, speed: SPEED, restart: true });
-    hero.busy = (d / SPEED) * 0.82;
+    const d = hero.person.play(CLIP[strike], { loop: false, fade: 0.08, speed: SPEED, restart: true, from: FROM[strike] });
+    hero.busy = ((d - FROM[strike]) / SPEED) * 0.75;
     hero.guard = 4;
     this.h.sound('whoosh', hero.pos, 0.5);
-    this.h.later(IMPACT[strike] / SPEED, () => this.land(strike));
+    this.h.later((IMPACT[strike] - FROM[strike]) / SPEED, () => this.land(strike));
     return true;
   }
 
@@ -173,7 +179,7 @@ export class Fight {
     if (Math.random() < (FIGHT_BACK[p.type] ?? 0.2) && p.hp > 40) {
       p.state = 'fight';
       p.swingCd = 0.7 + Math.random() * 0.5;
-      p.p.play('fight_idle', { fade: 0.2 });
+      p.p.play(GUARD, { fade: 0.2 });
       this.h.say(p, 'taunt');
     } else this.giveUp(p, from);
   }
@@ -255,8 +261,8 @@ export class Fight {
         if (d < 1.5) this.heroHit(p.swing.kind === 'punch' ? 13 : 9, p.pos);
         if (!p.swing) return; // that blow knocked the courier out: everyone stood down
       }
-      const dur = p.p.clipDuration(p.swing.kind);
-      if (p.swing.t >= dur * 0.95) { p.swing = undefined; p.p.play('fight_idle', { fade: 0.15 }); }
+      const dur = p.p.clipDuration(CLIP[p.swing.kind]);
+      if (p.swing.t >= Math.max(IMPACT[p.swing.kind] + 0.3, Math.min(dur * 0.95, IMPACT[p.swing.kind] + 0.6))) { p.swing = undefined; p.p.play(GUARD, { fade: 0.2 }); }
       return;
     }
     if (d > 1.15) {
@@ -266,12 +272,12 @@ export class Fight {
       if (p.p.currentName !== gait) p.p.play(gait, { fade: 0.2, speed: p.p.gaitRate(gait, d > 3 ? 3.2 : 1.6) });
       return;
     }
-    if (p.p.currentName !== 'fight_idle') p.p.play('fight_idle', { fade: 0.2 });
+    if (p.p.currentName !== GUARD) p.p.play(GUARD, { fade: 0.2 });
     p.swingCd = (p.swingCd ?? 1) - dt;
     if (p.swingCd <= 0) {
       const kind = Math.random() < 0.55 ? 'punch' : 'jab';
-      p.p.play(kind, { loop: false, fade: 0.1, speed: SPEED, restart: true });
-      p.swing = { t: 0, hit: IMPACT[kind], done: false, kind };
+      p.p.play(CLIP[kind], { loop: false, fade: 0.1, speed: SPEED, restart: true, from: FROM[kind] });
+      p.swing = { t: FROM[kind], hit: IMPACT[kind], done: false, kind };
       p.swingCd = 1.1 + Math.random() * 0.9;
     }
   }

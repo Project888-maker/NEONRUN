@@ -70,7 +70,3 @@ URL flags:
 - **People**: photoreal T-pose characters (image → Meshy 3D), auto-rigged with Meshy, animated with Meshy walk/run clips plus text-to-motion clips (Hunyuan Motion) retargeted in Blender; voiced street conversations (ElevenLabs).
 - **Cars**: eight generated traffic cars (image → Tripo 3D), cleaned and wheel-split in Blender, every one drivable.
 - **Assets**: fal.ai for textures, signage, ads, sky, UI, liveries, image-to-3D cars, people and landmarks, video, music, SFX, mission art and all voices. Blender (bpy, headless) for the city kit and hero car cleanup; gltf-transform for compression. See `assets/manifest.json` (prompt, model, seed and cost per file) and `NOTES.md`.
-
-## Credits
-
-People's walking, running, standing, talking, waving and shrugging come from the CMU Graphics Lab Motion Capture Database (BVH conversion by Bruce Hahne). The data used in this project was obtained from mocap.cs.cmu.edu; the database was created with funding from NSF EIA-0196217.

@@ -473,3 +473,14 @@ const sfxFight = {
   grunt_f: [0.6, false, 'adult woman gasping in pain after being hit, short, no words'],
 };
 for (const [k, [d, loop, p]] of Object.entries(sfxFight)) add('sfx', k, 'fal-ai/elevenlabs/sound-effects/v2', { text: p, duration_seconds: d, loop, prompt_influence: 0.7, output_format: 'mp3_44100_128' });
+
+// ---------- fighting moves, same generator as the other clips (Oct 19): retargeted motion capture made
+// people look twisted on these rigs, so the street clips went back to the native / generated ones
+const FIGHT_MOTIONS = {
+  fight_idle: 'a street fighter standing ready, fists clenched and held low in front of the chest, elbows bent down at the sides, knees slightly bent, shifting weight gently from foot to foot in place, facing forward',
+  punch: 'a person with fists held low at the chest throws one straight right punch forward at chest height, fully extending the right arm horizontally, then pulls it back to the chest, feet stay in place',
+  jab: 'a person with fists held low at the chest throws one quick left punch straight forward at chest height, extending the left arm horizontally, then pulls it back, feet stay in place',
+  kick: 'a person lifts the right knee and does one front push kick forward at waist height, then puts the foot back down and returns to a fighting stance',
+  get_up: 'a person lying face down on the ground pushes up with both hands, gets onto one knee and stands up, ending standing upright',
+};
+for (const [k, p] of Object.entries(FIGHT_MOTIONS)) add('motion', k, 'fal-ai/hunyuan-motion', { prompt: p, duration: k === 'get_up' ? 4 : k === 'fight_idle' ? 3 : 2, output_format: 'fbx' });

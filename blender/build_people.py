@@ -38,7 +38,8 @@ SEGMENTS = {
     'RightUpLeg': 'RightLeg', 'RightLeg': 'RightFoot', 'RightFoot': 'RightToeBase',
 }
 # keep root motion (vertical only) for these clips; everything is in place horizontally
-MOTIONS = ['idle', 'jump', 'enter_car', 'exit_car', 'talk', 'wave', 'flee', 'phone', 'shrug', 'push', 'fall']
+MOTIONS = ['idle', 'jump', 'enter_car', 'exit_car', 'talk', 'wave', 'flee', 'phone', 'shrug', 'push', 'fall',
+           'fight_idle', 'punch', 'jab', 'kick', 'get_up']
 
 # Real motion capture (CMU Graphics Lab database, BVH conversion by B. Hahne; free for any use, see
 # assets/mocap/READMEFIRST.txt) replaces the generated clips wherever the database has the action.
@@ -54,10 +55,10 @@ CMU_MAP = {
 # hands and toes are left out on purpose: the capture skeleton's hand and toe bones point differently
 # from the generated rigs, and copying them bent wrists sideways; they now follow the forearm / foot
 MOCAP = {
-    'walk': ('141_25', (1.0, 4.5), (0.95, 1.35)),
+    'walk': ('35_01', (0.1, 3.0), (0.9, 1.4)),  # an everyday walk, inside the stretch where posture is natural
     'run': ('141_34', (0.6, 2.4), (0.55, 0.85)),
     'flee': ('141_34', (0.6, 2.4), (0.55, 0.85)),
-    'idle': ('77_02', (1.0, 7.5), (3.5, 5.5)),  # relaxed standing; the 'waiting' takes fidgeted
+    'idle': ('82_08', (3.6, 7.6), (3.0, 4.0)),  # standing still: upright, arms hanging, head level
     'talk': ('18_08', (1.0, 16.0), (5.0, 8.0)),
     'wave': ('141_16', (0.2, 2.4), None),
     'shrug': ('141_21', (0.2, 2.2), None),
@@ -72,8 +73,9 @@ MOCAP = {
 FIGHT_IMPACT = {'punch': (61 - 1.6 * 30) / 30, 'jab': (93 - 2.85 * 30) / 30, 'kick': (65 - 1.7 * 30) / 30}
 if os.environ.get('MOCAP_TRY'):  # preview alternatives: MOCAP_TRY=idle2:140_06,idle3:77_02
     for item in os.environ['MOCAP_TRY'].split(','):
-        n, f = item.split(':')
-        MOCAP[n] = (f, (1.0, 25.0), (3.5, 5.5))
+        n, f, *w = item.split(':')
+        win = (float(w[0]), float(w[1])) if w else (1.0, 25.0)
+        MOCAP[n] = (f, win, (3.0, 4.0)) if n.startswith('idle') else (f, win, (0.9, 1.4))
 # per character: an old man walks and waits like one
 MOCAP_OVERRIDE = {
     'ped_elder': {'walk': ('07_04', (0.8, 6.0), (1.1, 1.6))},  # a real slow walk (the acted 'old man' take was a caricature)
@@ -160,7 +162,7 @@ def mocap_clip(arm, name, spec):
     src = import_bvh(file)
     src.animation_data.action.name = f'src_{name}'
     a, b = pick_loop(src, window, loop)
-    yaw = face_forward(src, a, b, name in ('walk', 'run', 'flee'), heading)
+    yaw = face_forward(src, a, b, name.startswith(('walk', 'run', 'flee')), heading)
     act = retarget(src, arm, name, (a, b), CMU_MAP, yaw, ground_from_end=name == 'get_up')
     act.use_fake_user = True
     arm.animation_data.action = None
@@ -188,7 +190,7 @@ def world_rot(arm, pb_or_bone, rest=False):
     return m.to_quaternion().normalized(), m.to_translation()
 
 
-def retarget(src, dst, action_name, frame_range, mapping=None, yaw=None, ground_from_end=False):
+def retarget(src, dst, action_name, frame_range, mapping=None, yaw=None, ground_from_end=False, forearm_max_z=None):
     """Bake src animation onto dst armature as a new action (mapping: src bone -> dst bone)."""
     MAP = mapping or globals()['MAP']
     hip_s = next(k for k, v in MAP.items() if v == 'Hips')
@@ -227,6 +229,9 @@ def retarget(src, dst, action_name, frame_range, mapping=None, yaw=None, ground_
     src_hips0 = (src.matrix_world @ src.data.bones[hip_s].head_local)
     dst_hips0 = (dst.matrix_world @ dst.data.bones['Hips'].head_local)
     order = [b.name for b in dst.data.bones]  # parents come before children
+    # rest direction of each forearm (elbow -> wrist), for keeping hands low in fight clips
+    fore_dir = {t: (rest_head(dst, c) - rest_head(dst, t)).normalized() for t, c in (('LeftForeArm', 'LeftHand'), ('RightForeArm', 'RightHand'))}
+    fore_fix = {}
     f0, f1 = frame_range
     start_pose_xz = None
     base_z = None
@@ -245,6 +250,21 @@ def retarget(src, dst, action_name, frame_range, mapping=None, yaw=None, ground_
                 sq = yaw @ sq  # turn the whole motion (mocap facing correction)
             delta = sq @ src_rest[s].inverted()
             want = (delta @ align.get(t, Quaternion()) @ dst_rest[t]).normalized()
+            if forearm_max_z is not None and t in fore_dir:
+                # no finger bones: an open hand raised past the chin reads as 'hands up'. Keep the forearm
+                # at most slightly raised (hands forward at chest height), and turn the hand with it.
+                d = (want @ dst_rest[t].inverted()) @ fore_dir[t]
+                fix = Quaternion()
+                if d.z > forearm_max_z:
+                    h = Vector((d.x, d.y, 0))
+                    if h.length < 1e-3:
+                        h = Vector((0, -1, 0))
+                    nd = h.normalized() * math.sqrt(1 - forearm_max_z ** 2) + Vector((0, 0, forearm_max_z))
+                    fix = d.rotation_difference(nd)
+                    want = (fix @ want).normalized()
+                fore_fix['Left' if t.startswith('Left') else 'Right'] = fix
+            if forearm_max_z is not None and t in ('LeftHand', 'RightHand'):
+                want = (fore_fix.get('Left' if t.startswith('Left') else 'Right', Quaternion()) @ want).normalized()
             pb = dst.pose.bones[t]
             # world -> armature space rotation, keep current head position
             cur = dst.matrix_world @ pb.matrix
@@ -324,7 +344,8 @@ def build(cid, check=False):
         src = next(o for o in objs if o.type == 'ARMATURE')
         rng = tuple(src.animation_data.action.frame_range)
         src_act = src.animation_data.action
-        act = retarget(src, arm, name, rng)
+        act = retarget(src, arm, name, rng, ground_from_end=name == 'get_up',
+                       forearm_max_z=0.2 if name in ('fight_idle', 'punch', 'jab', 'kick') else None)
         act.use_fake_user = True
         arm.animation_data.action = None
         bpy.data.actions.remove(src_act)

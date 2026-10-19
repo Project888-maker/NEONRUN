@@ -510,6 +510,16 @@ if (want('weapon')) {
   await N('fightAttack', 'punch'); await sleep(330); await shot('89_weapon_swing');
   await N('camAt', null);
 }
+if (want('bodies')) {
+  // people on the street from the side, full body: standing and walking
+  await N('setInput', {});
+  if ((await N('mode')) === 'drive') { await N('exitCar'); for (let k = 0; k < 20 && (await N('mode')) !== 'foot'; k++) await sleep(500); }
+  await N('heroToDoor', 'noodle_row'); await sleep(600);
+  for (const t of ['ped_worker', 'ped_nurse', 'ped_suit']) await N('fightSetup', t, false);
+  await sleep(3000);
+  for (let k = 0; k < 6; k++) { console.log('body', k, JSON.stringify(await N('bodyShot', k))); await sleep(300); await shot(`90_body_${k}`); }
+  await N('clearFaceShot');
+}
 if (want('places')) {
   // Pause > Places: the list of shops and directions to one on the minimap
   await N('setInput', {});

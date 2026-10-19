@@ -29,7 +29,12 @@ for (const [row, name] of clips.entries()) {
     p.current!.time = (d * col) / N;
     p.mixer.update(0);
     p.place(0, 0, 0, 0);
-    p.update(0, true);
+    p.update(0, false);
+    // how far above the ground is the lowest foot (no grounding correction): floating shows here
+    let lo = Infinity;
+    p.root.traverse((o) => { if (/(left|right)(foot|toebase)$/i.test(o.name)) lo = Math.min(lo, o.getWorldPosition(new THREE.Vector3()).y); });
+    (window as unknown as { feet: Record<string, number[]> }).feet ??= {};
+    ((window as unknown as { feet: Record<string, number[]> }).feet[name] ??= []).push(+lo.toFixed(3));
     cam.position.set(Math.sin(side) * 4.2, 1.0, Math.cos(side) * 4.2);
     cam.lookAt(0, 0.9, 0);
     const y = (clips.length - 1 - row) * S * 1.5;
@@ -37,4 +42,5 @@ for (const [row, name] of clips.entries()) {
     renderer.render(scene, cam);
   }
 }
+console.log('feet', type, JSON.stringify((window as unknown as { feet: unknown }).feet));
 (window as { done?: boolean }).done = true;

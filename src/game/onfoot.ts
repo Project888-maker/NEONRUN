@@ -107,7 +107,7 @@ export class HeroOnFoot {
       // clip rate follows the real ground speed so the planted foot doesn't slide
       else if (this.speed > 2.7) this.person.play('run', { speed: Math.max(0.7, this.person.gaitRate('run', this.speed)) });
       else if (this.speed > 0.35) this.person.play('walk', { speed: Math.max(0.45, this.person.gaitRate('walk', this.speed)) });
-      else this.person.play(this.guard > 0 && this.person.has('fight_idle') ? 'fight_idle' : 'idle', { fade: 0.35 });
+      else this.person.play('idle', { fade: 0.35 });
     }
     // footsteps
     if (this.grounded && this.speed > 0.5) {

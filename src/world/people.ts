@@ -672,7 +672,8 @@ export class Crowd {
       p.p.place(p.pos.x, ground, p.pos.z, p.p.yaw);
       // animation LOD: far crowds update at a lower rate
       const d = p.pos.distanceTo(player);
-      if (d < 60 || (this.frame + p.id) % 3 === 0) p.p.update(d < 60 ? dt : dt * 3, d < 45);
+      // feet stay on the ground at any distance you can see them (far ones used to hover)
+      if (d < 60 || (this.frame + p.id) % 3 === 0) p.p.update(d < 60 ? dt : dt * 3, d < 130);
     }
     this.separate();
     this.frame++;

@@ -1765,12 +1765,25 @@ function debugApi() {
       return ped.type;
     },
     clearFaceShot: () => { debugCam = null; },
+    /** full-body side view of the k-th nearest pedestrian (state, foot height above the ground) */
+    bodyShot: (k = 0, dist = 3.2) => {
+      if (!hero) return null;
+      const list = crowd.peds.filter((p) => p.state !== 'down').sort((a, b) => a.pos.distanceTo(hero!.pos) - b.pos.distanceTo(hero!.pos));
+      const p = list[k];
+      if (!p) { debugCam = null; return null; }
+      const side = p.p.yaw + Math.PI / 2;
+      const at = p.pos.clone().setY(p.p.root.position.y + 0.95);
+      debugCam = { at, pos: at.clone().add(new THREE.Vector3(Math.sin(side) * dist, 0.25, Math.cos(side) * dist)) };
+      let lo = Infinity;
+      p.p.root.traverse((o) => { if (/(left|right)foot$/i.test(o.name)) lo = Math.min(lo, o.getWorldPosition(new THREE.Vector3()).y); });
+      return { type: p.type, state: p.state, anim: p.p.currentName, rootY: +p.p.root.position.y.toFixed(3), footY: +lo.toFixed(3), ground: +(p.pos.y).toFixed(3), d: +p.pos.distanceTo(hero.pos).toFixed(1) };
+    },
     /** a person of `type` squares up 1.3 m in front of the courier (fight tests) */
     fightSetup: (type: string, brawl = true) => {
       if (!hero) return null;
       const yaw = hero.person.yaw, at = hero.pos.clone().add(new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw)).multiplyScalar(1.3)).setY(0);
       const p = crowd.spawnAt(type as PedType, at, yaw + Math.PI);
-      if (p && brawl) { p.state = 'fight'; p.swingCd = 1.5; p.p.play('fight_idle', { fade: 0 }); }
+      if (p && brawl) { p.state = 'fight'; p.swingCd = 1.5; p.p.play('idle', { fade: 0 }); }
       return p ? p.id : null;
     },
     fightAttack: (kind: 'punch' | 'kick') => fight.attack(kind),
