@@ -75,7 +75,8 @@ export class Missions {
   private spotsIn(d: DistrictId[]) { return this.city.spots.filter((s) => d.includes(s.district)); }
 
   newJob(playerPos: THREE.Vector3) {
-    const pool = this.spotsIn(this.save.unlocked);
+    let pool = this.spotsIn(this.save.unlocked);
+    if (!pool.length) pool = this.city.spots;
     // pickup reasonably close to the player
     const near = pool.filter((s) => { const d = Math.hypot(s.x - playerPos.x, s.z - playerPos.z); return d > 120 && d < 420; });
     this.pickup = (near.length ? near : pool)[Math.floor(this.rng() * (near.length ? near.length : pool.length))];
@@ -185,7 +186,8 @@ export class Missions {
     // re-route occasionally
     this.routeTimer -= dt;
     if (this.routeTimer <= 0) { this.routeTimer = 1.0; this.computeRoute(pos); }
-    const tgt = this.target!;
+    const tgt = this.target;
+    if (!tgt) { this.newJob(pos); return; } // no job yet (should not happen): start one rather than fail every frame
     const dist = Math.hypot(tgt.x - pos.x, tgt.z - pos.z);
     this.hud.setDist(dist);
 

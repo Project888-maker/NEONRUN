@@ -700,7 +700,12 @@ function openStory() {
 
 /** Start a story mission behind a short fade: the click returns at once (no frozen button), the heavy
  * work (placing the car, building the mission) runs while the screen is black. */
-function startStory(def: MissionDef) { fade(() => startStoryNow(def)); }
+function startStory(def: MissionDef) {
+  // free-ride deliveries stop at once: during the fade there is no job yet (starting a story from the
+  // menu never picks one), and a frame of deliveries without a pickup used to throw
+  missions.suspend(true, playerPos);
+  fade(() => startStoryNow(def));
+}
 function startStoryNow(def: MissionDef) {
   missions.suspend(true, playerPos);
   campaign.start(def);
