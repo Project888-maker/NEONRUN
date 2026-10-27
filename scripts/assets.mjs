@@ -290,7 +290,9 @@ PRICES['fal-ai/meshy/rigging'] = 0.3; // estimate
 PRICES['fal-ai/hunyuan-motion'] = 0.2; // estimate
 const PERSON = 'full body photograph of one adult person standing in a strict T-pose, arms straight out horizontally to the sides at shoulder height, palms down, legs slightly apart, feet flat, facing the camera, neutral expression, head to toe fully visible with margin, plain pure white seamless studio background, soft even studio lighting, sharp focus, photorealistic, realistic skin and fabric, no props, no bag, nothing in the hands';
 export const PEOPLE = {
-  hero: 'athletic courier man in his early thirties, short dark undercut hair, light stubble, black waterproof techwear jacket with subtle cyan piping, dark cargo trousers, black high-top sneakers, fingerless gloves',
+  // the hero is the man from Gasan's reference photo (Oct 27): his T-pose image was made with fal-ai/nano-banana/edit from the
+  // photo (see manifest person/hero), so this prompt is only a description; fal.mjs skips it because the file exists
+  hero: 'very big muscular man, long curly black hair, full dark beard, thin silver rectangular glasses, faded blue denim jacket with rolled sleeves over a white button shirt, khaki cargo pants, tan suede sneakers',
   ped_suit: 'middle aged office man, grey suit, open beige trench coat, black leather shoes, short grey hair',
   ped_vendor: 'older east asian street food vendor man, white apron over a blue work shirt, rolled sleeves, black trousers, rubber boots',
   ped_punk: 'young punk woman, bleached short hair with pink tips, black leather jacket, ripped dark jeans, combat boots',
@@ -306,7 +308,7 @@ for (const [k, p] of Object.entries(PEOPLE)) {
   add('person3d', k, 'fal-ai/meshy/v6/image-to-3d', { image_url: `@file:assets/generated/person/${k}.png`, topology: 'triangle', target_polycount: 30000, should_remesh: true, enable_pbr: true, symmetry_mode: 'auto', is_a_t_pose: true, should_texture: true });
 }
 
-const HEIGHTS = { hero: 1.82, ped_suit: 1.78, ped_vendor: 1.68, ped_punk: 1.68, ped_worker: 1.84, ped_student: 1.64, ped_elder: 1.58, ped_techwear: 1.8, ped_nurse: 1.66, ped_rider: 1.76 };
+const HEIGHTS = { hero: 1.85, ped_suit: 1.78, ped_vendor: 1.68, ped_punk: 1.68, ped_worker: 1.84, ped_student: 1.64, ped_elder: 1.58, ped_techwear: 1.8, ped_nurse: 1.66, ped_rider: 1.76 };
 for (const k of Object.keys(PEOPLE)) add('rig', k, 'fal-ai/meshy/rigging', { model_url: `@file:assets/build/people/${k}_rigin.glb`, height_meters: HEIGHTS[k] });
 
 // text-to-motion clips (retargeted onto the Meshy skeleton in blender/retarget.py)

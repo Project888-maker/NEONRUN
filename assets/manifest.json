@@ -3379,17 +3379,19 @@
       "files": [
         "assets/generated/person/hero.png"
       ],
-      "model": "fal-ai/gpt-image-2",
-      "prompt": "athletic courier man in his early thirties, short dark undercut hair, light stubble, black waterproof techwear jacket with subtle cyan piping, dark cargo trousers, black high-top sneakers, fingerless gloves. full body photograph of one adult person standing in a strict T-pose, arms straight out horizontally to the sides at shoulder height, palms down, legs slightly apart, feet flat, facing the camera, neutral expression, head to toe fully visible with margin, plain pure white seamless studio background, soft even studio lighting, sharp focus, photorealistic, realistic skin and fabric, no props, no bag, nothing in the hands",
+      "model": "fal-ai/nano-banana/edit",
+      "prompt": "T-pose full-body photo of the man in the reference photo (same face, glasses, long curly hair, beard, build, denim jacket, white shirt, khaki cargo pants, tan sneakers), plain white studio background",
       "input": {
-        "prompt": "athletic courier man in his early thirties, short dark undercut hair, light stubble, black waterproof techwear jacket with subtle cyan piping, dark cargo trousers, black high-top sneakers, fingerless gloves. full body photograph of one adult person standing in a strict T-pose, arms straight out horizontally to the sides at shoulder height, palms down, legs slightly apart, feet flat, facing the camera, neutral expression, head to toe fully visible with margin, plain pure white seamless studio background, soft even studio lighting, sharp focus, photorealistic, realistic skin and fabric, no props, no bag, nothing in the hands",
-        "image_size": "portrait_16_9",
-        "quality": "high"
+        "image_urls": [
+          "(reference photo uploaded by Gasan, not in the repo)"
+        ],
+        "aspect_ratio": "9:16"
       },
       "seed": null,
-      "cost_usd_est": 0.1,
-      "created": "2026-10-15T00:46:37.031Z",
-      "seconds": 54
+      "cost_usd_est": 0.04,
+      "created": "2026-10-27T19:22:35.103598Z",
+      "seconds": 54,
+      "note": "replaced Oct 27: hero is now the man from the reference photo"
     },
     "person/ped_punk": {
       "files": [
@@ -3448,8 +3450,8 @@
       },
       "seed": null,
       "cost_usd_est": 0.8,
-      "created": "2026-10-15T00:51:44.826868Z",
-      "note": "entry restored after a concurrent-write race"
+      "created": "2026-10-27T19:22:35.103598Z",
+      "note": "regenerated Oct 27 from the new person/hero.png"
     },
     "rig/hero": {
       "files": [
@@ -3463,12 +3465,13 @@
       "prompt": null,
       "input": {
         "model_url": "@file:assets/build/people/hero_rigin.glb",
-        "height_meters": 1.82
+        "height_meters": 1.85
       },
       "seed": null,
       "cost_usd_est": 0.3,
-      "created": "2026-10-15T00:53:39.659Z",
-      "seconds": 34
+      "created": "2026-10-27T19:22:35.103598Z",
+      "seconds": 34,
+      "note": "regenerated Oct 27"
     },
     "motion/wave": {
       "files": [

@@ -33,7 +33,7 @@ const DISTRICT_MIX: Record<DistrictId, Partial<Record<PedType, number>>> = {
  * calibration page (tests/face): they differ too much between generated faces to guess.
  */
 const MOUTH_U: Record<string, number> = {
-  hero: 0.088, ped_punk: 0.047, ped_nurse: 0.09, ped_elder: 0.088, ped_vendor: 0.09,
+  hero: 0.11, ped_punk: 0.047, ped_nurse: 0.09, ped_elder: 0.088, ped_vendor: 0.09,
   ped_rider: 0.072, ped_student: 0.042, ped_suit: 0.078, ped_techwear: 0.072, ped_worker: 0.098,
 };
 interface FaceFrame { H: THREE.Vector3; U: THREE.Vector3; F: THREE.Vector3; L: THREE.Vector3; mouth: number; front: number; head: number; bones: THREE.Vector4 }
